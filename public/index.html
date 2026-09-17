@@ -1,713 +1,1806 @@
 <!DOCTYPE html>
-<html lang="el">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>APEX Training Lab</title>
-<meta name="description" content="APEX Training Lab — Personal Training & Mini Group στο Ηράκλειο.">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+
+<meta
+  name="description"
+  content="APEX Training Lab — Personal Training & Mini Group στο Ηράκλειο."
+>
+
+<!-- Athletic / modern fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+>
 
 <style>
+
+/* =========================================================
+   APEX TRAINING LAB
+   MODERN ATHLETIC DESIGN
+   ========================================================= */
+
 :root{
-  --bg:#07111d;
-  --bg2:#0a1522;
-  --nav:#111;
-  --line:#26384a;
-  --text:#eef3f8;
-  --muted:#91a8bd;
-  --blue:#1677ff;
-  --blue2:#4b9aff;
-  --max:1200px;
+  --bg:#050b12;
+  --bg2:#07111d;
+  --bg3:#0a1624;
+  --nav:#080b0f;
+
+  --line:#20364c;
+  --line2:#294763;
+
+  --text:#f1f5f9;
+  --muted:#91a6bb;
+
+  --blue:#1478ff;
+  --blue2:#3f95ff;
+
+  --max:1240px;
 }
+
+/* RESET */
 
 *{
   box-sizing:border-box;
   margin:0;
-  padding:0
+  padding:0;
 }
 
 html{
-  scroll-behavior:smooth
+  scroll-behavior:smooth;
 }
 
 body{
   background:var(--bg);
   color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
-  line-height:1.6;
+
+  font-family:
+    "Rajdhani",
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  line-height:1.5;
 }
 
 a{
   color:inherit;
-  text-decoration:none
+  text-decoration:none;
 }
 
-.wrap{
-  width:min(var(--max),calc(100% - 48px));
-  margin:auto
+button,
+input,
+select{
+  font-family:inherit;
 }
+
+
+/* =========================================================
+   GENERAL
+   ========================================================= */
+
+.wrap{
+  width:min(
+    var(--max),
+    calc(100% - 50px)
+  );
+
+  margin:auto;
+}
+
+.blue{
+  color:var(--blue);
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
 
 header{
   position:sticky;
   top:0;
-  z-index:100;
-  background:rgba(17,17,17,.97);
-  border-bottom:1px solid #26313d;
-  backdrop-filter:blur(12px);
+  z-index:1000;
+
+  background:rgba(5,8,12,.96);
+
+  border-bottom:
+    1px solid rgba(64,91,116,.35);
+
+  backdrop-filter:blur(15px);
 }
 
 .nav{
-  min-height:82px;
+  min-height:92px;
+
   display:flex;
   align-items:center;
   justify-content:space-between;
+
   gap:30px;
 }
+
+
+/* LOGO */
 
 .brand{
   display:flex;
   align-items:center;
-  gap:12px;
+
+  gap:14px;
+
+  min-width:240px;
+}
+
+.logo-mark{
+  width:54px;
+  height:54px;
+
+  position:relative;
+
+  flex:none;
+}
+
+
+/*
+  Stylised APEX "A" mark
+*/
+
+.logo-mark svg{
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+.brand-text{
+  display:flex;
+  flex-direction:column;
+  line-height:.85;
+}
+
+.brand-apex{
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:39px;
   font-weight:800;
-  font-size:25px;
-  letter-spacing:.04em
+
+  letter-spacing:.12em;
+
+  color:#f5f7fa;
 }
 
-.brand img{
-  width:25px;
-  height:25px;
-  object-fit:contain
+.brand-apex span{
+  color:var(--blue);
 }
 
-.brand-dot{
-  color:var(--blue)
+.brand-sub{
+  margin-top:7px;
+
+  font-family:"Rajdhani",sans-serif;
+
+  font-size:10px;
+  font-weight:600;
+
+  letter-spacing:.42em;
+
+  color:#8ca2b6;
+
+  white-space:nowrap;
 }
+
+
+/* NAVIGATION */
 
 .links{
   display:flex;
   align-items:center;
-  gap:32px;
-  color:#9aabbc;
-  font-size:16px
+
+  gap:34px;
+
+  color:#9eafc0;
+
+  font-size:16px;
+  font-weight:600;
+
+  letter-spacing:.08em;
+
+  text-transform:uppercase;
+}
+
+.links a{
+  transition:
+    color .2s ease,
+    transform .2s ease;
 }
 
 .links a:hover{
-  color:#fff
+  color:#fff;
+  transform:translateY(-1px);
 }
+
+
+/* INSTAGRAM */
+
+.instagram-link{
+  width:46px;
+  height:46px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-left:1px solid var(--line2);
+  border-right:1px solid var(--line2);
+
+  padding:0 17px;
+
+  margin-left:4px;
+
+  box-sizing:content-box;
+}
+
+.instagram-icon{
+  width:25px;
+  height:25px;
+
+  fill:none;
+
+  stroke:#fff;
+  stroke-width:2;
+}
+
+.instagram-link:hover .instagram-icon{
+  stroke:var(--blue2);
+}
+
+
+/* BOOK BUTTON */
 
 .book-btn{
   display:inline-flex;
+
   align-items:center;
   justify-content:center;
-  padding:11px 19px;
+
+  gap:14px;
+
+  min-height:54px;
+
+  padding:0 27px;
+
   border:1px solid var(--blue);
-  color:#fff!important;
+
   background:var(--blue);
+
+  color:#fff !important;
+
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:18px;
   font-weight:800;
-  letter-spacing:.04em;
+
+  letter-spacing:.12em;
+
+  text-transform:uppercase;
+
   cursor:pointer;
+
+  transition:
+    background .2s ease,
+    box-shadow .2s ease,
+    transform .2s ease;
 }
 
 .book-btn:hover{
-  background:#0f65db
+  background:#0e68df;
+
+  box-shadow:
+    0 0 30px rgba(20,120,255,.25);
+
+  transform:translateY(-1px);
 }
 
+.arrow{
+  font-size:24px;
+  line-height:0;
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
 .hero{
-  min-height:calc(100vh - 82px);
+  position:relative;
+
+  min-height:
+    calc(100vh - 92px);
+
   display:grid;
-  grid-template-columns:1.1fr .9fr;
+
+  grid-template-columns:
+    1.02fr
+    .98fr;
+
   align-items:center;
+
   gap:60px;
-  padding:85px 0 100px;
+
+  padding:
+    75px 0
+    95px;
+
+  overflow:hidden;
+
+  border-top:0;
+}
+
+
+/* subtle blue glow */
+
+.hero::before{
+  content:"";
+
+  position:absolute;
+
+  width:650px;
+  height:650px;
+
+  left:-300px;
+  top:100px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(20,120,255,.11),
+      transparent 68%
+    );
+
+  pointer-events:none;
+}
+
+
+/* LEFT */
+
+.hero-left{
+  position:relative;
+  z-index:2;
 }
 
 .eyebrow{
   color:var(--blue2);
-  font-size:13px;
-  font-weight:800;
-  letter-spacing:.22em;
+
+  font-size:15px;
+  font-weight:700;
+
+  letter-spacing:.34em;
+
   text-transform:uppercase;
-  margin-bottom:20px
+
+  margin-bottom:25px;
 }
 
 h1{
-  font-size:clamp(64px,9vw,122px);
-  line-height:.88;
-  letter-spacing:-.055em;
-  text-transform:uppercase
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:
+    clamp(
+      76px,
+      10vw,
+      142px
+    );
+
+  font-weight:900;
+
+  line-height:.80;
+
+  letter-spacing:-.025em;
+
+  text-transform:uppercase;
 }
 
-h1 span,
-.blue{
-  color:var(--blue)
+h1 .white{
+  color:#f1f5f9;
 }
+
+h1 .blue{
+  color:var(--blue);
+  font-style:italic;
+}
+
 
 .hero-copy{
-  margin-top:30px;
-  max-width:650px;
-  color:#9bb0c4;
-  font-size:19px
+  margin-top:35px;
+
+  max-width:590px;
+
+  color:#a1b3c4;
+
+  font-family:"Rajdhani",sans-serif;
+
+  font-size:20px;
+
+  line-height:1.45;
+
+  font-weight:500;
 }
+
+.hero-copy strong{
+  color:#fff;
+}
+
 
 .hero-actions{
   display:flex;
-  gap:14px;
+
+  align-items:center;
+
+  gap:16px;
+
   flex-wrap:wrap;
-  margin-top:36px
+
+  margin-top:38px;
 }
 
 .hero-actions .book-btn{
-  padding:15px 25px
+  min-height:60px;
+  padding:0 32px;
 }
 
 .ghost-btn{
-  border:1px solid var(--line);
-  padding:15px 25px;
-  color:#c5d3df;
-  font-weight:700
+  display:inline-flex;
+
+  align-items:center;
+  justify-content:center;
+
+  min-height:60px;
+
+  padding:0 30px;
+
+  border:1px solid var(--line2);
+
+  color:#d1dce6;
+
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:18px;
+
+  font-weight:700;
+
+  letter-spacing:.1em;
+
+  text-transform:uppercase;
+
+  transition:
+    border-color .2s ease,
+    background .2s ease;
 }
 
-.hero-card{
-  min-height:470px;
-  border:1px solid var(--line);
+.ghost-btn:hover{
+  border-color:var(--blue);
+
   background:
-    linear-gradient(145deg,rgba(22,119,255,.12),transparent 45%),
-    var(--bg2);
+    rgba(20,120,255,.06);
+}
+
+
+/* =========================================================
+   HERO RIGHT CARD
+   ========================================================= */
+
+.hero-visual{
   position:relative;
+
+  min-height:560px;
+
+  border:1px solid var(--line);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(20,120,255,.10),
+      transparent 42%
+    ),
+    linear-gradient(
+      180deg,
+      #0a1929,
+      #06101b
+    );
+
   overflow:hidden;
-  display:flex;
-  align-items:flex-end;
-  padding:34px;
 }
 
-.hero-card:before{
-  content:"APEX";
-  position:absolute;
-  right:-30px;
-  top:30px;
-  font-size:130px;
-  line-height:1;
-  font-weight:900;
-  color:rgba(255,255,255,.025);
-  transform:rotate(90deg);
-}
 
-.hero-card:after{
+/* inner border */
+
+.hero-visual::before{
   content:"";
+
   position:absolute;
-  inset:28px;
-  border:1px solid rgba(75,154,255,.18)
+
+  inset:32px;
+
+  border:
+    1px solid
+    rgba(62,145,255,.22);
 }
+
+
+/* huge APEX watermark */
+
+.hero-watermark{
+  position:absolute;
+
+  right:-70px;
+  top:25px;
+
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:190px;
+
+  font-weight:900;
+
+  line-height:.8;
+
+  color:
+    rgba(255,255,255,.025);
+
+  writing-mode:vertical-rl;
+
+  letter-spacing:-.05em;
+}
+
+
+/* diagonal lines */
+
+.hero-visual .line{
+  position:absolute;
+
+  background:
+    rgba(49,126,215,.18);
+}
+
+.hero-visual .line-one{
+  width:1px;
+  height:70%;
+
+  left:24%;
+
+  top:15%;
+
+  transform:rotate(17deg);
+}
+
+.hero-visual .line-two{
+  width:1px;
+  height:70%;
+
+  left:52%;
+
+  top:12%;
+
+  transform:rotate(-24deg);
+}
+
+.hero-visual .line-three{
+  width:75%;
+  height:1px;
+
+  left:12%;
+  bottom:29%;
+}
+
+
+/* A logo inside card */
+
+.hero-apex-mark{
+  position:absolute;
+
+  left:50%;
+  top:38%;
+
+  transform:
+    translate(-50%,-50%);
+
+  width:180px;
+  height:180px;
+
+  opacity:.08;
+}
+
+
+/* CARD CONTENT */
 
 .hero-card-content{
-  position:relative;
-  z-index:2
+  position:absolute;
+
+  left:60px;
+  bottom:50px;
+
+  z-index:5;
 }
 
 .hero-card-number{
-  font-size:90px;
-  line-height:.9;
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:112px;
+
+  line-height:.8;
+
   font-weight:900;
-  color:var(--blue)
+
+  color:var(--blue);
+
+  letter-spacing:-.04em;
 }
 
 .hero-card-label{
-  margin-top:12px;
-  color:#a6bbcf;
-  font-size:17px;
-  max-width:260px
+  margin-top:22px;
+
+  max-width:330px;
+
+  color:#b1c1d0;
+
+  font-size:20px;
+
+  line-height:1.25;
+
+  font-weight:500;
 }
 
+.hero-card-label strong{
+  color:#fff;
+}
+
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+
 section{
-  border-top:1px solid var(--line);
-  padding:110px 0
+  border-top:
+    1px solid var(--line);
+
+  padding:
+    115px 0;
 }
 
 .section-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:90px
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap:90px;
 }
 
 .section-title{
-  font-size:clamp(42px,6vw,72px);
-  line-height:.95;
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:
+    clamp(
+      54px,
+      7vw,
+      88px
+    );
+
+  font-weight:900;
+
+  line-height:.85;
+
   text-transform:uppercase;
-  letter-spacing:-.045em
+
+  letter-spacing:-.025em;
 }
 
 .section-intro{
-  color:#a0b4c7;
-  font-size:18px;
-  max-width:520px;
-  margin-top:8px
+  color:#9db1c4;
+
+  font-size:21px;
+
+  line-height:1.4;
+
+  font-weight:500;
+
+  max-width:550px;
 }
 
 .text{
   color:#91a8bd;
-  font-size:17px;
-  max-width:700px
+
+  font-size:18px;
+
+  line-height:1.6;
+
+  max-width:700px;
 }
 
 .text p+p{
-  margin-top:22px
+  margin-top:24px;
 }
 
 .text strong{
-  color:#f3f6fa
+  color:#f3f6fa;
 }
+
+
+/* =========================================================
+   STATS
+   ========================================================= */
 
 .stats{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  margin-top:55px;
-  border-top:1px solid var(--line);
-  border-bottom:1px solid var(--line)
+
+  grid-template-columns:
+    repeat(3,1fr);
+
+  margin-top:60px;
+
+  border-top:
+    1px solid var(--line);
+
+  border-bottom:
+    1px solid var(--line);
 }
 
 .stat{
-  padding:28px 24px;
-  min-height:130px
+  min-height:145px;
+
+  padding:30px 25px;
 }
 
 .stat+.stat{
-  border-left:1px solid var(--line)
+  border-left:
+    1px solid var(--line);
 }
 
 .stat-num{
-  font-size:42px;
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:58px;
+
   line-height:1;
+
+  font-weight:900;
+
   color:var(--blue);
-  font-weight:900
 }
 
 .stat-label{
-  color:#9ab0c4;
   margin-top:13px;
-  font-size:15px
+
+  color:#9ab0c4;
+
+  font-size:16px;
+
+  font-weight:500;
 }
+
+
+/* =========================================================
+   TRAINING
+   ========================================================= */
 
 .training{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px;
-  margin-top:55px
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap:20px;
+
+  margin-top:60px;
 }
 
 .training-card{
+  position:relative;
+
+  min-height:330px;
+
+  padding:42px;
+
   border:1px solid var(--line);
-  padding:38px;
-  min-height:300px;
+
   background:
-    linear-gradient(135deg,rgba(255,255,255,.02),rgba(22,119,255,.035))
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.025),
+      rgba(20,120,255,.04)
+    );
+
+  overflow:hidden;
+
+  transition:
+    border-color .25s ease,
+    transform .25s ease;
+}
+
+.training-card:hover{
+  border-color:
+    rgba(20,120,255,.55);
+
+  transform:translateY(-3px);
+}
+
+.training-card::after{
+  content:"";
+
+  position:absolute;
+
+  right:-50px;
+  bottom:-80px;
+
+  width:200px;
+  height:200px;
+
+  border:
+    1px solid
+    rgba(20,120,255,.10);
+
+  transform:rotate(45deg);
 }
 
 .training-number{
   color:var(--blue);
-  font-weight:900;
-  font-size:14px;
-  letter-spacing:.15em
+
+  font-size:15px;
+
+  font-weight:800;
+
+  letter-spacing:.2em;
 }
 
 .training-card h3{
-  font-size:32px;
-  margin:35px 0 16px;
-  text-transform:uppercase
+  margin:
+    38px 0
+    17px;
+
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:42px;
+
+  font-weight:800;
+
+  line-height:1;
+
+  text-transform:uppercase;
+
+  letter-spacing:.02em;
 }
 
 .training-card p{
+  max-width:520px;
+
   color:#91a8bd;
-  font-size:16px
+
+  font-size:18px;
+
+  line-height:1.45;
 }
 
 .training-card a{
   display:inline-block;
-  margin-top:28px;
-  color:#cbd8e4;
+
+  margin-top:30px;
+
+  color:#d8e3ed;
+
+  font-size:15px;
+
   font-weight:800;
-  font-size:14px;
-  letter-spacing:.08em
+
+  letter-spacing:.12em;
 }
+
+.training-card a:hover{
+  color:var(--blue2);
+}
+
+
+/* =========================================================
+   CTA
+   ========================================================= */
 
 .cta{
   background:
-    linear-gradient(90deg,rgba(22,119,255,.11),transparent 55%),
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(20,120,255,.12),
+      transparent 50%
+    ),
     var(--bg2);
+
   text-align:center;
-  padding:115px 20px
+
+  padding:
+    125px 20px;
 }
 
 .cta h2{
-  font-size:clamp(48px,7vw,88px);
-  line-height:.92;
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:
+    clamp(
+      60px,
+      8vw,
+      105px
+    );
+
+  font-weight:900;
+
+  line-height:.82;
+
   text-transform:uppercase;
-  letter-spacing:-.05em
 }
 
 .cta p{
-  max-width:600px;
-  margin:24px auto 32px;
+  max-width:650px;
+
+  margin:
+    28px auto
+    35px;
+
   color:#94aabd;
-  font-size:18px
+
+  font-size:20px;
 }
+
+
+/* =========================================================
+   CONTACT
+   ========================================================= */
 
 .contact-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:90px
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap:90px;
 }
 
 .contact-list{
-  margin-top:34px
+  margin-top:10px;
 }
 
 .contact-item{
+  min-height:75px;
+
   padding:20px 0;
-  border-top:1px solid var(--line);
+
+  border-top:
+    1px solid var(--line);
+
   display:flex;
+
   justify-content:space-between;
-  gap:30px
+
+  align-items:center;
+
+  gap:30px;
 }
 
 .contact-item:last-child{
-  border-bottom:1px solid var(--line)
+  border-bottom:
+    1px solid var(--line);
 }
 
 .contact-label{
   color:#6f879c;
-  font-size:12px;
+
+  font-size:13px;
+
+  font-weight:700;
+
   text-transform:uppercase;
-  letter-spacing:.15em
+
+  letter-spacing:.18em;
 }
 
 .contact-value{
   color:#d7e1ea;
-  text-align:right
+
+  text-align:right;
+
+  font-size:18px;
+
+  font-weight:600;
 }
 
 .contact-value a:hover{
-  color:var(--blue2)
+  color:var(--blue2);
 }
 
-footer{
-  border-top:1px solid var(--line);
-  padding:30px 0;
-  color:#647b90;
-  font-size:13px
+
+/* INSTAGRAM CONTACT */
+
+.instagram-contact{
+  display:inline-flex;
+
+  align-items:center;
+
+  gap:9px;
 }
 
-.footer-inner{
-  display:flex;
-  justify-content:space-between;
-  gap:20px
+.instagram-contact svg{
+  width:20px;
+  height:20px;
+
+  fill:none;
+
+  stroke:var(--blue2);
+
+  stroke-width:2;
 }
 
-/* BOOKING */
+
+/* =========================================================
+   BOOKING
+   ========================================================= */
 
 #booking{
-  background:#06101b
+  background:#040c14;
 }
 
 .booking-wrap{
-  max-width:760px;
-  margin:auto
+  max-width:800px;
+
+  margin:auto;
 }
 
 .booking-head{
   text-align:center;
-  margin-bottom:45px
+
+  margin-bottom:50px;
 }
 
 .booking-head h2{
-  font-size:clamp(45px,7vw,75px);
-  line-height:.95;
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:
+    clamp(
+      58px,
+      8vw,
+      90px
+    );
+
+  font-weight:900;
+
+  line-height:.82;
+
   text-transform:uppercase;
-  letter-spacing:-.04em
 }
 
 .booking-head p{
   color:var(--muted);
-  margin-top:18px
+
+  margin-top:20px;
+
+  font-size:19px;
 }
 
 .booking-box{
-  background:var(--bg2);
-  border:1px solid var(--line);
-  padding:32px
+  background:var(--bg3);
+
+  border:
+    1px solid var(--line);
+
+  padding:35px;
 }
 
 .form-row{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap:20px;
 }
 
 .field{
-  margin-bottom:18px
+  margin-bottom:20px;
 }
 
 .field label{
   display:block;
+
   color:#9eb3c6;
-  font-size:13px;
+
+  font-size:14px;
+
   font-weight:700;
-  margin-bottom:8px
+
+  letter-spacing:.06em;
+
+  margin-bottom:8px;
 }
 
 .field input,
 .field select{
   width:100%;
-  padding:14px 15px;
+
+  padding:15px 16px;
+
   background:#07111d;
-  border:1px solid #30465b;
+
+  border:
+    1px solid #30465b;
+
   color:#fff;
-  font-size:16px;
+
+  font-size:17px;
+
   outline:none;
-  border-radius:0
+
+  border-radius:0;
 }
 
 .field input:focus,
 .field select:focus{
-  border-color:var(--blue)
+  border-color:var(--blue);
 }
 
 .slots-title{
   color:#9eb3c6;
-  font-size:13px;
+
+  font-size:14px;
+
   font-weight:700;
-  margin:8px 0 12px
+
+  letter-spacing:.08em;
+
+  margin:
+    10px 0
+    13px;
 }
 
 .slots{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+
+  grid-template-columns:
+    repeat(4,1fr);
+
   gap:10px;
-  margin-bottom:24px
+
+  margin-bottom:25px;
 }
 
 .slot{
-  padding:12px 8px;
-  border:1px solid #30465b;
+  padding:14px 8px;
+
+  border:
+    1px solid #30465b;
+
   background:#07111d;
+
   color:#dce7f0;
+
   cursor:pointer;
+
   text-align:center;
-  font-weight:700
+
+  font-size:17px;
+
+  font-weight:700;
+
+  transition:
+    border-color .2s ease,
+    background .2s ease;
 }
 
 .slot:hover{
   border-color:var(--blue);
-  background:#0a1b2e
+
+  background:#0a1b2e;
 }
 
 .slot.selected{
   border-color:var(--blue);
+
   background:var(--blue);
-  color:#fff
+
+  color:#fff;
 }
 
 .slot small{
   display:block;
+
   font-size:11px;
+
   color:#8ea5bb;
-  font-weight:400
+
+  font-weight:400;
 }
 
 .slot.selected small{
-  color:#fff
+  color:#fff;
 }
 
 .message{
   padding:14px;
+
   margin-bottom:18px;
+
   display:none;
-  border:1px solid #30465b;
-  color:#c9d7e4
+
+  border:
+    1px solid #30465b;
+
+  color:#c9d7e4;
+
+  font-size:16px;
 }
 
 .message.show{
-  display:block
+  display:block;
 }
 
 .message.error{
   border-color:#8a3941;
-  color:#ffb8bd
+  color:#ffb8bd;
 }
 
 .message.success{
   border-color:#2d7253;
-  color:#aee5c9
+  color:#aee5c9;
 }
 
 .submit{
   width:100%;
-  padding:16px;
+
+  padding:17px;
+
   border:0;
+
   background:var(--blue);
+
   color:#fff;
-  font-size:16px;
-  font-weight:900;
-  letter-spacing:.05em;
-  cursor:pointer
+
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:20px;
+
+  font-weight:800;
+
+  letter-spacing:.1em;
+
+  cursor:pointer;
+
+  text-transform:uppercase;
+}
+
+.submit:hover:not(:disabled){
+  background:#0e68df;
 }
 
 .submit:disabled{
   opacity:.45;
-  cursor:not-allowed
+
+  cursor:not-allowed;
 }
 
 .booking-note{
   text-align:center;
+
   color:#6f879c;
-  font-size:12px;
-  margin-top:16px
+
+  font-size:13px;
+
+  margin-top:17px;
 }
 
-@media(max-width:850px){
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+footer{
+  border-top:
+    1px solid var(--line);
+
+  padding:
+    32px 0;
+
+  color:#647b90;
+
+  font-size:14px;
+}
+
+.footer-inner{
+  display:flex;
+
+  justify-content:space-between;
+
+  gap:20px;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media(max-width:900px){
 
   .wrap{
-    width:min(var(--max),calc(100% - 30px))
+    width:
+      min(
+        var(--max),
+        calc(100% - 30px)
+      );
   }
 
   .nav{
-    min-height:72px
+    min-height:75px;
+  }
+
+  .brand{
+    min-width:0;
+  }
+
+  .logo-mark{
+    width:45px;
+    height:45px;
+  }
+
+  .brand-apex{
+    font-size:31px;
+  }
+
+  .brand-sub{
+    font-size:8px;
   }
 
   .links{
     gap:10px;
-    font-size:13px
   }
 
-  .links a:not(.book-btn){
-    display:none
+  .links a:not(.book-btn):not(.instagram-link){
+    display:none;
   }
 
-  .book-btn{
-    padding:10px 13px
+  .instagram-link{
+    width:32px;
+    height:40px;
+
+    padding:
+      0 10px;
+
+    margin-left:0;
   }
+
+  .instagram-icon{
+    width:23px;
+    height:23px;
+  }
+
+  .links .book-btn{
+    min-height:46px;
+    padding:0 16px;
+    font-size:16px;
+  }
+
 
   .hero{
     grid-template-columns:1fr;
-    padding:70px 0 75px;
-    gap:45px
+
+    padding:
+      70px 0
+      80px;
+
+    gap:50px;
   }
 
-  .hero-card{
-    min-height:320px
+  h1{
+    font-size:
+      clamp(
+        76px,
+        19vw,
+        120px
+      );
+  }
+
+  .hero-copy{
+    font-size:18px;
+  }
+
+  .hero-visual{
+    min-height:390px;
+  }
+
+  .hero-card-content{
+    left:35px;
+    bottom:35px;
+  }
+
+  .hero-card-number{
+    font-size:85px;
+  }
+
+  .hero-card-label{
+    font-size:17px;
+  }
+
+
+  section{
+    padding:
+      80px 0;
   }
 
   .section-grid,
   .contact-grid{
     grid-template-columns:1fr;
-    gap:45px
-  }
 
-  section{
-    padding:75px 0
+    gap:45px;
   }
 
   .stats{
-    grid-template-columns:1fr
+    grid-template-columns:1fr;
   }
 
   .stat+.stat{
     border-left:0;
-    border-top:1px solid var(--line)
+
+    border-top:
+      1px solid var(--line);
   }
 
   .training{
-    grid-template-columns:1fr
+    grid-template-columns:1fr;
   }
 
+
   .contact-item{
-    display:block
+    display:block;
   }
 
   .contact-value{
     text-align:left;
-    margin-top:7px
+
+    margin-top:8px;
   }
 
+
   .form-row{
-    grid-template-columns:1fr
+    grid-template-columns:1fr;
   }
 
   .slots{
-    grid-template-columns:repeat(2,1fr)
+    grid-template-columns:
+      repeat(2,1fr);
   }
 
   .booking-box{
-    padding:22px
+    padding:22px;
   }
 
+
   .footer-inner{
-    display:block
+    display:block;
   }
 
   .footer-inner div+div{
-    margin-top:8px
+    margin-top:8px;
   }
+
 }
+
+
+/* SMALL PHONES */
+
+@media(max-width:480px){
+
+  .brand-sub{
+    display:none;
+  }
+
+  .brand-apex{
+    font-size:28px;
+  }
+
+  .hero-actions{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .hero-actions .book-btn,
+  .hero-actions .ghost-btn{
+    width:100%;
+  }
+
+  .slots{
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+}
+
 </style>
 </head>
 
+
 <body>
 
+
+<!-- =========================================================
+     HEADER
+     ========================================================= -->
+
 <header>
+
   <div class="wrap nav">
 
-    <a class="brand" href="#top">
-      <img src="assets/apex-logo.png" alt="APEX">
-      <span>APEX <span class="brand-dot">.</span></span>
+    <a class="brand" href="#top" aria-label="APEX Training Lab">
+
+      <div class="logo-mark">
+
+        <svg
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+
+          <!-- blue A -->
+          <path
+            d="M15 82 L48 20 L58 38 L34 82"
+            fill="none"
+            stroke="#1478ff"
+            stroke-width="7"
+            stroke-linecap="square"
+          />
+
+          <!-- white A -->
+          <path
+            d="M47 20 L82 82"
+            fill="none"
+            stroke="#f1f5f9"
+            stroke-width="7"
+            stroke-linecap="square"
+          />
+
+          <!-- A middle -->
+          <path
+            d="M38 62 L62 62 L72 82"
+            fill="none"
+            stroke="#c9d2dc"
+            stroke-width="7"
+            stroke-linecap="square"
+          />
+
+        </svg>
+
+      </div>
+
+
+      <div class="brand-text">
+
+        <div class="brand-apex">
+          AP<span>E</span>X
+        </div>
+
+        <div class="brand-sub">
+          TRAINING LAB
+        </div>
+
+      </div>
+
     </a>
 
+
     <nav class="links">
-      <a href="#about">About</a>
-      <a href="#training">Training</a>
-      <a href="#contact">Contact</a>
-      <a class="book-btn" href="#booking">BOOK NOW</a>
+
+      <a href="#about">
+        About
+      </a>
+
+      <a href="#training">
+        Training
+      </a>
+
+      <a href="#contact">
+        Contact
+      </a>
+
+
+      <!-- INSTAGRAM -->
+
+      <a
+        class="instagram-link"
+        href="https://www.instagram.com/apex_training_lab/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Instagram APEX Training Lab"
+      >
+
+        <svg
+          class="instagram-icon"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+
+          <rect
+            x="3"
+            y="3"
+            width="18"
+            height="18"
+            rx="5"
+          />
+
+          <circle
+            cx="12"
+            cy="12"
+            r="4"
+          />
+
+          <circle
+            cx="17.5"
+            cy="6.5"
+            r="1"
+            fill="currentColor"
+            stroke="none"
+          />
+
+        </svg>
+
+      </a>
+
+
+      <a
+        class="book-btn"
+        href="#booking"
+      >
+        BOOK NOW
+        <span class="arrow">→</span>
+      </a>
+
     </nav>
 
   </div>
+
 </header>
+
+
+
+<!-- =========================================================
+     MAIN
+     ========================================================= -->
 
 <main id="top">
 
-<section class="hero" style="border-top:0">
+
+<!-- =========================================================
+     HERO
+     ========================================================= -->
+
+<section
+  class="hero"
+  style="border-top:0"
+>
 
   <div class="wrap" style="display:contents">
 
-    <div>
+
+    <div class="hero-left">
 
       <div class="eyebrow">
-        Training • Heraklion • Crete
+        TRAINING • HERAKLION • CRETE
       </div>
 
+
       <h1>
-        Train<br>
-        with <span>purpose.</span>
+
+        <span class="white">
+          TRAIN
+        </span>
+
+        <br>
+
+        <span class="white">
+          WITH
+        </span>
+
+        <br>
+
+        <span class="blue">
+          PURPOSE.
+        </span>
+
       </h1>
 
+
       <p class="hero-copy">
-        A small coaching floor, not a big box gym. Every session is built around
-        the person doing it — your goal, your starting point and your progress.
+
+        <strong>
+          Personalized training in a focused environment.
+        </strong>
+
+        <br>
+
+        Real progress. A stronger you.
+
       </p>
 
+
       <div class="hero-actions">
-        <a class="book-btn" href="#booking">
+
+        <a
+          class="book-btn"
+          href="#booking"
+        >
           BOOK NOW
+          <span class="arrow">→</span>
         </a>
 
-        <a class="ghost-btn" href="#training">
+
+        <a
+          class="ghost-btn"
+          href="#training"
+        >
           EXPLORE TRAINING
         </a>
+
       </div>
 
     </div>
 
-    <div class="hero-card">
+
+
+    <!-- RIGHT VISUAL -->
+
+    <div class="hero-visual">
+
+      <div class="hero-watermark">
+        APEX
+      </div>
+
+
+      <div class="line line-one"></div>
+      <div class="line line-two"></div>
+      <div class="line line-three"></div>
+
+
+      <div class="hero-apex-mark">
+
+        <svg
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+
+          <path
+            d="M15 82 L48 20 L58 38 L34 82"
+            fill="none"
+            stroke="#1478ff"
+            stroke-width="7"
+          />
+
+          <path
+            d="M47 20 L82 82"
+            fill="none"
+            stroke="#fff"
+            stroke-width="7"
+          />
+
+          <path
+            d="M38 62 L62 62 L72 82"
+            fill="none"
+            stroke="#ccc"
+            stroke-width="7"
+          />
+
+        </svg>
+
+      </div>
+
 
       <div class="hero-card-content">
 
@@ -716,7 +1809,13 @@ footer{
         </div>
 
         <div class="hero-card-label">
-          Personal coaching when the session needs to be completely about you.
+
+          <strong>
+            Personal coaching
+          </strong>
+
+          when the session needs to be completely about you.
+
         </div>
 
       </div>
@@ -727,6 +1826,11 @@ footer{
 
 </section>
 
+
+
+<!-- =========================================================
+     ABOUT
+     ========================================================= -->
 
 <section id="about">
 
@@ -737,19 +1841,26 @@ footer{
       <div>
 
         <h2 class="section-title">
-          About<br>
+
+          About
+          <br>
           the Lab
+
         </h2>
 
         <p class="section-intro">
+
           Coaching built around the person doing the work.
+
         </p>
 
       </div>
 
+
       <div class="text">
 
         <p>
+
           <strong>
             APEX Training Lab is a gym and fitness centre in Heraklion built around one idea:
             training works best when it's built for the person doing it.
@@ -757,12 +1868,17 @@ footer{
 
           No two members need the same approach — each plan is shaped around your own goal,
           your own starting point and your own schedule.
+
         </p>
 
+
         <p>
-          Every session is coached, not just supervised. Whether you train in a mini group
-          or one-on-one, the focus stays on quality — correct technique, sensible loading,
-          and sessions that move you toward your maximum potential.
+
+          Every session is coached, not just supervised.
+          Whether you train in a mini group or one-on-one,
+          the focus stays on quality — correct technique,
+          sensible loading, and sessions that move you toward your maximum potential.
+
         </p>
 
       </div>
@@ -770,27 +1886,45 @@ footer{
     </div>
 
 
+
     <div class="stats">
 
       <div class="stat">
-        <div class="stat-num">6</div>
+
+        <div class="stat-num">
+          6
+        </div>
+
         <div class="stat-label">
           Members per mini group, max
         </div>
+
       </div>
 
+
       <div class="stat">
-        <div class="stat-num">1:1</div>
+
+        <div class="stat-num">
+          1:1
+        </div>
+
         <div class="stat-label">
           Personal training available
         </div>
+
       </div>
 
+
       <div class="stat">
-        <div class="stat-num">6</div>
+
+        <div class="stat-num">
+          6
+        </div>
+
         <div class="stat-label">
           Training days a week
         </div>
+
       </div>
 
     </div>
@@ -800,6 +1934,11 @@ footer{
 </section>
 
 
+
+<!-- =========================================================
+     TRAINING
+     ========================================================= -->
+
 <section id="training">
 
   <div class="wrap">
@@ -807,21 +1946,33 @@ footer{
     <div class="section-grid">
 
       <div>
+
         <h2 class="section-title">
-          How<br>
+
+          How
+          <br>
           training works
+
         </h2>
+
       </div>
 
+
       <div class="section-intro">
+
         From your first goal conversation to every session after it,
         the aim is simple: purposeful training and quality coaching.
+
       </div>
 
     </div>
 
 
+
     <div class="training">
+
+
+      <!-- PERSONAL -->
 
       <article class="training-card">
 
@@ -834,16 +1985,26 @@ footer{
         </h3>
 
         <p>
-          One coach. One athlete. A session built around your goals,
+
+          One coach. One athlete.
+          A session built around your goals,
           technique, training needs and progress.
+
         </p>
 
-        <a href="#booking" onclick="selectService('Personal Training')">
+
+        <a
+          href="#booking"
+          onclick="selectService('Personal Training')"
+        >
           BOOK A SESSION →
         </a>
 
       </article>
 
+
+
+      <!-- MINI GROUP -->
 
       <article class="training-card">
 
@@ -856,15 +2017,22 @@ footer{
         </h3>
 
         <p>
-          Small-group coaching with a maximum of 6 people, keeping the session
-          focused, coached and personal.
+
+          Small-group coaching with a maximum of 6 people,
+          keeping the session focused, coached and personal.
+
         </p>
 
-        <a href="#booking" onclick="selectService('Mini Group')">
+
+        <a
+          href="#booking"
+          onclick="selectService('Mini Group')"
+        >
           BOOK A SESSION →
         </a>
 
       </article>
+
 
     </div>
 
@@ -873,21 +2041,43 @@ footer{
 </section>
 
 
+
+<!-- =========================================================
+     CTA
+     ========================================================= -->
+
 <section class="cta">
 
   <div class="wrap">
 
     <h2>
-      Ready to<br>
-      <span class="blue">train?</span>
+
+      Ready to
+      <br>
+
+      <span class="blue">
+        train?
+      </span>
+
     </h2>
 
+
     <p>
-      Choose your training session and book your place through the APEX booking system.
+
+      Choose your training session and book your place
+      through the APEX booking system.
+
     </p>
 
-    <a class="book-btn" href="#booking">
+
+    <a
+      class="book-btn"
+      href="#booking"
+    >
+
       BOOK NOW
+      <span class="arrow">→</span>
+
     </a>
 
   </div>
@@ -895,11 +2085,17 @@ footer{
 </section>
 
 
+
+<!-- =========================================================
+     CONTACT
+     ========================================================= -->
+
 <section id="contact">
 
   <div class="wrap">
 
     <div class="contact-grid">
+
 
       <div>
 
@@ -908,13 +2104,20 @@ footer{
         </h2>
 
         <p class="section-intro">
-          Find APEX Training Lab in Heraklion or get in touch before your first session.
+
+          Find APEX Training Lab in Heraklion
+          or get in touch before your first session.
+
         </p>
 
       </div>
 
 
+
       <div class="contact-list">
+
+
+        <!-- LOCATION -->
 
         <div class="contact-item">
 
@@ -923,6 +2126,7 @@ footer{
           </div>
 
           <div class="contact-value">
+
             <a
               href="https://www.google.com/maps/search/?api=1&query=Λεωφόρος+Ικάρου+97,+Ηράκλειο"
               target="_blank"
@@ -930,10 +2134,13 @@ footer{
             >
               Λεωφόρος Ικάρου 97, Ηράκλειο
             </a>
+
           </div>
 
         </div>
 
+
+        <!-- MOBILE -->
 
         <div class="contact-item">
 
@@ -942,13 +2149,17 @@ footer{
           </div>
 
           <div class="contact-value">
+
             <a href="tel:6943820715">
               694 382 0715
             </a>
+
           </div>
 
         </div>
 
+
+        <!-- PHONE -->
 
         <div class="contact-item">
 
@@ -957,13 +2168,17 @@ footer{
           </div>
 
           <div class="contact-value">
+
             <a href="tel:2811815465">
               2811 815 465
             </a>
+
           </div>
 
         </div>
 
+
+        <!-- EMAIL -->
 
         <div class="contact-item">
 
@@ -972,13 +2187,72 @@ footer{
           </div>
 
           <div class="contact-value">
+
             <a href="mailto:apextraininglab53@gmail.com">
               apextraininglab53@gmail.com
             </a>
+
           </div>
 
         </div>
 
+
+        <!-- INSTAGRAM -->
+
+        <div class="contact-item">
+
+          <div class="contact-label">
+            Instagram
+          </div>
+
+          <div class="contact-value">
+
+            <a
+              class="instagram-contact"
+              href="https://www.instagram.com/apex_training_lab/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+
+              <svg
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+
+                <rect
+                  x="3"
+                  y="3"
+                  width="18"
+                  height="18"
+                  rx="5"
+                />
+
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="4"
+                />
+
+                <circle
+                  cx="17.5"
+                  cy="6.5"
+                  r="1"
+                  fill="currentColor"
+                  stroke="none"
+                />
+
+              </svg>
+
+              @apex_training_lab
+
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <!-- BOOKING -->
 
         <div class="contact-item">
 
@@ -987,12 +2261,15 @@ footer{
           </div>
 
           <div class="contact-value">
+
             <a href="#booking">
               BOOK NOW →
             </a>
+
           </div>
 
         </div>
+
 
       </div>
 
@@ -1003,21 +2280,31 @@ footer{
 </section>
 
 
-<!-- BOOKING -->
+
+<!-- =========================================================
+     BOOKING
+     ========================================================= -->
 
 <section id="booking">
 
   <div class="booking-wrap">
 
+
     <div class="booking-head">
 
       <div class="eyebrow">
-        APEX Training Lab
+        APEX TRAINING LAB
       </div>
 
       <h2>
-        Book<br>
-        <span class="blue">Now.</span>
+
+        Book
+        <br>
+
+        <span class="blue">
+          Now.
+        </span>
+
       </h2>
 
       <p>
@@ -1027,10 +2314,16 @@ footer{
     </div>
 
 
+
     <div class="booking-box">
 
-      <div id="message" class="message"></div>
+      <div
+        id="message"
+        class="message"
+      ></div>
 
+
+      <!-- SERVICE -->
 
       <div class="field">
 
@@ -1053,6 +2346,8 @@ footer{
       </div>
 
 
+      <!-- DATE -->
+
       <div class="field">
 
         <label for="date">
@@ -1067,14 +2362,22 @@ footer{
       </div>
 
 
+      <!-- SLOTS -->
+
       <div class="slots-title">
         ΔΙΑΘΕΣΙΜΕΣ ΩΡΕΣ
       </div>
 
-      <div id="slots" class="slots"></div>
+      <div
+        id="slots"
+        class="slots"
+      ></div>
 
+
+      <!-- NAME / PHONE -->
 
       <div class="form-row">
+
 
         <div class="field">
 
@@ -1086,7 +2389,6 @@ footer{
             id="name"
             type="text"
             placeholder="Το όνομά σου"
-            autocomplete="name"
           >
 
         </div>
@@ -1102,10 +2404,10 @@ footer{
             id="phone"
             type="tel"
             placeholder="69XXXXXXXX"
-            autocomplete="tel"
           >
 
         </div>
+
 
       </div>
 
@@ -1120,7 +2422,10 @@ footer{
 
 
       <div class="booking-note">
-        Οι αλλαγές/ακυρώσεις δεν επιτρέπονται εντός 24 ωρών πριν από την προπόνηση.
+
+        Οι αλλαγές/ακυρώσεις δεν επιτρέπονται
+        εντός 24 ωρών πριν από την προπόνηση.
+
       </div>
 
     </div>
@@ -1129,8 +2434,14 @@ footer{
 
 </section>
 
+
 </main>
 
+
+
+<!-- =========================================================
+     FOOTER
+     ========================================================= -->
 
 <footer>
 
@@ -1149,66 +2460,120 @@ footer{
 </footer>
 
 
+
+<!-- =========================================================
+     BOOKING JAVASCRIPT
+     ========================================================= -->
+
 <script>
 
-const serviceEl = document.getElementById("service");
-const dateEl = document.getElementById("date");
-const slotsEl = document.getElementById("slots");
-const nameEl = document.getElementById("name");
-const phoneEl = document.getElementById("phone");
-const submitEl = document.getElementById("submit");
-const messageEl = document.getElementById("message");
+const serviceEl =
+  document.getElementById("service");
+
+const dateEl =
+  document.getElementById("date");
+
+const slotsEl =
+  document.getElementById("slots");
+
+const nameEl =
+  document.getElementById("name");
+
+const phoneEl =
+  document.getElementById("phone");
+
+const submitEl =
+  document.getElementById("submit");
+
+const messageEl =
+  document.getElementById("message");
+
 
 let selectedSlot = null;
 
 
+/* DATE */
+
 function localDateString(d){
 
-  const y = d.getFullYear();
+  const y =
+    d.getFullYear();
 
-  const m = String(d.getMonth() + 1).padStart(2,"0");
+  const m =
+    String(
+      d.getMonth() + 1
+    ).padStart(2,"0");
 
-  const day = String(d.getDate()).padStart(2,"0");
+  const day =
+    String(
+      d.getDate()
+    ).padStart(2,"0");
 
   return `${y}-${m}-${day}`;
 }
 
 
-dateEl.min = localDateString(new Date());
-dateEl.value = dateEl.min;
+dateEl.min =
+  localDateString(
+    new Date()
+  );
+
+dateEl.value =
+  dateEl.min;
 
 
-function showMessage(text,type=""){
+/* MESSAGES */
 
-  messageEl.textContent = text;
+function showMessage(
+  text,
+  type=""
+){
 
-  messageEl.className = "message show " + type;
+  messageEl.textContent =
+    text;
+
+  messageEl.className =
+    "message show " +
+    type;
 }
 
 
 function clearMessage(){
 
-  messageEl.textContent = "";
+  messageEl.textContent =
+    "";
 
-  messageEl.className = "message";
+  messageEl.className =
+    "message";
 }
 
+
+/* SERVICE */
 
 function selectService(service){
 
-  serviceEl.value = service;
+  serviceEl.value =
+    service;
 
-  setTimeout(() => loadSlots(),50);
+  setTimeout(
+    () => loadSlots(),
+    50
+  );
 }
 
 
+/* LOAD AVAILABLE SLOTS */
+
 async function loadSlots(){
 
-  selectedSlot = null;
+  selectedSlot =
+    null;
 
-  submitEl.disabled = true;
+  submitEl.disabled =
+    true;
 
-  slotsEl.innerHTML = "";
+  slotsEl.innerHTML =
+    "";
 
   clearMessage();
 
@@ -1216,6 +2581,7 @@ async function loadSlots(){
   if(!dateEl.value){
 
     return;
+
   }
 
 
@@ -1226,13 +2592,24 @@ async function loadSlots(){
   try{
 
     const url =
-      `/api/slots?date=${encodeURIComponent(dateEl.value)}&service=${encodeURIComponent(serviceEl.value)}`;
+      `/api/slots?date=${
+        encodeURIComponent(
+          dateEl.value
+        )
+      }&service=${
+        encodeURIComponent(
+          serviceEl.value
+        )
+      }`;
 
 
     const response =
-      await fetch(url,{
-        cache:"no-store"
-      });
+      await fetch(
+        url,
+        {
+          cache:"no-store"
+        }
+      );
 
 
     if(!response.ok){
@@ -1248,16 +2625,8 @@ async function loadSlots(){
       await response.json();
 
 
-    if(!Array.isArray(slots)){
-
-      throw new Error(
-        "Μη έγκυρη απάντηση από το σύστημα."
-      );
-
-    }
-
-
-    slotsEl.innerHTML = "";
+    slotsEl.innerHTML =
+      "";
 
 
     if(!slots.length){
@@ -1266,80 +2635,79 @@ async function loadSlots(){
         "<div style='grid-column:1/-1;color:#71899d;padding:10px 0'>Δεν υπάρχουν διαθέσιμες ώρες για αυτή την ημερομηνία.</div>";
 
       return;
+
     }
 
 
-    slots.forEach(slot => {
+    slots.forEach(
+      slot => {
 
-      const button =
-        document.createElement("button");
-
-
-      button.type = "button";
-
-      button.className = "slot";
+        const button =
+          document.createElement(
+            "button"
+          );
 
 
-      button.innerHTML =
-        `${slot.time}<small>${
-          serviceEl.value === "Mini Group"
-          ? `Μένουν ${slot.remaining}`
-          : "Διαθέσιμο"
-        }</small>`;
+        button.type =
+          "button";
+
+        button.className =
+          "slot";
 
 
-      button.setAttribute(
-        "aria-label",
-        `Κλείσε ${slot.time}`
-      );
-
-      button.setAttribute(
-        "aria-pressed",
-        "false"
-      );
+        button.innerHTML =
+          `${slot.time}<small>${
+            serviceEl.value === "Mini Group"
+              ? `Μένουν ${slot.remaining}`
+              : "Διαθέσιμο"
+          }</small>`;
 
 
-      button.onclick = () => {
+        button.onclick =
+          () => {
 
-        document
-          .querySelectorAll(".slot")
-          .forEach(x => {
+            document
+              .querySelectorAll(
+                ".slot"
+              )
+              .forEach(
+                x =>
+                  x.classList.remove(
+                    "selected"
+                  )
+              );
 
-            x.classList.remove("selected");
 
-            x.setAttribute(
-              "aria-pressed",
-              "false"
+            button.classList.add(
+              "selected"
             );
 
-          });
+
+            selectedSlot =
+              slot.id;
 
 
-        button.classList.add("selected");
+            submitEl.disabled =
+              false;
 
-        button.setAttribute(
-          "aria-pressed",
-          "true"
+
+            clearMessage();
+
+          };
+
+
+        slotsEl.appendChild(
+          button
         );
 
-
-        selectedSlot = slot.id;
-
-        submitEl.disabled = false;
-
-        clearMessage();
-
-      };
-
-
-      slotsEl.appendChild(button);
-
-    });
+      }
+    );
 
 
   }catch(e){
 
-    slotsEl.innerHTML = "";
+    slotsEl.innerHTML =
+      "";
 
     showMessage(
       "Δεν μπόρεσα να φορτώσω τις ώρες. Δοκίμασε ξανά.",
@@ -1351,11 +2719,12 @@ async function loadSlots(){
 }
 
 
+/* EVENTS */
+
 serviceEl.addEventListener(
   "change",
   loadSlots
 );
-
 
 dateEl.addEventListener(
   "change",
@@ -1363,9 +2732,12 @@ dateEl.addEventListener(
 );
 
 
+/* BOOKING */
+
 submitEl.addEventListener(
   "click",
   async () => {
+
 
     if(!selectedSlot){
 
@@ -1375,6 +2747,7 @@ submitEl.addEventListener(
       );
 
       return;
+
     }
 
 
@@ -1393,10 +2766,12 @@ submitEl.addEventListener(
       );
 
       return;
+
     }
 
 
-    submitEl.disabled = true;
+    submitEl.disabled =
+      true;
 
     submitEl.textContent =
       "ΓΙΝΕΤΑΙ Η ΚΡΑΤΗΣΗ...";
@@ -1411,14 +2786,24 @@ submitEl.addEventListener(
             method:"POST",
 
             headers:{
-              "Content-Type":"application/json"
+              "Content-Type":
+                "application/json"
             },
 
-            body:JSON.stringify({
-              slot_id:selectedSlot,
-              name,
-              phone
-            })
+            body:
+              JSON.stringify({
+
+                slot_id:
+                  selectedSlot,
+
+                name:
+                  name,
+
+                phone:
+                  phone
+
+              })
+
           }
         );
 
@@ -1438,16 +2823,28 @@ submitEl.addEventListener(
 
 
       showMessage(
-        `Η κράτησή σου ολοκληρώθηκε! ${data.slot.service} — ${data.slot.date} στις ${data.slot.time}.`,
+
+        `Η κράτησή σου ολοκληρώθηκε! ${
+          data.slot.service
+        } — ${
+          data.slot.date
+        } στις ${
+          data.slot.time
+        }.`,
+
         "success"
+
       );
 
 
-      nameEl.value = "";
+      nameEl.value =
+        "";
 
-      phoneEl.value = "";
+      phoneEl.value =
+        "";
 
-      selectedSlot = null;
+      selectedSlot =
+        null;
 
 
       await loadSlots();
@@ -1460,8 +2857,8 @@ submitEl.addEventListener(
         "error"
       );
 
-      submitEl.disabled = false;
-
+      submitEl.disabled =
+        false;
 
     }finally{
 
@@ -1474,16 +2871,28 @@ submitEl.addEventListener(
 );
 
 
+/* INITIAL LOAD */
+
 loadSlots();
 
 
-if(location.hash === "#booking"){
+/* OPEN BOOKING AUTOMATICALLY */
+
+if(
+  location.hash ===
+  "#booking"
+){
 
   setTimeout(
-    () =>
+    () => {
+
       document
-        .getElementById("booking")
-        .scrollIntoView(),
+        .getElementById(
+          "booking"
+        )
+        .scrollIntoView();
+
+    },
     100
   );
 
