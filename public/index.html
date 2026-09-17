@@ -421,6 +421,9 @@ async function loadSlots(){
     const response=await fetch(url,{cache:"no-store"});
     if(!response.ok) throw new Error("Αποτυχία φόρτωσης");
 
+    if(!response.ok){
+      throw new Error("Η υπηρεσία διαθεσιμότητας δεν είναι διαθέσιμη.");
+    }
     const slots=await response.json();
     slotsEl.innerHTML="";
 
