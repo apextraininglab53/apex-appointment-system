@@ -1,24 +1,223 @@
 <!doctype html>
-<html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="/assets/favicon.png"><title>APEX Training Lab | Admin</title>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="/assets/favicon.png">
+<title>APEX Training Lab | Admin</title>
 <style>
-:root{--bg:#08090b;--card:#111317;--line:#2b2e36;--text:#f6f7f8;--muted:#a7abb4;--accent:#39a9ff;--danger:#d95353}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#252a32,#08090b 48%);color:var(--text);font-family:Arial,Helvetica,sans-serif}.wrap{max-width:1180px;margin:auto;padding:25px 18px 50px}.brand{text-align:center;margin-bottom:22px}.brand img{width:125px;border-radius:14px}.brand p{color:var(--muted);margin:7px}.card{background:#111317f7;border:1px solid var(--line);border-radius:20px;padding:22px;margin-bottom:18px;box-shadow:0 18px 45px #0006}.login{max-width:480px;margin:70px auto}.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}input,select{width:100%;padding:13px;border:1px solid var(--line);border-radius:10px;background:#191b20;color:#fff;font-size:15px}select option{background:#191b20;color:#fff}button{padding:12px 15px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:900;cursor:pointer}.actions{margin-top:12px}.danger{background:var(--danger)}.muted{color:var(--muted)}.stats{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}.stat{border:1px solid var(--line);border-radius:12px;padding:12px 15px;background:#181a20}.stat b{display:block;font-size:22px}.filters{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:15px}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:11px 9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}th{color:#b8bdc7;text-transform:uppercase;font-size:11px;letter-spacing:.6px}.ok{color:#76dfa4;font-weight:800}.booked{color:#ffcf6b;font-weight:800}@media(max-width:800px){.grid,.filters{grid-template-columns:1fr}table{display:block;overflow:auto;white-space:nowrap}}
-</style></head><body><div class="wrap">
-<div id="login" class="card login"><div class="brand"><img src="/assets/apex-logo.png" alt="APEX"><p>Διαχείριση ραντεβού</p></div><input id="pass" type="password" placeholder="Κωδικός διαχειριστή" autocomplete="current-password" onkeydown="if(event.key==='Enter') login()"><div class="actions"><button onclick="login()">ΣΥΝΔΕΣΗ</button></div><p id="loginMsg" class="muted"></p></div>
-<div id="app" style="display:none"><div class="brand"><img src="/assets/apex-logo.png" alt="APEX"><p>APEX Training Lab · Admin</p></div>
-<div class="card"><h2>Νέα διαθέσιμη ώρα</h2><div class="grid" style="margin-top:15px"><input id="newDate" type="date"><input id="newTime" type="time"><select id="newService"><option>Personal Training</option><option>Mini Group</option></select></div><div class="actions"><button onclick="addSlot()">ΠΡΟΣΘΗΚΗ ΩΡΑΣ</button></div><p id="msg" class="muted"></p></div>
-<div class="card"><h2>Ώρες & ραντεβού</h2><div class="stats"><div class="stat">Σύνολο<b id="total">0</b></div><div class="stat">Διαθέσιμα<b id="free">0</b></div><div class="stat">Κλεισμένα<b id="used">0</b></div></div>
-<div class="filters"><input id="filterDate" type="date"><select id="filterService"><option value="">Όλες οι υπηρεσίες</option><option>Personal Training</option><option>Mini Group</option></select><select id="filterStatus"><option value="">Όλες οι καταστάσεις</option><option value="free">Διαθέσιμα</option><option value="booked">Κλεισμένα</option></select></div><div id="list" class="muted">Φόρτωση…</div></div></div>
-</div><script>
+:root{--bg:#08090b;--card:#111317;--card2:#181a20;--line:#2b2e36;--text:#f6f7f8;--muted:#a7abb4;--accent:#39a9ff;--danger:#d95353;--ok:#76dfa4;--warn:#ffcf6b}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% -10%,#252a32,#08090b 48%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+.wrap{max-width:1250px;margin:auto;padding:25px 18px 50px}
+.brand{text-align:center;margin-bottom:22px}.brand img{width:125px;border-radius:14px}.brand p{color:var(--muted);margin:7px}
+.card{background:#111317f7;border:1px solid var(--line);border-radius:20px;padding:22px;margin-bottom:18px;box-shadow:0 18px 45px #0006}
+.login{max-width:480px;margin:70px auto}.actions{margin-top:12px}
+input,select{width:100%;padding:13px;border:1px solid var(--line);border-radius:10px;background:#191b20;color:#fff;font-size:15px}
+select option{background:#191b20;color:#fff}
+button{padding:12px 15px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:900;cursor:pointer}
+.danger{background:var(--danger)}.muted{color:var(--muted)}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}.stat{border:1px solid var(--line);border-radius:12px;padding:12px 15px;background:var(--card2)}.stat b{display:block;font-size:22px}
+.filters{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:15px}
+table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:11px 9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}th{color:#b8bdc7;text-transform:uppercase;font-size:11px;letter-spacing:.6px}
+.ok{color:var(--ok);font-weight:800}.booked{color:var(--warn);font-weight:800}
+.badge{display:inline-block;padding:5px 8px;border-radius:8px;background:#20232a;color:var(--muted);font-size:11px;font-weight:800;margin:2px}
+.booking{padding:8px 0;border-bottom:1px solid #292c33}.booking:last-child{border-bottom:0}
+.refresh{float:right;background:#292d35}.topline{display:flex;justify-content:space-between;align-items:center;gap:10px}
+@media(max-width:800px){.filters{grid-template-columns:1fr}table{display:block;overflow:auto;white-space:nowrap}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="login" class="card login">
+  <div class="brand"><img src="/assets/apex-logo.png" alt="APEX"><p>Διαχείριση ραντεβού</p></div>
+  <input id="pass" type="password" placeholder="Κωδικός διαχειριστή" autocomplete="current-password"
+    onkeydown="if(event.key==='Enter') login()">
+  <div class="actions"><button onclick="login()">ΣΥΝΔΕΣΗ</button></div>
+  <p id="loginMsg" class="muted"></p>
+</div>
+
+<div id="app" style="display:none">
+  <div class="brand"><img src="/assets/apex-logo.png" alt="APEX"><p>APEX Training Lab · Admin</p></div>
+
+  <div class="card">
+    <div class="topline">
+      <div>
+        <h2 style="margin:0">Ώρες & ραντεβού</h2>
+        <p class="muted" style="margin:7px 0 0">Οι ώρες δημιουργούνται αυτόματα. Δεν χρειάζεται να προσθέτεις ώρες μία-μία.</p>
+      </div>
+      <button class="refresh" onclick="load()">ΑΝΑΝΕΩΣΗ</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat">Σύνολο ωρών<b id="total">0</b></div>
+      <div class="stat">Διαθέσιμες<b id="free">0</b></div>
+      <div class="stat">Κρατήσεις<b id="used">0</b></div>
+      <div class="stat">Mini Group άτομα<b id="miniPeople">0</b></div>
+    </div>
+
+    <div class="filters">
+      <input id="filterDate" type="date">
+      <select id="filterService">
+        <option value="">Όλες οι υπηρεσίες</option>
+        <option>Personal Training</option>
+        <option>Mini Group</option>
+      </select>
+      <select id="filterStatus">
+        <option value="">Όλες οι καταστάσεις</option>
+        <option value="free">Διαθέσιμες</option>
+        <option value="booked">Με κρατήσεις</option>
+        <option value="full">Γεμάτες</option>
+      </select>
+    </div>
+
+    <div id="msg" class="muted" style="margin-top:12px"></div>
+    <div id="list" class="muted">Φόρτωση…</div>
+  </div>
+</div>
+</div>
+
+<script>
 let password="",rows=[];
-async function api(url,opt={}){opt.headers={...(opt.headers||{}),"x-admin-password":password,"Content-Type":"application/json"};const r=await fetch(url,opt);let d={};try{d=await r.json()}catch{}if(!r.ok)throw Error(d.error||"Σφάλμα");return d}
-async function login(){password=$("pass").value.trim();try{await api("/api/admin/slots");$("login").style.display="none";$("app").style.display="block";load()}catch(e){$("loginMsg").textContent=e.message}}
+
 const $=id=>document.getElementById(id);
-async function addSlot(){try{await api("/api/admin/slots",{method:"POST",body:JSON.stringify({date:$("newDate").value,time:$("newTime").value,service:$("newService").value})});$("msg").textContent="Η ώρα προστέθηκε.";load()}catch(e){$("msg").textContent=e.message}}
-async function load(){rows=await api("/api/admin/slots");render()}
-function render(){let r=rows.filter(x=>(!$("filterDate").value||x.date===$("filterDate").value)&&(!$("filterService").value||x.service===$("filterService").value)&&(!$("filterStatus").value||($("filterStatus").value==="booked")==!!x.booking_id));$("total").textContent=rows.length;$("free").textContent=rows.filter(x=>!x.booking_id).length;$("used").textContent=rows.filter(x=>x.booking_id).length;
-let h="<table><tr><th>Ημερομηνία</th><th>Ώρα</th><th>Υπηρεσία</th><th>Κατάσταση</th><th>Πελάτης</th><th>Τηλέφωνο</th><th>Ενέργεια</th></tr>";r.forEach(x=>h+=`<tr><td>${x.date}</td><td>${x.time}</td><td>${x.service}</td><td class="${x.booking_id?"booked":"ok"}">${x.booking_id?"Κλεισμένο":"Διαθέσιμο"}</td><td>${x.name||"-"}</td><td>${x.phone||"-"}</td><td>${x.booking_id?`<button class="danger" onclick="cancel(${x.booking_id})">Ακύρωση</button>`:`<button class="danger" onclick="del(${x.id})">Διαγραφή</button>`}</td></tr>`);h+="</table>";$("list").innerHTML=h}
-async function del(id){if(confirm("Να διαγραφεί η διαθέσιμη ώρα;")){await api("/api/admin/slots/"+id,{method:"DELETE"});load()}}
-async function cancel(id){if(confirm("Να ακυρωθεί το ραντεβού;")){await api("/api/admin/bookings/"+id,{method:"DELETE"});load()}}
-["filterDate","filterService","filterStatus"].forEach(id=>$(id).onchange=render);
-</script></body></html>
+
+async function api(url,opt={}){
+  opt.headers={...(opt.headers||{}),"x-admin-password":password,"Content-Type":"application/json"};
+  const r=await fetch(url,opt);
+  let d={}; try{d=await r.json()}catch{}
+  if(!r.ok) throw Error(d.error||"Σφάλμα");
+  return d;
+}
+
+async function login(){
+  password=$("pass").value.trim();
+  if(!password){$("loginMsg").textContent="Βάλε τον κωδικό διαχειριστή.";return}
+  try{
+    await api("/api/admin/slots");
+    $("login").style.display="none";
+    $("app").style.display="block";
+    load();
+  }catch(e){
+    $("loginMsg").textContent=e.message;
+  }
+}
+
+async function load(){
+  $("msg").textContent="Φόρτωση…";
+  try{
+    rows=await api("/api/admin/slots");
+    render();
+    $("msg").textContent="";
+  }catch(e){
+    $("msg").textContent=e.message;
+  }
+}
+
+function matches(x){
+  const date=$("filterDate").value;
+  const service=$("filterService").value;
+  const status=$("filterStatus").value;
+  const count=Number(x.booking_count||0);
+  const capacity=Number(x.capacity||1);
+
+  if(date && x.date!==date)return false;
+  if(service && x.service!==service)return false;
+  if(status==="free" && count>0)return false;
+  if(status==="booked" && count===0)return false;
+  if(status==="full" && count<capacity)return false;
+  return true;
+}
+
+function render(){
+  const visible=rows.filter(matches);
+
+  const totalBookings=rows.reduce((a,x)=>a+Number(x.booking_count||0),0);
+  const miniPeople=rows.filter(x=>x.service==="Mini Group")
+    .reduce((a,x)=>a+Number(x.booking_count||0),0);
+
+  $("total").textContent=rows.length;
+  $("free").textContent=rows.filter(x=>Number(x.booking_count||0)===0).length;
+  $("used").textContent=totalBookings;
+  $("miniPeople").textContent=miniPeople;
+
+  if(!visible.length){
+    $("list").innerHTML='<p class="muted">Δεν βρέθηκαν ώρες με τα συγκεκριμένα φίλτρα.</p>';
+    return;
+  }
+
+  let h=`<table>
+  <tr>
+    <th>Ημερομηνία</th>
+    <th>Ώρα</th>
+    <th>Υπηρεσία</th>
+    <th>Θέσεις</th>
+    <th>Κατάσταση</th>
+    <th>Πελάτες / Τηλέφωνα</th>
+    <th>Ενέργεια</th>
+  </tr>`;
+
+  visible.forEach(x=>{
+    const count=Number(x.booking_count||0);
+    const capacity=Number(x.capacity||1);
+    const full=count>=capacity;
+    const status=count===0
+      ? '<span class="ok">Διαθέσιμο</span>'
+      : (full ? '<span class="booked">Γεμάτο</span>' : '<span class="booked">Με κρατήσεις</span>');
+
+    let customers="-";
+    if(x.bookings && x.bookings.length){
+      customers=x.bookings.map(b=>`
+        <div class="booking">
+          <strong>${escapeHtml(b.name)}</strong><br>
+          <span class="muted">${escapeHtml(b.phone)}</span>
+          <span class="badge">Κράτηση #${b.id}</span>
+        </div>
+      `).join("");
+    }
+
+    let action="-";
+    if(x.bookings && x.bookings.length){
+      action=x.bookings.map(b=>`
+        <button class="danger" style="margin:2px 0" onclick="cancelBooking(${b.id})">
+          Ακύρωση #${b.id}
+        </button>
+      `).join("<br>");
+    }
+
+    h+=`<tr>
+      <td>${x.date}</td>
+      <td><strong>${x.time}</strong></td>
+      <td>${x.service}</td>
+      <td>${count}/${capacity}</td>
+      <td>${status}</td>
+      <td>${customers}</td>
+      <td>${action}</td>
+    </tr>`;
+  });
+
+  h+="</table>";
+  $("list").innerHTML=h;
+}
+
+function escapeHtml(v){
+  return String(v??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[c]));
+}
+
+async function cancelBooking(id){
+  if(!confirm("Να ακυρωθεί αυτή η κράτηση;"))return;
+  try{
+    await api("/api/admin/bookings/"+id,{method:"DELETE"});
+    await load();
+  }catch(e){alert(e.message)}
+}
+
+["filterDate","filterService","filterStatus"].forEach(id=>{
+  $(id).onchange=render;
+});
+</script>
+</body>
+</html>
