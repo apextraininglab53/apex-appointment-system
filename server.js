@@ -33,8 +33,10 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 function admin(req,res,next){
-  const expected=process.env.ADMIN_PASSWORD || "CHANGE_ME";
-  const supplied=req.get("x-admin-password");
+  // Railway environment variable is preferred. The fallback keeps the first setup
+  // usable if the variable is temporarily unavailable during deployment.
+  const expected=String(process.env.ADMIN_PASSWORD || "Ioannis97").trim();
+  const supplied=String(req.get("x-admin-password") || "").trim();
   if(!supplied || supplied!==expected) return res.status(401).json({error:"Μη έγκυρος κωδικός διαχειριστή."});
   next();
 }
