@@ -1,12 +1,13 @@
 <!doctype html>
 <html lang="el">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#08090b">
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <title>APEX Training Lab | Ραντεβού</title>
 <style>
-:root{--bg:#070809;--card:#111317;--card2:#181a20;--line:#2b2e36;--text:#f7f7f8;--muted:#a9adb6;--accent:#39a9ff}
+:root{--card:#111317;--card2:#181a20;--line:#2b2e36;--text:#f7f7f8;--muted:#a9adb6;--accent:#39a9ff}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -15%,#262b34,#090a0c 48%,#050506);color:var(--text);font-family:Arial,Helvetica,sans-serif}
 .wrap{max-width:940px;margin:auto;padding:28px 18px 55px}.logo{display:block;width:min(220px,60vw);margin:0 auto 25px;border-radius:16px}
 .card{border:1px solid var(--line);background:rgba(17,19,23,.96);border-radius:26px;padding:30px;box-shadow:0 25px 70px #0008}
@@ -14,9 +15,9 @@
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.full{grid-column:1/-1}label{display:block;font-size:13px;font-weight:800;margin-bottom:8px}
 input,select{width:100%;padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--card2);color:#fff;font-size:16px;outline:none}
 select option{background:#181a20;color:#fff}input:focus,select:focus{border-color:var(--accent)}
-h3{font-size:13px;margin:0 0 10px}.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}.slot{padding:15px;text-align:center;border:1px solid var(--line);border-radius:12px;background:#121419;cursor:pointer}.slot:hover{border-color:#656b77}.slot.selected{border-color:var(--accent);background:#39a9ff18}.slot strong{font-size:18px}.slot small{display:block;color:var(--muted);margin-top:4px}.empty{color:var(--muted);padding:8px 0}
-button{width:100%;border:0;border-radius:12px;padding:16px;background:linear-gradient(135deg,#39a9ff,#147dc9);color:#fff;font-weight:900;font-size:15px;cursor:pointer;margin-top:20px}.notice{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:13px;line-height:1.5}.message{text-align:center;min-height:24px;margin-top:13px;font-weight:800}.success{color:#76dfa4}.error{color:#ff8e8e}.footer{text-align:center;color:#70747d;font-size:12px;margin-top:20px}
-.confirm{display:none;text-align:center}.confirm .check{font-size:50px}.confirm h2{font-size:30px}.back{background:#292d35}
+h3{font-size:13px;margin:0 0 10px}.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.slot{padding:15px;text-align:center;border:1px solid var(--line);border-radius:12px;background:#121419;cursor:pointer}.slot:hover{border-color:#656b77}.slot.selected{border-color:var(--accent);background:#39a9ff18}.slot strong{font-size:18px}.slot small{display:block;color:var(--muted);margin-top:4px}.empty{color:var(--muted);padding:8px 0}
+button{width:100%;border:0;border-radius:12px;padding:16px;background:linear-gradient(135deg,#39a9ff,#147dc9);color:#fff;font-weight:900;font-size:15px;cursor:pointer;margin-top:20px}.notice{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:13px;line-height:1.5}.message{text-align:center;min-height:24px;margin-top:13px;font-weight:800}.error{color:#ff8e8e}.footer{text-align:center;color:#70747d;font-size:12px;margin-top:20px}.confirm{display:none;text-align:center}.confirm .check{font-size:50px}.confirm h2{font-size:30px}.back{background:#292d35}
 @media(max-width:650px){.card{padding:22px}.grid{grid-template-columns:1fr}.full{grid-column:auto}}
 </style>
 </head>
@@ -41,17 +42,34 @@ button{width:100%;border:0;border-radius:12px;padding:16px;background:linear-gra
 </div>
 <script>
 let selected=null;
-const $=id=>document.getElementById(id), service=$("service"),date=$("date"),slots=$("slots"),msg=$("msg");
+const $=id=>document.getElementById(id),service=$("service"),date=$("date"),slots=$("slots"),msg=$("msg");
 const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());date.min=d.toISOString().slice(0,10);
 async function load(){
- selected=null;msg.textContent="";msg.className="message";slots.innerHTML='<div class="empty">Φόρτωση…</div>';
+ selected=null;msg.textContent="";msg.className="message";
  if(!service.value||!date.value){slots.innerHTML='<div class="empty">Επίλεξε υπηρεσία και ημερομηνία.</div>';return}
- try{const r=await fetch("/api/slots");const all=await r.json();const list=all.filter(x=>x.service===service.value&&x.date===date.value);
- if(!list.length){slots.innerHTML='<div class="empty">Δεν υπάρχουν διαθέσιμες ώρες.</div>';return}
- slots.innerHTML="";list.forEach(x=>{const el=document.createElement("div");el.className="slot";el.innerHTML=`<strong>${x.time}</strong><small>${x.service}</small>`;el.onclick=()=>{document.querySelectorAll(".slot").forEach(a=>a.classList.remove("selected"));el.classList.add("selected");selected=x.id};slots.appendChild(el)})
+ slots.innerHTML='<div class="empty">Φόρτωση διαθέσιμων ωρών…</div>';
+ try{
+  const r=await fetch(`/api/slots?date=${encodeURIComponent(date.value)}&service=${encodeURIComponent(service.value)}`,{cache:"no-store"});
+  const list=await r.json();
+  if(!Array.isArray(list)||!list.length){slots.innerHTML='<div class="empty">Δεν υπάρχουν διαθέσιμες ώρες για αυτή την ημερομηνία.</div>';return}
+  slots.innerHTML="";
+  list.forEach(x=>{
+   const el=document.createElement("div");el.className="slot";
+   const remaining=Number(x.remaining??1);
+   el.innerHTML=`<strong>${x.time}</strong><small>${service.value==="Mini Group"?`Διαθέσιμες θέσεις: ${remaining}/6`:"Διαθέσιμο"}</small>`;
+   el.onclick=()=>{document.querySelectorAll(".slot").forEach(a=>a.classList.remove("selected"));el.classList.add("selected");selected=x.id};
+   slots.appendChild(el);
+  });
  }catch(e){slots.innerHTML='<div class="empty">Δεν ήταν δυνατή η φόρτωση των ωρών.</div>'}
 }
 service.onchange=load;date.onchange=load;
-$("book").onclick=async()=>{if(!selected||!$("name").value.trim()||!$("phone").value.trim()){msg.textContent="Συμπλήρωσε όλα τα πεδία και επίλεξε ώρα.";msg.className="message error";return}
-$("book").disabled=true;try{const r=await fetch("/api/book",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({slot_id:selected,name:$("name").value.trim(),phone:$("phone").value.trim()})});const x=await r.json();if(!r.ok)throw Error(x.error);$("booking").style.display="none";$("confirm").style.display="block";$("details").textContent=`${x.slot.service} · ${x.slot.date} · ${x.slot.time}`}catch(e){msg.textContent=e.message;msg.className="message error";$("book").disabled=false}};
+$("book").onclick=async()=>{
+ if(!selected||!$("name").value.trim()||!$("phone").value.trim()){msg.textContent="Συμπλήρωσε όλα τα πεδία και επίλεξε ώρα.";msg.className="message error";return}
+ $("book").disabled=true;
+ try{
+  const r=await fetch("/api/book",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({slot_id:selected,name:$("name").value.trim(),phone:$("phone").value.trim()})});
+  const x=await r.json();if(!r.ok)throw Error(x.error||"Δεν ήταν δυνατή η κράτηση.");
+  $("booking").style.display="none";$("confirm").style.display="block";$("details").textContent=`${x.slot.service} · ${x.slot.date} · ${x.slot.time}`;
+ }catch(e){msg.textContent=e.message;msg.className="message error";$("book").disabled=false}
+};
 </script></body></html>
