@@ -21,23 +21,25 @@
 
 <style>
 
-/* =========================================================
-   APEX TRAINING LAB
-   HOMEPAGE
-   ========================================================= */
-
 :root{
-  --black:#02070c;
-  --black2:#050b11;
-  --panel:#071019;
-  --white:#f4f6fa;
-  --gray:#a9b3c0;
-  --gray2:#697482;
-  --blue:#087cff;
-  --blue2:#1687ff;
-  --line:rgba(255,255,255,.16);
-  --max:1380px;
+  --bg:#05080c;
+  --bg2:#090e14;
+  --panel:#0c1219;
+  --line:#1d2a37;
+  --line2:#263746;
+
+  --text:#f4f7fa;
+  --muted:#91a2b2;
+
+  --blue:#1677ff;
+  --blue2:#4b9aff;
+
+  --max:1280px;
 }
+
+/* =========================
+   RESET
+========================= */
 
 *{
   box-sizing:border-box;
@@ -50,9 +52,10 @@ html{
 }
 
 body{
-  background:var(--black);
-  color:var(--white);
+  background:var(--bg);
+  color:var(--text);
   font-family:"Rajdhani",Arial,sans-serif;
+  line-height:1.5;
   overflow-x:hidden;
 }
 
@@ -64,810 +67,705 @@ a{
 button,
 input,
 select{
-  font:inherit;
+  font-family:inherit;
 }
 
-
-/* =========================================================
-   GENERAL
-   ========================================================= */
-
-.container{
-  width:min(var(--max),calc(100% - 80px));
+.wrap{
+  width:min(var(--max),calc(100% - 50px));
   margin:auto;
 }
 
-.blue{
-  color:var(--blue);
-}
-
-
-/* =========================================================
+/* =========================
    HEADER
-   ========================================================= */
+========================= */
 
 header{
-  position:fixed;
+  position:sticky;
   top:0;
-  left:0;
-  width:100%;
   z-index:1000;
 
-  background:rgba(2,7,12,.94);
-  border-bottom:1px solid rgba(255,255,255,.12);
+  background:rgba(5,8,12,.94);
+
+  border-bottom:1px solid rgba(255,255,255,.08);
 
   backdrop-filter:blur(14px);
   -webkit-backdrop-filter:blur(14px);
 }
 
 .nav{
-  min-height:122px;
+  min-height:82px;
 
   display:flex;
   align-items:center;
   justify-content:space-between;
 
-  gap:40px;
+  gap:30px;
 }
 
-
-/* =========================================================
-   APEX LOGO
-   ========================================================= */
+/* LOGO */
 
 .brand{
   display:flex;
   align-items:center;
-  gap:22px;
+  gap:13px;
 
-  min-width:360px;
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:30px;
+  font-weight:800;
+
+  letter-spacing:.04em;
 }
 
-.logo-mark{
-  width:82px;
-  height:82px;
-  flex:0 0 82px;
-}
+.brand img{
+  width:42px;
+  height:42px;
 
-.logo-mark svg{
-  width:100%;
-  height:100%;
+  object-fit:contain;
+
   display:block;
 }
 
-.logo-word{
-  display:flex;
-  flex-direction:column;
-  line-height:1;
+.brand-name{
+  color:#fff;
 }
 
-.logo-apex{
-  font-family:"Rajdhani",sans-serif;
-  font-size:53px;
-  font-weight:500;
-  letter-spacing:.27em;
-
-  color:#f2f4f7;
-
-  display:flex;
-  align-items:center;
-}
-
-.logo-apex .e-bars{
-  display:inline-flex;
-  flex-direction:column;
-  gap:5px;
-  margin-left:3px;
-  width:28px;
-}
-
-.logo-apex .e-bars span{
-  height:3px;
-  width:28px;
-  background:var(--blue);
-  display:block;
-}
-
-.logo-sub{
-  margin-top:7px;
-
-  display:flex;
-  align-items:center;
-  gap:11px;
-
-  font-size:13px;
-  letter-spacing:.43em;
-  font-weight:600;
-}
-
-.logo-sub:before,
-.logo-sub:after{
-  content:"";
-  height:1px;
-  width:27px;
-  background:#69727c;
-}
-
-.logo-sub span:first-child{
+.brand-dot{
   color:var(--blue);
 }
 
-.logo-sub span:last-child{
-  color:#a9b0b9;
-}
+/* NAVIGATION */
 
-
-/* =========================================================
-   NAVIGATION
-   ========================================================= */
-
-.navigation{
+.links{
   display:flex;
   align-items:center;
-  justify-content:flex-end;
+  gap:30px;
 
-  gap:70px;
-}
+  color:#9ba9b7;
 
-.navigation a{
-  font-size:18px;
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:16px;
   font-weight:600;
-  letter-spacing:.12em;
 
-  color:#d7dde5;
+  letter-spacing:.08em;
 
-  transition:.25s ease;
+  text-transform:uppercase;
 }
 
-.navigation a:hover{
+.links a{
+  transition:.2s ease;
+}
+
+.links a:hover{
   color:#fff;
 }
 
-.nav-instagram{
-  width:74px;
-  height:64px;
+/* BOOK BUTTON */
 
-  border-left:1px solid rgba(255,255,255,.25);
-  border-right:1px solid rgba(255,255,255,.25);
+.book-btn{
+  display:inline-flex;
 
-  display:flex;
   align-items:center;
   justify-content:center;
 
-  margin-left:-20px;
-}
+  padding:12px 21px;
 
-.instagram-icon{
-  width:36px;
-  height:36px;
-  border:3px solid white;
-  border-radius:10px;
-
-  position:relative;
-}
-
-.instagram-icon:before{
-  content:"";
-  position:absolute;
-
-  width:12px;
-  height:12px;
-
-  border:3px solid white;
-  border-radius:50%;
-
-  left:50%;
-  top:50%;
-
-  transform:translate(-50%,-50%);
-}
-
-.instagram-icon:after{
-  content:"";
-  position:absolute;
-
-  width:5px;
-  height:5px;
-
-  background:white;
-  border-radius:50%;
-
-  right:5px;
-  top:5px;
-}
-
-.book-button{
-  min-width:235px;
-  height:64px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:25px;
+  border:1px solid var(--blue);
 
   background:var(--blue);
-  color:#fff;
 
-  font-size:19px;
-  font-weight:700;
-  letter-spacing:.09em;
+  color:#fff !important;
 
-  transition:.25s ease;
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:16px;
+  font-weight:800;
+
+  letter-spacing:.08em;
+
+  cursor:pointer;
+
+  transition:.2s ease;
 }
 
-.book-button span{
-  font-size:30px;
-  line-height:0;
-}
+.book-btn:hover{
+  background:#0e63d5;
+  border-color:#0e63d5;
 
-.book-button:hover{
-  background:#0069dc;
   transform:translateY(-1px);
 }
 
+/* INSTAGRAM */
 
-/* =========================================================
-   HERO
-   ========================================================= */
-
-.hero{
-  min-height:100vh;
-  padding-top:122px;
-
-  position:relative;
-  overflow:hidden;
-
-  background:
-    radial-gradient(
-      circle at 70% 35%,
-      rgba(15,104,210,.12),
-      transparent 35%
-    ),
-    linear-gradient(
-      90deg,
-      #02070c 0%,
-      #02070c 37%,
-      #040a10 58%,
-      #03070c 100%
-    );
-}
-
-.hero-grid{
-  min-height:calc(100vh - 122px);
-
-  display:grid;
-  grid-template-columns:44% 56%;
-
-  position:relative;
-}
-
-
-/* =========================================================
-   HERO LEFT
-   ========================================================= */
-
-.hero-content{
-  position:relative;
-  z-index:5;
-
+.instagram{
   display:flex;
-  flex-direction:column;
+  align-items:center;
   justify-content:center;
 
-  padding:80px 40px 140px 0;
+  width:25px;
+  height:25px;
+}
+
+.instagram svg{
+  width:21px;
+  height:21px;
+
+  fill:none;
+
+  stroke:#a7b5c2;
+  stroke-width:1.7;
+
+  transition:.2s ease;
+}
+
+.instagram:hover svg{
+  stroke:#fff;
+}
+
+/* =========================
+   HERO
+========================= */
+
+.hero{
+  position:relative;
+
+  min-height:calc(100vh - 82px);
+
+  display:grid;
+
+  grid-template-columns:
+    minmax(0,1fr)
+    minmax(420px,.9fr);
+
+  align-items:stretch;
+
+  border-bottom:1px solid var(--line);
+
+  overflow:hidden;
+}
+
+.hero-left{
+  display:flex;
+  align-items:center;
+
+  padding:
+    90px
+    65px
+    90px
+    max(50px,calc((100vw - 1280px)/2));
+
+  position:relative;
+
+  z-index:2;
+}
+
+.hero-left-inner{
+  max-width:720px;
 }
 
 .eyebrow{
-  color:#1687ff;
+  color:var(--blue2);
 
-  font-size:17px;
-  font-weight:600;
-  letter-spacing:.38em;
-
-  text-transform:uppercase;
-
-  margin-bottom:27px;
-}
-
-.hero-title{
   font-family:"Barlow Condensed",sans-serif;
 
-  font-size:clamp(90px,8vw,145px);
+  font-size:15px;
+  font-weight:800;
 
-  line-height:.76;
-
-  font-weight:900;
-
-  font-style:italic;
-
-  letter-spacing:-.025em;
+  letter-spacing:.25em;
 
   text-transform:uppercase;
+
+  margin-bottom:24px;
 }
 
-.hero-title .white{
-  color:#f3f5f8;
+.hero h1{
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:
+    clamp(75px,9vw,145px);
+
+  line-height:.78;
+
+  letter-spacing:-.045em;
+
+  text-transform:uppercase;
+
+  font-weight:900;
 }
 
-.hero-title .blue{
+.hero h1 span{
   color:var(--blue);
 }
 
 .hero-line{
-  width:47px;
+  width:105px;
   height:4px;
 
-  background:#f3f5f8;
+  background:var(--blue);
 
-  margin:32px 0 24px;
+  margin-top:27px;
 }
 
-.hero-description{
-  color:#b3bdc9;
+.hero-copy{
+  margin-top:28px;
 
-  font-size:22px;
-  line-height:1.45;
+  max-width:590px;
 
-  max-width:570px;
+  color:#9aa9b7;
+
+  font-size:19px;
+
+  line-height:1.55;
 
   font-weight:500;
 }
 
 .hero-actions{
   display:flex;
-  gap:30px;
+  align-items:center;
 
-  margin-top:39px;
+  gap:14px;
+
+  flex-wrap:wrap;
+
+  margin-top:36px;
 }
 
-.hero-main-button{
-  height:63px;
-  min-width:250px;
+.hero-actions .book-btn{
+  padding:15px 27px;
 
-  display:flex;
+  font-size:17px;
+}
+
+.ghost-btn{
+  display:inline-flex;
+
   align-items:center;
   justify-content:center;
-  gap:25px;
 
-  background:var(--blue);
+  padding:15px 25px;
+
+  border:1px solid var(--line2);
+
+  color:#c9d4dd;
+
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:17px;
+
+  font-weight:700;
+
+  letter-spacing:.08em;
+
+  transition:.2s ease;
+}
+
+.ghost-btn:hover{
+  border-color:#526b80;
 
   color:#fff;
-
-  font-size:19px;
-  font-weight:700;
-
-  letter-spacing:.08em;
-
-  transition:.25s ease;
 }
 
-.hero-main-button span{
-  font-size:30px;
-}
-
-.hero-main-button:hover{
-  background:#0069dc;
-}
-
-.hero-outline-button{
-  height:63px;
-  min-width:260px;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  border:2px solid var(--blue);
-
-  color:#dce3ec;
-
-  font-size:18px;
-  font-weight:700;
-
-  letter-spacing:.08em;
-
-  transition:.25s ease;
-}
-
-.hero-outline-button:hover{
-  background:rgba(8,124,255,.08);
-}
-
-
-/* =========================================================
+/* =========================
    HERO IMAGE
-   ========================================================= */
+========================= */
 
-.hero-image{
+.hero-right{
   position:relative;
 
-  min-height:calc(100vh - 122px);
+  min-height:650px;
 
-  background-image:
+  overflow:hidden;
+
+  border-left:1px solid var(--line);
+}
+
+.hero-photo{
+  position:absolute;
+
+  inset:0;
+
+  background:
     linear-gradient(
       90deg,
-      rgba(2,7,12,1) 0%,
-      rgba(2,7,12,.76) 8%,
-      rgba(2,7,12,.16) 38%,
-      rgba(2,7,12,.04) 100%
+      rgba(5,8,12,.35),
+      rgba(5,8,12,.05)
     ),
     linear-gradient(
-      0deg,
-      rgba(2,7,12,.82) 0%,
-      rgba(2,7,12,.08) 45%,
-      rgba(2,7,12,.15) 100%
+      180deg,
+      rgba(0,0,0,.12),
+      rgba(0,0,0,.65)
     ),
     url("assets/hero.jpg");
 
   background-size:cover;
   background-position:center;
 
-  overflow:hidden;
+  filter:saturate(.82) contrast(1.08);
 }
 
-
-/* dark side fade */
-.hero-image:before{
+.hero-photo:after{
   content:"";
 
   position:absolute;
+
   inset:0;
 
   background:
     linear-gradient(
       90deg,
-      #02070c 0%,
-      rgba(2,7,12,.45) 12%,
-      transparent 38%
+      rgba(5,8,12,.35),
+      transparent 35%
     );
-
-  pointer-events:none;
 }
 
+/* HERO SIDE LABEL */
 
-/* right vignette */
-.hero-image:after{
-  content:"";
-
-  position:absolute;
-  inset:0;
-
-  box-shadow:
-    inset -80px 0 130px rgba(0,0,0,.55),
-    inset 0 -100px 120px rgba(0,0,0,.5);
-
-  pointer-events:none;
-}
-
-
-/* =========================================================
-   STRONGER THAN YESTERDAY
-   ========================================================= */
-
-.hero-slogan{
+.hero-side-label{
   position:absolute;
 
-  right:70px;
-  top:18%;
+  right:30px;
+  bottom:30px;
 
-  z-index:4;
+  z-index:3;
 
-  width:220px;
+  border-left:3px solid var(--blue);
 
-  transform:rotate(-2deg);
-}
+  padding-left:16px;
 
-.hero-slogan div{
   font-family:"Barlow Condensed",sans-serif;
 
-  font-size:48px;
-  line-height:.88;
+  text-align:right;
 
-  font-weight:800;
-
-  letter-spacing:.03em;
-
-  color:rgba(240,243,247,.56);
-
-  text-shadow:0 2px 15px rgba(0,0,0,.7);
+  text-transform:uppercase;
 }
 
-.hero-slogan .slogan-line{
-  width:70px;
-  height:6px;
+.hero-side-label strong{
+  display:block;
 
-  background:var(--blue);
+  font-size:42px;
 
-  margin-top:32px;
+  line-height:.9;
 
-  transform:skew(-18deg);
+  font-weight:900;
+
+  color:#fff;
 }
 
+.hero-side-label span{
+  display:block;
 
-/* =========================================================
+  margin-top:8px;
+
+  color:#b1bdc8;
+
+  font-size:14px;
+
+  letter-spacing:.14em;
+}
+
+/* =========================
    FEATURE STRIP
-   ========================================================= */
+========================= */
 
 .features{
-  position:absolute;
-
-  left:0;
-  bottom:0;
-
-  width:100%;
-
-  z-index:10;
-
-  background:
-    linear-gradient(
-      0deg,
-      rgba(2,7,12,.98),
-      rgba(2,7,12,.82)
-    );
-
-  border-top:1px solid rgba(255,255,255,.16);
-}
-
-.feature-grid{
   display:grid;
+
   grid-template-columns:repeat(4,1fr);
+
+  border-bottom:1px solid var(--line);
 }
 
 .feature{
   min-height:145px;
 
+  padding:28px 30px;
+
+  border-right:1px solid var(--line);
+
   display:flex;
   flex-direction:column;
-  align-items:center;
+
   justify-content:center;
 
-  text-align:center;
-
-  position:relative;
+  background:#070c12;
 }
 
-.feature + .feature{
-  border-left:1px solid rgba(255,255,255,.23);
+.feature:last-child{
+  border-right:0;
 }
 
 .feature-icon{
-  width:52px;
-  height:52px;
-
-  margin-bottom:10px;
-
   color:var(--blue);
-}
 
-.feature-icon svg{
-  width:100%;
-  height:100%;
-  fill:none;
-  stroke:currentColor;
-  stroke-width:1.6;
-  stroke-linecap:round;
-  stroke-linejoin:round;
+  font-size:25px;
+
+  margin-bottom:9px;
 }
 
 .feature-title{
-  font-size:18px;
+  font-family:"Barlow Condensed",sans-serif;
 
-  font-weight:700;
+  font-size:22px;
 
-  letter-spacing:.20em;
+  font-weight:800;
 
-  color:#eef2f7;
+  letter-spacing:.04em;
+
+  text-transform:uppercase;
 }
 
 .feature-text{
-  margin-top:2px;
+  margin-top:3px;
 
-  font-size:19px;
+  color:#7f91a2;
 
-  color:#a4afbc;
+  font-size:14px;
 
   font-weight:500;
 }
 
+/* =========================
+   GENERAL SECTIONS
+========================= */
 
-/* =========================================================
-   SECTIONS
-   ========================================================= */
+section.standard{
+  border-bottom:1px solid var(--line);
 
-section:not(.hero){
-  padding:120px 0;
-
-  border-top:1px solid rgba(255,255,255,.1);
-
-  background:var(--black);
+  padding:115px 0;
 }
 
-.section-heading{
+.section-grid{
+  display:grid;
+
+  grid-template-columns:1fr 1fr;
+
+  gap:90px;
+}
+
+.section-title{
   font-family:"Barlow Condensed",sans-serif;
 
-  font-size:80px;
+  font-size:clamp(55px,7vw,95px);
 
-  line-height:.9;
+  line-height:.84;
+
+  letter-spacing:-.035em;
 
   text-transform:uppercase;
 
-  font-style:italic;
-
-  font-weight:800;
-
-  letter-spacing:-.02em;
+  font-weight:900;
 }
 
-.section-heading span{
+.section-title span{
   color:var(--blue);
 }
 
 .section-intro{
-  max-width:650px;
+  margin-top:15px;
 
-  margin-top:22px;
+  color:#a0afbd;
 
-  color:#9da9b7;
+  font-size:19px;
 
-  font-size:21px;
-
-  line-height:1.5;
+  max-width:500px;
 }
 
-
-/* =========================================================
-   ABOUT
-   ========================================================= */
-
-.about-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-
-  gap:100px;
-
-  align-items:start;
-}
-
-.about-text{
-  color:#9ca9b7;
+.text{
+  color:#8fa1b1;
 
   font-size:18px;
 
-  line-height:1.75;
+  line-height:1.65;
+
+  max-width:680px;
 }
 
-.about-text p + p{
-  margin-top:24px;
+.text p+p{
+  margin-top:25px;
 }
 
-.about-text strong{
-  color:#eef2f7;
+.text strong{
+  color:#f2f5f7;
 }
 
+/* =========================
+   STATS
+========================= */
 
-/* =========================================================
-   TRAINING
-   ========================================================= */
+.stats{
+  display:grid;
 
-.training-grid{
+  grid-template-columns:repeat(3,1fr);
+
   margin-top:60px;
 
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+}
+
+.stat{
+  min-height:145px;
+
+  padding:30px;
+
+  border-right:1px solid var(--line);
+}
+
+.stat:last-child{
+  border-right:0;
+}
+
+.stat-num{
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:58px;
+
+  line-height:.8;
+
+  color:var(--blue);
+
+  font-weight:900;
+}
+
+.stat-label{
+  margin-top:17px;
+
+  color:#899aaa;
+
+  font-size:15px;
+}
+
+/* =========================
+   TRAINING CARDS
+========================= */
+
+.training{
   display:grid;
+
   grid-template-columns:1fr 1fr;
 
-  gap:22px;
+  gap:20px;
+
+  margin-top:60px;
 }
 
 .training-card{
-  position:relative;
+  min-height:340px;
 
-  min-height:360px;
+  position:relative;
 
   padding:40px;
 
-  border:1px solid rgba(255,255,255,.13);
+  border:1px solid var(--line);
 
   background:
     linear-gradient(
       135deg,
-      rgba(8,124,255,.09),
-      rgba(255,255,255,.015)
+      rgba(255,255,255,.025),
+      rgba(22,119,255,.045)
     );
 
   overflow:hidden;
 
-  transition:.3s ease;
+  transition:.2s ease;
 }
 
 .training-card:hover{
-  border-color:rgba(8,124,255,.7);
+  border-color:#3b5369;
 
-  transform:translateY(-4px);
+  transform:translateY(-2px);
 }
 
 .training-number{
   color:var(--blue);
 
-  font-size:14px;
+  font-family:"Barlow Condensed",sans-serif;
 
-  letter-spacing:.22em;
+  font-size:15px;
 
-  font-weight:700;
+  font-weight:800;
+
+  letter-spacing:.16em;
 }
 
 .training-card h3{
-  margin-top:50px;
+  margin-top:38px;
 
   font-family:"Barlow Condensed",sans-serif;
 
-  font-size:55px;
+  font-size:46px;
 
-  line-height:.95;
+  line-height:.9;
 
   text-transform:uppercase;
 
-  font-style:italic;
+  font-weight:900;
 }
 
 .training-card p{
-  max-width:550px;
+  max-width:570px;
 
-  margin-top:22px;
+  margin-top:20px;
 
-  color:#96a3b1;
+  color:#8fa1b1;
 
-  font-size:18px;
-
-  line-height:1.55;
+  font-size:17px;
 }
 
 .training-link{
   display:inline-flex;
 
-  margin-top:30px;
+  margin-top:28px;
 
-  color:#dbe2ea;
+  color:#d5dfe7;
 
-  font-weight:700;
+  font-family:"Barlow Condensed",sans-serif;
 
-  letter-spacing:.13em;
+  font-size:16px;
 
-  font-size:15px;
+  font-weight:800;
+
+  letter-spacing:.1em;
 }
 
 .training-link:hover{
-  color:var(--blue);
+  color:var(--blue2);
 }
 
-
-/* =========================================================
+/* =========================
    CTA
-   ========================================================= */
+========================= */
 
 .cta{
   text-align:center;
 
+  padding:125px 20px;
+
   background:
     radial-gradient(
       circle at center,
-      rgba(8,124,255,.12),
-      transparent 45%
+      rgba(22,119,255,.10),
+      transparent 50%
     ),
-    #050b11 !important;
+    var(--bg2);
+
+  border-bottom:1px solid var(--line);
 }
 
 .cta h2{
   font-family:"Barlow Condensed",sans-serif;
 
-  font-size:clamp(70px,9vw,125px);
+  font-size:clamp(65px,8vw,110px);
 
-  line-height:.85;
+  line-height:.82;
 
   font-weight:900;
 
-  font-style:italic;
-
   text-transform:uppercase;
+
+  letter-spacing:-.04em;
 }
 
 .cta h2 span{
@@ -879,209 +777,240 @@ section:not(.hero){
 
   margin:25px auto 35px;
 
-  color:#98a5b3;
+  color:#93a4b3;
 
-  font-size:19px;
+  font-size:18px;
 }
 
-
-/* =========================================================
+/* =========================
    CONTACT
-   ========================================================= */
+========================= */
 
 .contact-grid{
   display:grid;
-  grid-template-columns:.8fr 1.2fr;
 
-  gap:100px;
+  grid-template-columns:1fr 1fr;
+
+  gap:90px;
 }
 
 .contact-list{
-  border-top:1px solid rgba(255,255,255,.13);
+  border-top:1px solid var(--line);
 }
 
 .contact-item{
-  min-height:80px;
-
   display:flex;
-  align-items:center;
+
   justify-content:space-between;
 
   gap:30px;
 
-  border-bottom:1px solid rgba(255,255,255,.13);
+  padding:21px 0;
+
+  border-bottom:1px solid var(--line);
 }
 
 .contact-label{
-  color:#687582;
+  color:#667b8d;
 
-  font-size:13px;
-
-  text-transform:uppercase;
-
-  letter-spacing:.18em;
-}
-
-.contact-value{
-  color:#e4e9ef;
-
-  font-size:18px;
-
-  text-align:right;
-}
-
-.contact-value a:hover{
-  color:var(--blue);
-}
-
-
-/* =========================================================
-   BOOKING
-   ========================================================= */
-
-.booking-section{
-  background:
-    radial-gradient(
-      circle at 50% 0%,
-      rgba(8,124,255,.11),
-      transparent 42%
-    ),
-    #03080e !important;
-}
-
-.booking-box{
-  max-width:1050px;
-
-  margin:55px auto 0;
-
-  padding:45px;
-
-  border:1px solid rgba(255,255,255,.13);
-
-  background:rgba(7,16,25,.86);
-
-  box-shadow:
-    0 25px 80px rgba(0,0,0,.35);
-}
-
-.booking-title{
   font-family:"Barlow Condensed",sans-serif;
-
-  font-size:48px;
-
-  text-transform:uppercase;
-
-  font-style:italic;
-
-  margin-bottom:30px;
-}
-
-.form-row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-
-  gap:18px;
-
-  margin-bottom:18px;
-}
-
-.form-group{
-  display:flex;
-  flex-direction:column;
-
-  gap:8px;
-}
-
-.form-group label{
-  color:#8492a0;
-
-  font-size:13px;
-
-  text-transform:uppercase;
-
-  letter-spacing:.15em;
-
-  font-weight:700;
-}
-
-.form-group input,
-.form-group select{
-  width:100%;
-
-  height:55px;
-
-  padding:0 16px;
-
-  border:1px solid rgba(255,255,255,.14);
-
-  background:#050b11;
-
-  color:#eef3f8;
-
-  outline:none;
-
-  border-radius:0;
-}
-
-.form-group input:focus,
-.form-group select:focus{
-  border-color:var(--blue);
-}
-
-.service-buttons{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-
-  gap:14px;
-
-  margin-bottom:25px;
-}
-
-.service-button{
-  height:58px;
-
-  border:1px solid rgba(255,255,255,.16);
-
-  background:#050b11;
-
-  color:#aeb8c3;
-
-  cursor:pointer;
-
-  font-size:16px;
-
-  font-weight:700;
-
-  letter-spacing:.08em;
-
-  transition:.2s ease;
-}
-
-.service-button:hover{
-  border-color:var(--blue);
-  color:#fff;
-}
-
-.service-button.active{
-  border-color:var(--blue);
-
-  background:var(--blue);
-
-  color:#fff;
-}
-
-.booking-subtitle{
-  margin-bottom:13px;
-
-  color:#8d9aa8;
 
   font-size:14px;
 
+  font-weight:700;
+
   text-transform:uppercase;
 
-  letter-spacing:.13em;
+  letter-spacing:.16em;
+}
+
+.contact-value{
+  color:#d7e0e7;
+
+  text-align:right;
+
+  font-size:17px;
+}
+
+.contact-value a:hover{
+  color:var(--blue2);
+}
+
+/* =========================
+   BOOKING
+========================= */
+
+#booking{
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(22,119,255,.07),
+      transparent 35%
+    ),
+    #050a10;
+}
+
+.booking-wrap{
+  width:min(850px,calc(100% - 30px));
+
+  margin:auto;
+}
+
+.booking-head{
+  text-align:center;
+
+  margin-bottom:45px;
+}
+
+.booking-head .eyebrow{
+  margin-bottom:15px;
+}
+
+.booking-head h2{
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:clamp(65px,8vw,105px);
+
+  line-height:.82;
+
+  text-transform:uppercase;
+
+  font-weight:900;
+
+  letter-spacing:-.04em;
+}
+
+.booking-head h2 span{
+  color:var(--blue);
+}
+
+.booking-head p{
+  margin-top:20px;
+
+  color:#91a2b2;
+
+  font-size:18px;
+}
+
+/* BOOKING BOX */
+
+.booking-box{
+  padding:34px;
+
+  background:#0a1119;
+
+  border:1px solid var(--line2);
+
+  box-shadow:
+    0 20px 80px rgba(0,0,0,.35);
+}
+
+/* MESSAGE */
+
+.message{
+  display:none;
+
+  padding:16px 18px;
+
+  margin-bottom:20px;
+
+  border:1px solid var(--line2);
+
+  font-size:16px;
+
+  font-weight:600;
+}
+
+.message.show{
+  display:block;
+}
+
+.message.error{
+  border-color:#813c45;
+
+  color:#ffb9bf;
+
+  background:rgba(130,40,50,.08);
+}
+
+.message.success{
+  border-color:#28694d;
+
+  color:#aee7ca;
+
+  background:rgba(35,110,75,.08);
+}
+
+/* FIELDS */
+
+.field{
+  margin-bottom:20px;
+}
+
+.field label{
+  display:block;
+
+  margin-bottom:8px;
+
+  color:#9cafbf;
+
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:15px;
 
   font-weight:700;
+
+  text-transform:uppercase;
+
+  letter-spacing:.12em;
+}
+
+.field input,
+.field select{
+  width:100%;
+
+  height:52px;
+
+  padding:0 15px;
+
+  border:1px solid #304454;
+
+  border-radius:0;
+
+  outline:none;
+
+  background:#060b11;
+
+  color:#fff;
+
+  font-family:"Rajdhani",sans-serif;
+
+  font-size:17px;
+
+  font-weight:500;
+}
+
+.field input:focus,
+.field select:focus{
+  border-color:var(--blue);
+}
+
+/* SLOTS */
+
+.slots-title{
+  margin:7px 0 13px;
+
+  color:#9cafbf;
+
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:15px;
+
+  font-weight:700;
+
+  letter-spacing:.12em;
+
+  text-transform:uppercase;
 }
 
 .slots{
@@ -1095,123 +1024,129 @@ section:not(.hero){
 }
 
 .slot{
-  min-height:52px;
+  min-height:58px;
 
-  border:1px solid rgba(255,255,255,.13);
+  padding:10px 8px;
 
-  background:#050b11;
+  border:1px solid #304454;
 
-  color:#dbe2ea;
+  background:#060b11;
+
+  color:#dce6ed;
 
   cursor:pointer;
 
+  text-align:center;
+
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:18px;
+
   font-weight:700;
 
-  transition:.2s ease;
+  transition:.15s ease;
 }
 
 .slot:hover{
   border-color:var(--blue);
+
+  background:#0a1827;
 }
 
-.slot.active{
-  background:var(--blue);
-
+.slot.selected{
   border-color:var(--blue);
 
-  color:white;
+  background:var(--blue);
+
+  color:#fff;
 }
 
-.slot.disabled{
-  opacity:.25;
+.slot small{
+  display:block;
 
-  cursor:not-allowed;
+  margin-top:2px;
+
+  color:#8094a6;
+
+  font-family:"Rajdhani",sans-serif;
+
+  font-size:12px;
+
+  font-weight:500;
 }
 
-.booking-submit{
+.slot.selected small{
+  color:#fff;
+}
+
+/* FORM ROW */
+
+.form-row{
+  display:grid;
+
+  grid-template-columns:1fr 1fr;
+
+  gap:18px;
+}
+
+/* SUBMIT */
+
+.submit{
   width:100%;
 
-  height:62px;
+  min-height:57px;
 
-  border:0;
+  margin-top:5px;
+
+  border:1px solid var(--blue);
 
   background:var(--blue);
 
   color:#fff;
 
-  font-size:18px;
+  cursor:pointer;
+
+  font-family:"Barlow Condensed",sans-serif;
+
+  font-size:20px;
 
   font-weight:800;
 
-  letter-spacing:.12em;
+  letter-spacing:.08em;
 
-  cursor:pointer;
-
-  transition:.25s ease;
+  transition:.2s ease;
 }
 
-.booking-submit:hover{
-  background:#0069dc;
+.submit:hover:not(:disabled){
+  background:#0f65db;
 }
 
-.booking-submit:disabled{
+.submit:disabled{
   opacity:.45;
 
   cursor:not-allowed;
 }
 
-
-/* =========================================================
-   SUCCESS / ERROR MESSAGE
-   ========================================================= */
-
-.booking-message{
-  display:none;
-
-  margin-top:22px;
-
-  padding:20px;
+.booking-note{
+  margin-top:16px;
 
   text-align:center;
 
-  font-size:17px;
+  color:#687d8e;
 
-  font-weight:700;
-
-  letter-spacing:.04em;
+  font-size:13px;
 }
 
-.booking-message.show{
-  display:block;
-}
-
-.booking-message.success{
-  border:1px solid #168b58;
-
-  background:rgba(22,139,88,.10);
-
-  color:#8ff0bf;
-}
-
-.booking-message.error{
-  border:1px solid #b43d48;
-
-  background:rgba(180,61,72,.10);
-
-  color:#ffadb5;
-}
-
-
-/* =========================================================
+/* =========================
    FOOTER
-   ========================================================= */
+========================= */
 
 footer{
+  border-top:1px solid var(--line);
+
   padding:30px 0;
 
-  border-top:1px solid rgba(255,255,255,.1);
-
-  color:#657382;
+  color:#607586;
 
   font-size:14px;
 }
@@ -1219,236 +1154,142 @@ footer{
 .footer-inner{
   display:flex;
 
-  align-items:center;
   justify-content:space-between;
+
+  gap:20px;
 }
 
-
-/* =========================================================
+/* =========================
    MOBILE
-   ========================================================= */
+========================= */
 
-@media(max-width:1100px){
+@media(max-width:950px){
 
-  .container{
-    width:min(var(--max),calc(100% - 40px));
+  .wrap{
+    width:min(var(--max),calc(100% - 30px));
   }
 
-  .navigation{
-    gap:25px;
-  }
-
-  .navigation > a:not(.book-button){
-    display:none;
-  }
-
-  .brand{
-    min-width:auto;
-  }
-
-  .hero-grid{
-    grid-template-columns:1fr;
-  }
-
-  .hero-content{
-    min-height:650px;
-
-    padding:90px 0 200px;
-
-    justify-content:center;
-  }
-
-  .hero-image{
-    position:absolute;
-
-    inset:122px 0 0 0;
-
-    min-height:calc(100vh - 122px);
-
-    opacity:.42;
-  }
-
-  .hero-content{
-    z-index:20;
-  }
-
-  .features{
-    position:absolute;
-  }
-
-  .hero-title{
-    font-size:clamp(82px,15vw,125px);
-  }
-
-  .about-grid,
-  .contact-grid{
-    grid-template-columns:1fr;
-
-    gap:50px;
-  }
-}
-
-
-@media(max-width:700px){
-
-  .container{
-    width:calc(100% - 30px);
-  }
-
-  .nav{
-    min-height:85px;
-  }
-
-  .brand{
-    gap:10px;
-  }
-
-  .logo-mark{
-    width:54px;
-    height:54px;
-    flex-basis:54px;
-  }
-
-  .logo-apex{
-    font-size:34px;
-  }
-
-  .logo-apex .e-bars{
-    width:18px;
-  }
-
-  .logo-apex .e-bars span{
-    width:18px;
-    height:2px;
-  }
-
-  .logo-sub{
-    font-size:8px;
-    letter-spacing:.3em;
-  }
-
-  .logo-sub:before,
-  .logo-sub:after{
-    width:13px;
-  }
-
-  .nav-instagram{
-    display:none;
-  }
-
-  .book-button{
-    min-width:135px;
-    height:48px;
-
-    font-size:14px;
-
-    gap:10px;
-  }
-
-  .book-button span{
-    font-size:22px;
-  }
-
-  .hero{
-    padding-top:85px;
-  }
-
-  .hero-grid{
-    min-height:calc(100vh - 85px);
-  }
-
-  .hero-image{
-    inset:85px 0 0 0;
-  }
-
-  .hero-content{
-    min-height:720px;
-
-    padding:80px 0 220px;
-  }
-
-  .eyebrow{
-    font-size:11px;
-
-    letter-spacing:.22em;
-  }
-
-  .hero-title{
-    font-size:clamp(68px,19vw,110px);
-  }
-
-  .hero-description{
-    font-size:17px;
-
-    max-width:420px;
-  }
-
-  .hero-actions{
-    flex-direction:column;
-
+  .links{
     gap:12px;
   }
 
-  .hero-main-button,
-  .hero-outline-button{
-    width:100%;
-    min-width:0;
+  .links a:not(.book-btn):not(.instagram){
+    display:none;
   }
 
-  .hero-slogan{
-    right:20px;
-    top:20%;
-    opacity:.6;
+  .hero{
+    grid-template-columns:1fr;
   }
 
-  .hero-slogan div{
-    font-size:35px;
+  .hero-left{
+    padding:75px 15px 65px;
   }
 
-  .feature-grid{
+  .hero-right{
+    min-height:500px;
+
+    border-left:0;
+
+    border-top:1px solid var(--line);
+  }
+
+  .features{
     grid-template-columns:1fr 1fr;
   }
 
   .feature{
-    min-height:105px;
+    border-bottom:1px solid var(--line);
   }
 
-  .feature-title{
-    font-size:12px;
-
-    letter-spacing:.11em;
+  .feature:nth-child(2){
+    border-right:0;
   }
 
-  .feature-text{
-    font-size:13px;
-  }
-
-  .feature-icon{
-    width:35px;
-    height:35px;
-  }
-
-  section:not(.hero){
-    padding:80px 0;
-  }
-
-  .section-heading{
-    font-size:60px;
-  }
-
-  .training-grid{
+  .section-grid,
+  .contact-grid{
     grid-template-columns:1fr;
+
+    gap:45px;
+  }
+
+  .training{
+    grid-template-columns:1fr;
+  }
+
+  .stats{
+    grid-template-columns:1fr;
+  }
+
+  .stat{
+    border-right:0;
+
+    border-bottom:1px solid var(--line);
+  }
+
+  .stat:last-child{
+    border-bottom:0;
+  }
+
+  .slots{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+
+@media(max-width:600px){
+
+  .nav{
+    min-height:72px;
+  }
+
+  .brand{
+    font-size:25px;
+  }
+
+  .brand img{
+    width:36px;
+    height:36px;
+  }
+
+  .book-btn{
+    padding:10px 14px;
+  }
+
+  .hero h1{
+    font-size:72px;
+  }
+
+  .hero-right{
+    min-height:390px;
+  }
+
+  .features{
+    grid-template-columns:1fr;
+  }
+
+  .feature,
+  .feature:nth-child(2){
+    border-right:0;
+  }
+
+  .feature:last-child{
+    border-bottom:0;
+  }
+
+  section.standard{
+    padding:80px 0;
   }
 
   .training-card{
     min-height:300px;
+
+    padding:30px;
+  }
+
+  .booking-box{
+    padding:22px 18px;
   }
 
   .form-row{
-    grid-template-columns:1fr;
-  }
-
-  .service-buttons{
     grid-template-columns:1fr;
   }
 
@@ -1456,27 +1297,21 @@ footer{
     grid-template-columns:repeat(2,1fr);
   }
 
-  .booking-box{
-    padding:25px 18px;
-  }
-
   .contact-item{
     display:block;
-
-    padding:18px 0;
   }
 
   .contact-value{
-    text-align:left;
+    margin-top:7px;
 
-    margin-top:8px;
+    text-align:left;
   }
 
   .footer-inner{
     display:block;
   }
 
-  .footer-inner div + div{
+  .footer-inner div+div{
     margin-top:8px;
   }
 }
@@ -1484,113 +1319,89 @@ footer{
 </style>
 </head>
 
+<body>
 
-<body id="top">
-
-
-<!-- =========================================================
+<!-- =========================
      HEADER
-     ========================================================= -->
+========================= -->
 
 <header>
 
-  <div class="container nav">
+  <div class="wrap nav">
 
-    <a href="#top" class="brand" aria-label="APEX Training Lab">
+    <a class="brand" href="#top" aria-label="APEX Training Lab">
 
-      <div class="logo-mark">
+      <img
+        src="assets/apex-logo.png"
+        alt="APEX Training Lab"
+      >
 
-        <svg viewBox="0 0 100 100" aria-hidden="true">
-
-          <!-- blue diagonal -->
-          <path
-            d="M12 87 L45 27"
-            stroke="#087cff"
-            stroke-width="5"
-            fill="none"
-          />
-
-          <!-- white A -->
-          <path
-            d="M45 27 L76 87"
-            stroke="#f2f4f7"
-            stroke-width="5"
-            fill="none"
-          />
-
-          <path
-            d="M30 65 L61 65"
-            stroke="#8d969f"
-            stroke-width="5"
-            fill="none"
-          />
-
-          <path
-            d="M51 39 L76 87"
-            stroke="#f2f4f7"
-            stroke-width="2"
-            fill="none"
-          />
-
-        </svg>
-
-      </div>
-
-
-      <div class="logo-word">
-
-        <div class="logo-apex">
-
-          A P
-
-          <span class="e-bars">
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
-
-          X
-
-        </div>
-
-        <div class="logo-sub">
-          <span>TRAINING</span>
-          <span>LAB</span>
-        </div>
-
-      </div>
+      <span class="brand-name">
+        APEX<span class="brand-dot">.</span>
+      </span>
 
     </a>
 
 
-    <nav class="navigation">
+    <nav class="links" aria-label="Main navigation">
 
-      <a href="#about">ABOUT</a>
+      <a href="#about">
+        ABOUT
+      </a>
 
-      <a href="#training">TRAINING</a>
+      <a href="#training">
+        TRAINING
+      </a>
 
-      <a href="#contact">CONTACT</a>
+      <a href="#contact">
+        CONTACT
+      </a>
 
 
       <a
-        class="nav-instagram"
+        class="instagram"
         href="https://www.instagram.com/apex_training_lab/"
         target="_blank"
         rel="noopener"
         aria-label="Instagram"
       >
 
-        <span class="instagram-icon"></span>
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <rect
+            x="3"
+            y="3"
+            width="18"
+            height="18"
+            rx="5"
+          />
+
+          <circle
+            cx="12"
+            cy="12"
+            r="4"
+          />
+
+          <circle
+            cx="17.5"
+            cy="6.5"
+            r="1"
+            fill="currentColor"
+            stroke="none"
+          />
+
+        </svg>
 
       </a>
 
 
-      <a class="book-button" href="#booking">
-
-        BOOK NOW
-
-        <span>→</span>
-
+      <a
+        class="book-btn"
+        href="#booking"
+      >
+        BOOK NOW →
       </a>
 
     </nav>
@@ -1600,220 +1411,83 @@ footer{
 </header>
 
 
-<!-- =========================================================
-     HERO
-     ========================================================= -->
+<!-- =========================
+     MAIN
+========================= -->
 
-<main>
+<main id="top">
+
+
+<!-- =========================
+     HERO
+========================= -->
 
 <section class="hero">
 
-  <div class="hero-grid">
+  <div class="hero-left">
 
-
-    <!-- LEFT -->
-
-    <div class="container hero-content">
+    <div class="hero-left-inner">
 
       <div class="eyebrow">
-        TRAINING&nbsp;&nbsp;•&nbsp;&nbsp;HERAKLION&nbsp;&nbsp;•&nbsp;&nbsp;CRETE
+        TRAINING • HERAKLION • CRETE
       </div>
 
-
-      <h1 class="hero-title">
-
-        <span class="white">TRAIN</span><br>
-
-        <span class="white">WITH</span><br>
-
-        <span class="blue">PURPOSE.</span>
-
+      <h1>
+        TRAIN<br>
+        WITH<br>
+        <span>PURPOSE.</span>
       </h1>
-
 
       <div class="hero-line"></div>
 
-
-      <p class="hero-description">
-
-        Personalized training in a focused environment.<br>
-
+      <p class="hero-copy">
+        Personalized training in a focused environment.
         Real progress. A stronger you.
-
       </p>
-
 
       <div class="hero-actions">
 
-        <a class="hero-main-button" href="#booking">
-
-          BOOK NOW
-
-          <span>→</span>
-
+        <a
+          class="book-btn"
+          href="#booking"
+        >
+          BOOK NOW →
         </a>
 
-
-        <a class="hero-outline-button" href="#training">
-
+        <a
+          class="ghost-btn"
+          href="#training"
+        >
           EXPLORE TRAINING
-
         </a>
 
       </div>
 
     </div>
 
+  </div>
 
-    <!-- RIGHT IMAGE -->
 
-    <div class="hero-image">
+  <div class="hero-right">
 
-      <div class="hero-slogan">
+    <!--
+      ΒΑΛΕ ΕΔΩ ΤΗΝ ΕΙΚΟΝΑ ΠΟΥ ΦΤΙΑΞΑΜΕ
+      ΜΕ ΟΝΟΜΑ:
 
-        <div>STRONGER</div>
+      public/assets/hero.jpg
+    -->
 
-        <div>THAN</div>
+    <div class="hero-photo"></div>
 
-        <div>YESTERDAY</div>
+    <div class="hero-side-label">
 
-        <div class="slogan-line"></div>
+      <strong>
+        STRONGER
+      </strong>
 
-      </div>
-
-    </div>
-
-
-    <!-- FEATURES -->
-
-    <div class="features">
-
-      <div class="container feature-grid">
-
-
-        <div class="feature">
-
-          <div class="feature-icon">
-
-            <svg viewBox="0 0 64 64">
-
-              <rect x="14" y="25" width="36" height="14" rx="3"></rect>
-
-              <path d="M7 18v28"></path>
-              <path d="M14 14v36"></path>
-
-              <path d="M50 14v36"></path>
-              <path d="M57 18v28"></path>
-
-            </svg>
-
-          </div>
-
-          <div class="feature-title">
-            PERSONAL TRAINING
-          </div>
-
-          <div class="feature-text">
-            Tailored to your goals
-          </div>
-
-        </div>
-
-
-        <div class="feature">
-
-          <div class="feature-icon">
-
-            <svg viewBox="0 0 64 64">
-
-              <circle cx="32" cy="17" r="8"></circle>
-
-              <circle cx="15" cy="25" r="6"></circle>
-
-              <circle cx="49" cy="25" r="6"></circle>
-
-              <path d="M17 49c0-10 6-16 15-16s15 6 15 16"></path>
-
-              <path d="M3 49c0-7 4-11 10-11"></path>
-
-              <path d="M61 49c0-7-4-11-10-11"></path>
-
-            </svg>
-
-          </div>
-
-          <div class="feature-title">
-            SMALL GROUPS
-          </div>
-
-          <div class="feature-text">
-            More motivation
-          </div>
-
-        </div>
-
-
-        <div class="feature">
-
-          <div class="feature-icon">
-
-            <svg viewBox="0 0 64 64">
-
-              <path
-                d="M32 52
-                   C28 48 12 38 12 25
-                   C12 17 18 12 25 12
-                   C29 12 32 15 32 19
-                   C32 15 35 12 39 12
-                   C46 12 52 17 52 25
-                   C52 38 36 48 32 52Z"
-              ></path>
-
-              <path d="M16 31h9l4-8 5 15 4-8h10"></path>
-
-            </svg>
-
-          </div>
-
-          <div class="feature-title">
-            BETTER HABITS
-          </div>
-
-          <div class="feature-text">
-            Lasting results
-          </div>
-
-        </div>
-
-
-        <div class="feature">
-
-          <div class="feature-icon">
-
-            <svg viewBox="0 0 64 64">
-
-              <path d="M8 50L28 24l8 10 8-13 12 29"></path>
-
-              <path d="M8 50h48"></path>
-
-              <path d="M22 43l6-8 6 7 8-9"></path>
-
-            </svg>
-
-          </div>
-
-          <div class="feature-title">
-            STRONGER YOU
-          </div>
-
-          <div class="feature-text">
-            Inside &amp; out
-          </div>
-
-        </div>
-
-
-      </div>
+      <span>
+        THAN YESTERDAY
+      </span>
 
     </div>
 
@@ -1822,64 +1496,178 @@ footer{
 </section>
 
 
-<!-- =========================================================
+<!-- =========================
+     FEATURES
+========================= -->
+
+<section class="features">
+
+  <div class="feature">
+
+    <div class="feature-icon">
+      ◈
+    </div>
+
+    <div class="feature-title">
+      PERSONAL TRAINING
+    </div>
+
+    <div class="feature-text">
+      Tailored to your goals
+    </div>
+
+  </div>
+
+
+  <div class="feature">
+
+    <div class="feature-icon">
+      ◇
+    </div>
+
+    <div class="feature-title">
+      SMALL GROUPS
+    </div>
+
+    <div class="feature-text">
+      Maximum 6 people
+    </div>
+
+  </div>
+
+
+  <div class="feature">
+
+    <div class="feature-icon">
+      +
+    </div>
+
+    <div class="feature-title">
+      BETTER HABITS
+    </div>
+
+    <div class="feature-text">
+      Lasting results
+    </div>
+
+  </div>
+
+
+  <div class="feature">
+
+    <div class="feature-icon">
+      ▲
+    </div>
+
+    <div class="feature-title">
+      STRONGER YOU
+    </div>
+
+    <div class="feature-text">
+      Inside & out
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
      ABOUT
-     ========================================================= -->
+========================= -->
 
-<section id="about">
+<section
+  id="about"
+  class="standard"
+>
 
-  <div class="container">
+  <div class="wrap">
 
-    <div class="about-grid">
+    <div class="section-grid">
 
       <div>
 
-        <h2 class="section-heading">
-
+        <h2 class="section-title">
           ABOUT<br>
-
-          <span>THE LAB</span>
-
+          THE <span>LAB.</span>
         </h2>
 
         <p class="section-intro">
-
           Coaching built around the person doing the work.
-
         </p>
 
       </div>
 
 
-      <div class="about-text">
+      <div class="text">
 
         <p>
 
           <strong>
-            APEX Training Lab is a gym and fitness centre in Heraklion
-            built around one idea: training works best when it's built
-            for the person doing it.
+            APEX Training Lab is a gym and fitness centre in
+            Heraklion built around one idea:
+            training works best when it's built for the person
+            doing it.
           </strong>
 
-        </p>
-
-
-        <p>
-
-          No two members need the same approach. Every session is
-          designed around your goal, your starting point and your
-          progress.
+          No two members need the same approach.
+          Each plan is shaped around your own goal,
+          your own starting point and your own schedule.
 
         </p>
 
 
         <p>
 
-          Whether you train one-on-one or in a mini group, the focus
-          stays on quality coaching, correct technique and purposeful
-          training.
+          Every session is coached, not just supervised.
+          Whether you train in a mini group or one-on-one,
+          the focus stays on quality — correct technique,
+          sensible loading and purposeful training.
 
         </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="stats">
+
+      <div class="stat">
+
+        <div class="stat-num">
+          6
+        </div>
+
+        <div class="stat-label">
+          MEMBERS PER MINI GROUP — MAX
+        </div>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-num">
+          1:1
+        </div>
+
+        <div class="stat-label">
+          PERSONAL TRAINING
+        </div>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-num">
+          6
+        </div>
+
+        <div class="stat-label">
+          COACHING DAYS A WEEK
+        </div>
 
       </div>
 
@@ -1890,32 +1678,45 @@ footer{
 </section>
 
 
-<!-- =========================================================
+<!-- =========================
      TRAINING
-     ========================================================= -->
+========================= -->
 
-<section id="training">
+<section
+  id="training"
+  class="standard"
+>
 
-  <div class="container">
+  <div class="wrap">
 
-    <h2 class="section-heading">
+    <div class="section-grid">
 
-      HOW<br>
+      <div>
 
-      <span>TRAINING WORKS</span>
+        <h2 class="section-title">
+          HOW<br>
+          TRAINING<br>
+          <span>WORKS.</span>
+        </h2>
 
-    </h2>
-
-
-    <p class="section-intro">
-
-      Purposeful training. Quality coaching. Real progress.
-
-    </p>
+      </div>
 
 
-    <div class="training-grid">
+      <div class="section-intro">
 
+        From your first goal conversation
+        to every session after it,
+        the aim is simple:
+        purposeful training and quality coaching.
+
+      </div>
+
+    </div>
+
+
+    <div class="training">
+
+      <!-- PERSONAL -->
 
       <article class="training-card">
 
@@ -1924,22 +1725,28 @@ footer{
         </div>
 
         <h3>
-          Personal<br>Training
+          Personal<br>
+          Training
         </h3>
 
         <p>
-
-          One coach. One athlete. A session built around
-          your goals, technique, training needs and progress.
-
+          One coach. One athlete.
+          A session built around your goals,
+          technique, training needs and progress.
         </p>
 
-        <a class="training-link" href="#booking">
+        <a
+          class="training-link"
+          href="#booking"
+          onclick="selectService('Personal Training')"
+        >
           BOOK A SESSION →
         </a>
 
       </article>
 
+
+      <!-- MINI GROUP -->
 
       <article class="training-card">
 
@@ -1948,22 +1755,25 @@ footer{
         </div>
 
         <h3>
-          Mini<br>Group
+          Mini<br>
+          Group
         </h3>
 
         <p>
-
-          Small-group coaching with a maximum of 6 people,
-          keeping the session focused, coached and personal.
-
+          Small-group coaching with a maximum
+          of 6 people, keeping the session
+          focused, coached and personal.
         </p>
 
-        <a class="training-link" href="#booking">
+        <a
+          class="training-link"
+          href="#booking"
+          onclick="selectService('Mini Group')"
+        >
           BOOK A SESSION →
         </a>
 
       </article>
-
 
     </div>
 
@@ -1972,37 +1782,29 @@ footer{
 </section>
 
 
-<!-- =========================================================
+<!-- =========================
      CTA
-     ========================================================= -->
+========================= -->
 
 <section class="cta">
 
-  <div class="container">
+  <div class="wrap">
 
     <h2>
-
       READY TO<br>
-
       <span>TRAIN?</span>
-
     </h2>
 
-
     <p>
-
-      Choose your training session and book your place
-      through the APEX booking system.
-
+      Choose your training session and book
+      your place directly through APEX.
     </p>
 
-
-    <a class="hero-main-button" href="#booking">
-
-      BOOK NOW
-
-      <span>→</span>
-
+    <a
+      class="book-btn"
+      href="#booking"
+    >
+      BOOK NOW →
     </a>
 
   </div>
@@ -2010,188 +1812,34 @@ footer{
 </section>
 
 
-<!-- =========================================================
-     BOOKING
-     ========================================================= -->
-
-<section id="booking" class="booking-section">
-
-  <div class="container">
-
-    <h2 class="section-heading">
-
-      BOOK<br>
-
-      <span>YOUR SESSION</span>
-
-    </h2>
-
-
-    <div class="booking-box">
-
-
-      <div class="booking-title">
-        SELECT YOUR TRAINING
-      </div>
-
-
-      <!-- SERVICE -->
-
-      <div class="service-buttons">
-
-        <button
-          type="button"
-          class="service-button active"
-          data-service="Personal Training"
-        >
-          PERSONAL TRAINING
-        </button>
-
-
-        <button
-          type="button"
-          class="service-button"
-          data-service="Mini Group"
-        >
-          MINI GROUP
-        </button>
-
-      </div>
-
-
-      <!-- DATE -->
-
-      <div class="form-row">
-
-        <div class="form-group">
-
-          <label for="bookingDate">
-            DATE
-          </label>
-
-          <input
-            type="date"
-            id="bookingDate"
-            required
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label for="bookingName">
-            NAME
-          </label>
-
-          <input
-            type="text"
-            id="bookingName"
-            placeholder="Your name"
-            autocomplete="name"
-            required
-          >
-
-        </div>
-
-      </div>
-
-
-      <!-- PHONE -->
-
-      <div class="form-row">
-
-        <div class="form-group">
-
-          <label for="bookingPhone">
-            PHONE
-          </label>
-
-          <input
-            type="tel"
-            id="bookingPhone"
-            placeholder="69XXXXXXXX"
-            autocomplete="tel"
-            required
-          >
-
-        </div>
-
-
-        <div></div>
-
-      </div>
-
-
-      <!-- HOURS -->
-
-      <div class="booking-subtitle">
-        AVAILABLE HOURS
-      </div>
-
-
-      <div
-        id="slots"
-        class="slots"
-      ></div>
-
-
-      <button
-        id="bookingSubmit"
-        class="booking-submit"
-        type="button"
-      >
-        COMPLETE BOOKING
-      </button>
-
-
-      <div
-        id="bookingMessage"
-        class="booking-message"
-      ></div>
-
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =========================================================
+<!-- =========================
      CONTACT
-     ========================================================= -->
+========================= -->
 
-<section id="contact">
+<section
+  id="contact"
+  class="standard"
+>
 
-  <div class="container">
+  <div class="wrap">
 
     <div class="contact-grid">
 
-
       <div>
 
-        <h2 class="section-heading">
-
-          GET IN<br>
-
-          <span>TOUCH</span>
-
+        <h2 class="section-title">
+          CONTACT
         </h2>
 
-
         <p class="section-intro">
-
           Find APEX Training Lab in Heraklion
-          or contact us before your first session.
-
+          or get in touch before your first session.
         </p>
 
       </div>
 
 
       <div class="contact-list">
-
 
         <div class="contact-item">
 
@@ -2285,7 +1933,6 @@ footer{
 
         </div>
 
-
       </div>
 
     </div>
@@ -2294,16 +1941,167 @@ footer{
 
 </section>
 
+
+<!-- =========================
+     BOOKING
+========================= -->
+
+<section
+  id="booking"
+  class="standard"
+>
+
+  <div class="booking-wrap">
+
+    <div class="booking-head">
+
+      <div class="eyebrow">
+        APEX TRAINING LAB
+      </div>
+
+      <h2>
+        BOOK<br>
+        <span>NOW.</span>
+      </h2>
+
+      <p>
+        Διάλεξε υπηρεσία, ημερομηνία και διαθέσιμη ώρα.
+      </p>
+
+    </div>
+
+
+    <div class="booking-box">
+
+      <div
+        id="message"
+        class="message"
+      ></div>
+
+
+      <!-- SERVICE -->
+
+      <div class="field">
+
+        <label for="service">
+          Υπηρεσία
+        </label>
+
+        <select id="service">
+
+          <option value="Personal Training">
+            Personal Training
+          </option>
+
+          <option value="Mini Group">
+            Mini Group
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- DATE -->
+
+      <div class="field">
+
+        <label for="date">
+          Ημερομηνία
+        </label>
+
+        <input
+          id="date"
+          type="date"
+        >
+
+      </div>
+
+
+      <!-- SLOTS -->
+
+      <div class="slots-title">
+        ΔΙΑΘΕΣΙΜΕΣ ΩΡΕΣ
+      </div>
+
+      <div
+        id="slots"
+        class="slots"
+      ></div>
+
+
+      <!-- NAME / PHONE -->
+
+      <div class="form-row">
+
+        <div class="field">
+
+          <label for="name">
+            Ονοματεπώνυμο
+          </label>
+
+          <input
+            id="name"
+            type="text"
+            autocomplete="name"
+            placeholder="Το όνομά σου"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="phone">
+            Τηλέφωνο
+          </label>
+
+          <input
+            id="phone"
+            type="tel"
+            autocomplete="tel"
+            placeholder="69XXXXXXXX"
+          >
+
+        </div>
+
+      </div>
+
+
+      <!-- SUBMIT -->
+
+      <button
+        id="submit"
+        class="submit"
+        type="button"
+        disabled
+      >
+        ΚΛΕΙΣΕ ΡΑΝΤΕΒΟΥ
+      </button>
+
+
+      <div class="booking-note">
+        Οι αλλαγές/ακυρώσεις δεν επιτρέπονται
+        εντός 24 ωρών πριν από την προπόνηση.
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
 </main>
 
 
-<!-- =========================================================
+<!-- =========================
      FOOTER
-     ========================================================= -->
+========================= -->
 
 <footer>
 
-  <div class="container footer-inner">
+  <div class="wrap footer-inner">
 
     <div>
       © 2026 APEX Training Lab
@@ -2318,274 +2116,393 @@ footer{
 </footer>
 
 
-<!-- =========================================================
+<!-- =========================
      BOOKING JAVASCRIPT
-     ========================================================= -->
+========================= -->
 
 <script>
 
-const API_BASE = "";
+/* =========================
+   ELEMENTS
+========================= */
 
-let selectedService = "Personal Training";
-let selectedTime = null;
+const serviceEl =
+  document.getElementById("service");
 
-const dateInput =
-  document.getElementById("bookingDate");
-
-const nameInput =
-  document.getElementById("bookingName");
-
-const phoneInput =
-  document.getElementById("bookingPhone");
+const dateEl =
+  document.getElementById("date");
 
 const slotsEl =
   document.getElementById("slots");
 
-const submitButton =
-  document.getElementById("bookingSubmit");
+const nameEl =
+  document.getElementById("name");
+
+const phoneEl =
+  document.getElementById("phone");
+
+const submitEl =
+  document.getElementById("submit");
 
 const messageEl =
-  document.getElementById("bookingMessage");
-
-const serviceButtons =
-  document.querySelectorAll(".service-button");
+  document.getElementById("message");
 
 
-/* =========================================================
-   TODAY
-   ========================================================= */
+/* =========================
+   STATE
+========================= */
 
-function getToday(){
+let selectedSlot = null;
 
-  const now = new Date();
 
-  const year =
-    now.getFullYear();
+/* =========================
+   ATHENS DATE
+========================= */
 
-  const month =
-    String(now.getMonth() + 1)
-      .padStart(2,"0");
+function getAthensDateString(){
 
-  const day =
-    String(now.getDate())
-      .padStart(2,"0");
+  const parts =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:"Europe/Athens",
+        year:"numeric",
+        month:"2-digit",
+        day:"2-digit"
+      }
+    ).formatToParts(new Date());
 
-  return `${year}-${month}-${day}`;
+  const result = {};
+
+  for(const part of parts){
+
+    if(part.type !== "literal"){
+
+      result[part.type] =
+        part.value;
+
+    }
+
+  }
+
+  return (
+    result.year +
+    "-" +
+    result.month +
+    "-" +
+    result.day
+  );
+
 }
 
-dateInput.min = getToday();
+
+/* =========================
+   DATE SETUP
+========================= */
+
+const today =
+  getAthensDateString();
+
+dateEl.min = today;
+
+if(!dateEl.value){
+
+  dateEl.value = today;
+
+}
 
 
-/* =========================================================
+/* =========================
    MESSAGE
-   ========================================================= */
+========================= */
 
-function showMessage(text,type){
+function showMessage(
+  text,
+  type=""
+){
 
-  messageEl.textContent = text;
+  messageEl.textContent =
+    text;
 
   messageEl.className =
-    "booking-message show " + type;
-
-  messageEl.scrollIntoView({
-    behavior:"smooth",
-    block:"center"
-  });
+    "message show " + type;
 
 }
 
 
 function clearMessage(){
 
-  messageEl.textContent = "";
+  messageEl.textContent =
+    "";
 
   messageEl.className =
-    "booking-message";
+    "message";
 
 }
 
 
-/* =========================================================
-   SERVICE
-   ========================================================= */
+/* =========================
+   SERVICE SELECTION
+========================= */
 
-serviceButtons.forEach(button => {
+function selectService(service){
 
-  button.addEventListener("click",() => {
+  serviceEl.value =
+    service;
 
-    serviceButtons.forEach(btn => {
-      btn.classList.remove("active");
-    });
+  setTimeout(
+    () => loadSlots(),
+    50
+  );
 
-    button.classList.add("active");
-
-    selectedService =
-      button.dataset.service;
-
-    selectedTime = null;
-
-    clearMessage();
-
-    loadSlots();
-
-  });
-
-});
+}
 
 
-/* =========================================================
-   DATE
-   ========================================================= */
-
-dateInput.addEventListener(
-  "change",
-  () => {
-
-    selectedTime = null;
-
-    clearMessage();
-
-    loadSlots();
-
-  }
-);
-
-
-/* =========================================================
+/* =========================
    LOAD SLOTS
-   ========================================================= */
+========================= */
 
 async function loadSlots(){
 
-  slotsEl.innerHTML = "";
+  selectedSlot =
+    null;
 
-  selectedTime = null;
+  submitEl.disabled =
+    true;
 
-  if(!dateInput.value){
+  slotsEl.innerHTML =
+    "";
 
-    slotsEl.innerHTML =
-      '<div style="color:#778594;">Select a date first.</div>';
+  clearMessage();
+
+
+  if(!dateEl.value){
 
     return;
 
   }
 
 
+  slotsEl.innerHTML =
+
+    "<div style='" +
+    "grid-column:1/-1;" +
+    "color:#71899d;" +
+    "padding:12px 0;" +
+    "'>" +
+
+    "Φόρτωση διαθέσιμων ωρών..." +
+
+    "</div>";
+
+
   try{
 
-    const response =
-      await fetch(
-        `${API_BASE}/api/slots?date=${encodeURIComponent(dateInput.value)}&service=${encodeURIComponent(selectedService)}`
+    /*
+      IMPORTANT:
+
+      Το API είναι relative,
+      ώστε να δουλεύει στο ίδιο
+      Railway domain.
+    */
+
+    const url =
+      "/api/slots?date=" +
+      encodeURIComponent(
+        dateEl.value
+      ) +
+      "&service=" +
+      encodeURIComponent(
+        serviceEl.value
       );
 
 
-    const data =
-      await response.json();
+    const response =
+      await fetch(
+        url,
+        {
+          method:"GET",
+          cache:"no-store"
+        }
+      );
 
 
     if(!response.ok){
 
       throw new Error(
-        data.error ||
-        "Unable to load available hours."
+        "Αποτυχία φόρτωσης διαθέσιμων ωρών."
       );
 
     }
 
 
-    const availableSlots =
-      Array.isArray(data)
-        ? data
-        : (data.slots || []);
+    const slots =
+      await response.json();
 
 
-    if(!availableSlots.length){
+    slotsEl.innerHTML =
+      "";
+
+
+    if(
+      !Array.isArray(slots) ||
+      slots.length === 0
+    ){
 
       slotsEl.innerHTML =
-        '<div style="grid-column:1/-1;color:#778594;padding:15px 0;">Δεν υπάρχουν διαθέσιμες ώρες για αυτή την ημερομηνία.</div>';
+
+        "<div style='" +
+        "grid-column:1/-1;" +
+        "color:#71899d;" +
+        "padding:12px 0;" +
+        "'>" +
+
+        "Δεν υπάρχουν διαθέσιμες ώρες " +
+        "για αυτή την ημερομηνία." +
+
+        "</div>";
 
       return;
 
     }
 
 
-    availableSlots.forEach(slot => {
+    slots.forEach(slot => {
 
       const button =
-        document.createElement("button");
-
-      button.type = "button";
-
-      button.className = "slot";
-
-      button.textContent =
-        slot.time;
+        document.createElement(
+          "button"
+        );
 
 
-      button.addEventListener(
-        "click",
-        () => {
-
-          document
-            .querySelectorAll(".slot")
-            .forEach(btn =>
-              btn.classList.remove("active")
-            );
+      button.type =
+        "button";
 
 
-          button.classList.add("active");
+      button.className =
+        "slot";
 
-          selectedTime =
-            slot.time;
 
-          clearMessage();
+      if(
+        serviceEl.value ===
+        "Mini Group"
+      ){
 
-        }
+        button.innerHTML =
+
+          slot.time +
+
+          "<small>" +
+
+          "Μένουν " +
+
+          slot.remaining +
+
+          "</small>";
+
+      }else{
+
+        button.innerHTML =
+
+          slot.time +
+
+          "<small>" +
+
+          "Διαθέσιμο" +
+
+          "</small>";
+
+      }
+
+
+      button.onclick = () => {
+
+        document
+          .querySelectorAll(".slot")
+          .forEach(
+            x =>
+              x.classList.remove(
+                "selected"
+              )
+          );
+
+
+        button.classList.add(
+          "selected"
+        );
+
+
+        selectedSlot =
+          slot.id;
+
+
+        submitEl.disabled =
+          false;
+
+
+        clearMessage();
+
+      };
+
+
+      slotsEl.appendChild(
+        button
       );
-
-
-      slotsEl.appendChild(button);
 
     });
 
-  }
-  catch(error){
+
+  }catch(error){
+
+    console.error(
+      "APEX slots error:",
+      error
+    );
+
 
     slotsEl.innerHTML =
-      `<div style="grid-column:1/-1;color:#ffadb5;padding:15px 0;">${escapeHtml(error.message)}</div>`;
+      "";
+
+
+    showMessage(
+      "Δεν μπόρεσα να φορτώσω τις ώρες. Δοκίμασε ξανά.",
+      "error"
+    );
 
   }
 
 }
 
 
-/* =========================================================
-   BOOKING
-   ========================================================= */
+/* =========================
+   EVENT LISTENERS
+========================= */
 
-submitButton.addEventListener(
+serviceEl.addEventListener(
+  "change",
+  loadSlots
+);
+
+
+dateEl.addEventListener(
+  "change",
+  loadSlots
+);
+
+
+/* =========================
+   BOOK APPOINTMENT
+========================= */
+
+submitEl.addEventListener(
   "click",
   async () => {
 
-    clearMessage();
 
-
-    if(!dateInput.value){
+    if(!selectedSlot){
 
       showMessage(
-        "Επίλεξε ημερομηνία.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    if(!selectedTime){
-
-      showMessage(
-        "Επίλεξε διαθέσιμη ώρα.",
+        "Διάλεξε πρώτα ώρα.",
         "error"
       );
 
@@ -2595,51 +2512,38 @@ submitButton.addEventListener(
 
 
     const name =
-      nameInput.value.trim();
+      nameEl.value.trim();
+
 
     const phone =
-      phoneInput.value.trim();
+      phoneEl.value.trim();
 
 
-    if(!name){
+    if(!name || !phone){
 
       showMessage(
-        "Συμπλήρωσε το ονοματεπώνυμό σου.",
+        "Συμπλήρωσε ονοματεπώνυμο και τηλέφωνο.",
         "error"
       );
-
-      nameInput.focus();
 
       return;
 
     }
 
 
-    if(!phone){
-
-      showMessage(
-        "Συμπλήρωσε το τηλέφωνό σου.",
-        "error"
-      );
-
-      phoneInput.focus();
-
-      return;
-
-    }
+    submitEl.disabled =
+      true;
 
 
-    submitButton.disabled = true;
-
-    submitButton.textContent =
-      "BOOKING...";
+    submitEl.textContent =
+      "ΓΙΝΕΤΑΙ Η ΚΡΑΤΗΣΗ...";
 
 
     try{
 
       const response =
         await fetch(
-          `${API_BASE}/api/book`,
+          "/api/book",
           {
             method:"POST",
 
@@ -2650,14 +2554,8 @@ submitButton.addEventListener(
 
             body:JSON.stringify({
 
-              date:
-                dateInput.value,
-
-              time:
-                selectedTime,
-
-              service:
-                selectedService,
+              slot_id:
+                selectedSlot,
 
               name:
                 name,
@@ -2685,48 +2583,105 @@ submitButton.addEventListener(
       }
 
 
-      /* =====================================================
-         SUCCESS MESSAGE
-         ===================================================== */
+      /* =========================
+         SUCCESS
+      ========================= */
 
       showMessage(
 
-        `✓ Η ΚΡΑΤΗΣΗ ΟΛΟΚΛΗΡΩΘΗΚΕ ΕΠΙΤΥΧΩΣ!  ${selectedService} — ${dateInput.value} στις ${selectedTime}.`,
+        "✓ Η ΚΡΑΤΗΣΗ ΟΛΟΚΛΗΡΩΘΗΚΕ ΕΠΙΤΥΧΩΣ! " +
+
+        data.slot.service +
+
+        " — " +
+
+        data.slot.date +
+
+        " στις " +
+
+        data.slot.time +
+
+        ".",
 
         "success"
 
       );
 
 
-      /* clear customer fields */
+      nameEl.value =
+        "";
 
-      nameInput.value = "";
-
-      phoneInput.value = "";
-
-      selectedTime = null;
+      phoneEl.value =
+        "";
 
 
-      /* reload available hours */
+      selectedSlot =
+        null;
+
+
+      /*
+        Ξαναφορτώνουμε τις ώρες
+        ώστε η συγκεκριμένη ώρα
+        να ενημερωθεί αμέσως.
+      */
 
       await loadSlots();
 
 
-    }
-    catch(error){
+      /*
+        Κρατάμε το success μήνυμα
+        μετά το refresh.
+      */
 
       showMessage(
-        error.message,
+
+        "✓ Η ΚΡΑΤΗΣΗ ΟΛΟΚΛΗΡΩΘΗΚΕ ΕΠΙΤΥΧΩΣ! " +
+
+        data.slot.service +
+
+        " — " +
+
+        data.slot.date +
+
+        " στις " +
+
+        data.slot.time +
+
+        ".",
+
+        "success"
+
+      );
+
+
+    }catch(error){
+
+      console.error(
+        "APEX booking error:",
+        error
+      );
+
+
+      showMessage(
+        error.message ||
+        "Η κράτηση δεν ολοκληρώθηκε.",
         "error"
       );
 
-    }
-    finally{
 
-      submitButton.disabled = false;
+    }finally{
 
-      submitButton.textContent =
-        "COMPLETE BOOKING";
+      submitEl.textContent =
+        "ΚΛΕΙΣΕ ΡΑΝΤΕΒΟΥ";
+
+
+      /*
+        Αν δεν υπάρχει επιλεγμένη
+        ώρα, παραμένει disabled.
+      */
+
+      submitEl.disabled =
+        !selectedSlot;
 
     }
 
@@ -2734,34 +2689,72 @@ submitButton.addEventListener(
 );
 
 
-/* =========================================================
-   ESCAPE HTML
-   ========================================================= */
+/* =========================
+   AUTOMATIC AVAILABILITY REFRESH
+========================= */
 
-function escapeHtml(value){
+/*
+  Κάθε 30 δευτερόλεπτα ελέγχουμε
+  ξανά τις διαθέσιμες ώρες.
 
-  return String(value)
+  Έτσι αν κάποιος άλλος κλείσει
+  μια ώρα, ενημερώνεται η σελίδα.
+*/
 
-    .replaceAll("&","&amp;")
+setInterval(
+  () => {
 
-    .replaceAll("<","&lt;")
+    if(
+      document.visibilityState ===
+      "visible"
+    ){
 
-    .replaceAll(">","&gt;")
+      loadSlots();
 
-    .replaceAll('"',"&quot;")
+    }
 
-    .replaceAll("'","&#039;");
+  },
+  30000
+);
 
-}
 
-
-/* =========================================================
-   INITIAL
-   ========================================================= */
-
-dateInput.value = getToday();
+/* =========================
+   INITIAL LOAD
+========================= */
 
 loadSlots();
+
+
+/* =========================
+   BOOKING HASH
+========================= */
+
+if(
+  window.location.hash ===
+  "#booking"
+){
+
+  setTimeout(
+    () => {
+
+      const booking =
+        document.getElementById(
+          "booking"
+        );
+
+      if(booking){
+
+        booking.scrollIntoView({
+          behavior:"smooth"
+        });
+
+      }
+
+    },
+    100
+  );
+
+}
 
 </script>
 
