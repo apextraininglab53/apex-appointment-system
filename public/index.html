@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>APEX Training Lab</title>
 <meta name="description" content="APEX Training Lab — Personal Training & Mini Group στο Ηράκλειο.">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 
 <style>
 :root{
@@ -18,163 +21,634 @@
   --blue2:#4b9aff;
   --max:1200px;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0
+}
+
+html{
+  scroll-behavior:smooth
+}
+
 body{
   background:var(--bg);
   color:var(--text);
   font-family:Arial,Helvetica,sans-serif;
   line-height:1.6;
 }
-a{color:inherit;text-decoration:none}
-.wrap{width:min(var(--max),calc(100% - 48px));margin:auto}
+
+a{
+  color:inherit;
+  text-decoration:none
+}
+
+.wrap{
+  width:min(var(--max),calc(100% - 48px));
+  margin:auto
+}
 
 header{
-  position:sticky;top:0;z-index:100;
+  position:sticky;
+  top:0;
+  z-index:100;
   background:rgba(17,17,17,.97);
   border-bottom:1px solid #26313d;
   backdrop-filter:blur(12px);
 }
+
 .nav{
-  min-height:82px;display:flex;align-items:center;
-  justify-content:space-between;gap:30px;
+  min-height:82px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:30px;
 }
-.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:25px;letter-spacing:.04em}
-.brand img{width:25px;height:25px;object-fit:contain}
-.brand-dot{color:var(--blue)}
-.links{display:flex;align-items:center;gap:32px;color:#9aabbc;font-size:16px}
-.links a:hover{color:#fff}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-weight:800;
+  font-size:25px;
+  letter-spacing:.04em
+}
+
+.brand img{
+  width:25px;
+  height:25px;
+  object-fit:contain
+}
+
+.brand-dot{
+  color:var(--blue)
+}
+
+.links{
+  display:flex;
+  align-items:center;
+  gap:32px;
+  color:#9aabbc;
+  font-size:16px
+}
+
+.links a:hover{
+  color:#fff
+}
+
 .book-btn{
-  display:inline-flex;align-items:center;justify-content:center;
-  padding:11px 19px;border:1px solid var(--blue);
-  color:#fff!important;background:var(--blue);
-  font-weight:800;letter-spacing:.04em;cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:11px 19px;
+  border:1px solid var(--blue);
+  color:#fff!important;
+  background:var(--blue);
+  font-weight:800;
+  letter-spacing:.04em;
+  cursor:pointer;
 }
-.book-btn:hover{background:#0f65db}
+
+.book-btn:hover{
+  background:#0f65db
+}
 
 .hero{
   min-height:calc(100vh - 82px);
-  display:grid;grid-template-columns:1.1fr .9fr;
-  align-items:center;gap:60px;padding:85px 0 100px;
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  align-items:center;
+  gap:60px;
+  padding:85px 0 100px;
 }
-.eyebrow{color:var(--blue2);font-size:13px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;margin-bottom:20px}
-h1{font-size:clamp(64px,9vw,122px);line-height:.88;letter-spacing:-.055em;text-transform:uppercase}
-h1 span,.blue{color:var(--blue)}
-.hero-copy{margin-top:30px;max-width:650px;color:#9bb0c4;font-size:19px}
-.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:36px}
-.hero-actions .book-btn{padding:15px 25px}
-.ghost-btn{border:1px solid var(--line);padding:15px 25px;color:#c5d3df;font-weight:700}
+
+.eyebrow{
+  color:var(--blue2);
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  margin-bottom:20px
+}
+
+h1{
+  font-size:clamp(64px,9vw,122px);
+  line-height:.88;
+  letter-spacing:-.055em;
+  text-transform:uppercase
+}
+
+h1 span,
+.blue{
+  color:var(--blue)
+}
+
+.hero-copy{
+  margin-top:30px;
+  max-width:650px;
+  color:#9bb0c4;
+  font-size:19px
+}
+
+.hero-actions{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-top:36px
+}
+
+.hero-actions .book-btn{
+  padding:15px 25px
+}
+
+.ghost-btn{
+  border:1px solid var(--line);
+  padding:15px 25px;
+  color:#c5d3df;
+  font-weight:700
+}
+
 .hero-card{
-  min-height:470px;border:1px solid var(--line);
-  background:linear-gradient(145deg,rgba(22,119,255,.12),transparent 45%),var(--bg2);
-  position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:34px;
+  min-height:470px;
+  border:1px solid var(--line);
+  background:
+    linear-gradient(145deg,rgba(22,119,255,.12),transparent 45%),
+    var(--bg2);
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  align-items:flex-end;
+  padding:34px;
 }
+
 .hero-card:before{
-  content:"APEX";position:absolute;right:-30px;top:30px;
-  font-size:130px;line-height:1;font-weight:900;
-  color:rgba(255,255,255,.025);transform:rotate(90deg);
+  content:"APEX";
+  position:absolute;
+  right:-30px;
+  top:30px;
+  font-size:130px;
+  line-height:1;
+  font-weight:900;
+  color:rgba(255,255,255,.025);
+  transform:rotate(90deg);
 }
-.hero-card:after{content:"";position:absolute;inset:28px;border:1px solid rgba(75,154,255,.18)}
-.hero-card-content{position:relative;z-index:2}
-.hero-card-number{font-size:90px;line-height:.9;font-weight:900;color:var(--blue)}
-.hero-card-label{margin-top:12px;color:#a6bbcf;font-size:17px;max-width:260px}
 
-section{border-top:1px solid var(--line);padding:110px 0}
-.section-grid{display:grid;grid-template-columns:1fr 1fr;gap:90px}
-.section-title{font-size:clamp(42px,6vw,72px);line-height:.95;text-transform:uppercase;letter-spacing:-.045em}
-.section-intro{color:#a0b4c7;font-size:18px;max-width:520px;margin-top:8px}
-.text{color:#91a8bd;font-size:17px;max-width:700px}
-.text p+p{margin-top:22px}
-.text strong{color:#f3f6fa}
+.hero-card:after{
+  content:"";
+  position:absolute;
+  inset:28px;
+  border:1px solid rgba(75,154,255,.18)
+}
 
-.stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:55px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.stat{padding:28px 24px;min-height:130px}
-.stat+.stat{border-left:1px solid var(--line)}
-.stat-num{font-size:42px;line-height:1;color:var(--blue);font-weight:900}
-.stat-label{color:#9ab0c4;margin-top:13px;font-size:15px}
+.hero-card-content{
+  position:relative;
+  z-index:2
+}
 
-.training{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:55px}
-.training-card{border:1px solid var(--line);padding:38px;min-height:300px;background:linear-gradient(135deg,rgba(255,255,255,.02),rgba(22,119,255,.035))}
-.training-number{color:var(--blue);font-weight:900;font-size:14px;letter-spacing:.15em}
-.training-card h3{font-size:32px;margin:35px 0 16px;text-transform:uppercase}
-.training-card p{color:#91a8bd;font-size:16px}
-.training-card a{display:inline-block;margin-top:28px;color:#cbd8e4;font-weight:800;font-size:14px;letter-spacing:.08em}
+.hero-card-number{
+  font-size:90px;
+  line-height:.9;
+  font-weight:900;
+  color:var(--blue)
+}
 
-.cta{background:linear-gradient(90deg,rgba(22,119,255,.11),transparent 55%),var(--bg2);text-align:center;padding:115px 20px}
-.cta h2{font-size:clamp(48px,7vw,88px);line-height:.92;text-transform:uppercase;letter-spacing:-.05em}
-.cta p{max-width:600px;margin:24px auto 32px;color:#94aabd;font-size:18px}
+.hero-card-label{
+  margin-top:12px;
+  color:#a6bbcf;
+  font-size:17px;
+  max-width:260px
+}
 
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:90px}
-.contact-list{margin-top:34px}
-.contact-item{padding:20px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:30px}
-.contact-item:last-child{border-bottom:1px solid var(--line)}
-.contact-label{color:#6f879c;font-size:12px;text-transform:uppercase;letter-spacing:.15em}
-.contact-value{color:#d7e1ea;text-align:right}
-.contact-value a:hover{color:var(--blue2)}
+section{
+  border-top:1px solid var(--line);
+  padding:110px 0
+}
 
-footer{border-top:1px solid var(--line);padding:30px 0;color:#647b90;font-size:13px}
-.footer-inner{display:flex;justify-content:space-between;gap:20px}
+.section-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:90px
+}
+
+.section-title{
+  font-size:clamp(42px,6vw,72px);
+  line-height:.95;
+  text-transform:uppercase;
+  letter-spacing:-.045em
+}
+
+.section-intro{
+  color:#a0b4c7;
+  font-size:18px;
+  max-width:520px;
+  margin-top:8px
+}
+
+.text{
+  color:#91a8bd;
+  font-size:17px;
+  max-width:700px
+}
+
+.text p+p{
+  margin-top:22px
+}
+
+.text strong{
+  color:#f3f6fa
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  margin-top:55px;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line)
+}
+
+.stat{
+  padding:28px 24px;
+  min-height:130px
+}
+
+.stat+.stat{
+  border-left:1px solid var(--line)
+}
+
+.stat-num{
+  font-size:42px;
+  line-height:1;
+  color:var(--blue);
+  font-weight:900
+}
+
+.stat-label{
+  color:#9ab0c4;
+  margin-top:13px;
+  font-size:15px
+}
+
+.training{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin-top:55px
+}
+
+.training-card{
+  border:1px solid var(--line);
+  padding:38px;
+  min-height:300px;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.02),rgba(22,119,255,.035))
+}
+
+.training-number{
+  color:var(--blue);
+  font-weight:900;
+  font-size:14px;
+  letter-spacing:.15em
+}
+
+.training-card h3{
+  font-size:32px;
+  margin:35px 0 16px;
+  text-transform:uppercase
+}
+
+.training-card p{
+  color:#91a8bd;
+  font-size:16px
+}
+
+.training-card a{
+  display:inline-block;
+  margin-top:28px;
+  color:#cbd8e4;
+  font-weight:800;
+  font-size:14px;
+  letter-spacing:.08em
+}
+
+.cta{
+  background:
+    linear-gradient(90deg,rgba(22,119,255,.11),transparent 55%),
+    var(--bg2);
+  text-align:center;
+  padding:115px 20px
+}
+
+.cta h2{
+  font-size:clamp(48px,7vw,88px);
+  line-height:.92;
+  text-transform:uppercase;
+  letter-spacing:-.05em
+}
+
+.cta p{
+  max-width:600px;
+  margin:24px auto 32px;
+  color:#94aabd;
+  font-size:18px
+}
+
+.contact-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:90px
+}
+
+.contact-list{
+  margin-top:34px
+}
+
+.contact-item{
+  padding:20px 0;
+  border-top:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  gap:30px
+}
+
+.contact-item:last-child{
+  border-bottom:1px solid var(--line)
+}
+
+.contact-label{
+  color:#6f879c;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.15em
+}
+
+.contact-value{
+  color:#d7e1ea;
+  text-align:right
+}
+
+.contact-value a:hover{
+  color:var(--blue2)
+}
+
+footer{
+  border-top:1px solid var(--line);
+  padding:30px 0;
+  color:#647b90;
+  font-size:13px
+}
+
+.footer-inner{
+  display:flex;
+  justify-content:space-between;
+  gap:20px
+}
 
 /* BOOKING */
-#booking{background:#06101b}
-.booking-wrap{max-width:760px;margin:auto}
-.booking-head{text-align:center;margin-bottom:45px}
-.booking-head h2{font-size:clamp(45px,7vw,75px);line-height:.95;text-transform:uppercase;letter-spacing:-.04em}
-.booking-head p{color:var(--muted);margin-top:18px}
+
+#booking{
+  background:#06101b
+}
+
+.booking-wrap{
+  max-width:760px;
+  margin:auto
+}
+
+.booking-head{
+  text-align:center;
+  margin-bottom:45px
+}
+
+.booking-head h2{
+  font-size:clamp(45px,7vw,75px);
+  line-height:.95;
+  text-transform:uppercase;
+  letter-spacing:-.04em
+}
+
+.booking-head p{
+  color:var(--muted);
+  margin-top:18px
+}
+
 .booking-box{
-  background:var(--bg2);border:1px solid var(--line);padding:32px;
+  background:var(--bg2);
+  border:1px solid var(--line);
+  padding:32px
 }
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.field{margin-bottom:18px}
-.field label{display:block;color:#9eb3c6;font-size:13px;font-weight:700;margin-bottom:8px}
-.field input,.field select{
-  width:100%;padding:14px 15px;
-  background:#07111d;border:1px solid #30465b;
-  color:#fff;font-size:16px;outline:none;border-radius:0;
+
+.form-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px
 }
-.field input:focus,.field select:focus{border-color:var(--blue)}
-.slots-title{color:#9eb3c6;font-size:13px;font-weight:700;margin:8px 0 12px}
-.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
-.slot{
-  padding:12px 8px;border:1px solid #30465b;
-  background:#07111d;color:#dce7f0;cursor:pointer;text-align:center;
+
+.field{
+  margin-bottom:18px
+}
+
+.field label{
+  display:block;
+  color:#9eb3c6;
+  font-size:13px;
   font-weight:700;
+  margin-bottom:8px
 }
-.slot:hover{border-color:var(--blue);background:#0a1b2e}
-.slot.selected{border-color:var(--blue);background:var(--blue);color:#fff}
-.slot small{display:block;font-size:11px;color:#8ea5bb;font-weight:400}
-.slot.selected small{color:#fff}
-.message{padding:14px;margin-bottom:18px;display:none;border:1px solid #30465b;color:#c9d7e4}
-.message.show{display:block}
-.message.error{border-color:#8a3941;color:#ffb8bd}
-.message.success{border-color:#2d7253;color:#aee5c9}
+
+.field input,
+.field select{
+  width:100%;
+  padding:14px 15px;
+  background:#07111d;
+  border:1px solid #30465b;
+  color:#fff;
+  font-size:16px;
+  outline:none;
+  border-radius:0
+}
+
+.field input:focus,
+.field select:focus{
+  border-color:var(--blue)
+}
+
+.slots-title{
+  color:#9eb3c6;
+  font-size:13px;
+  font-weight:700;
+  margin:8px 0 12px
+}
+
+.slots{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-bottom:24px
+}
+
+.slot{
+  padding:12px 8px;
+  border:1px solid #30465b;
+  background:#07111d;
+  color:#dce7f0;
+  cursor:pointer;
+  text-align:center;
+  font-weight:700
+}
+
+.slot:hover{
+  border-color:var(--blue);
+  background:#0a1b2e
+}
+
+.slot.selected{
+  border-color:var(--blue);
+  background:var(--blue);
+  color:#fff
+}
+
+.slot small{
+  display:block;
+  font-size:11px;
+  color:#8ea5bb;
+  font-weight:400
+}
+
+.slot.selected small{
+  color:#fff
+}
+
+.message{
+  padding:14px;
+  margin-bottom:18px;
+  display:none;
+  border:1px solid #30465b;
+  color:#c9d7e4
+}
+
+.message.show{
+  display:block
+}
+
+.message.error{
+  border-color:#8a3941;
+  color:#ffb8bd
+}
+
+.message.success{
+  border-color:#2d7253;
+  color:#aee5c9
+}
+
 .submit{
-  width:100%;padding:16px;border:0;background:var(--blue);color:#fff;
-  font-size:16px;font-weight:900;letter-spacing:.05em;cursor:pointer;
+  width:100%;
+  padding:16px;
+  border:0;
+  background:var(--blue);
+  color:#fff;
+  font-size:16px;
+  font-weight:900;
+  letter-spacing:.05em;
+  cursor:pointer
 }
-.submit:disabled{opacity:.45;cursor:not-allowed}
-.booking-note{text-align:center;color:#6f879c;font-size:12px;margin-top:16px}
+
+.submit:disabled{
+  opacity:.45;
+  cursor:not-allowed
+}
+
+.booking-note{
+  text-align:center;
+  color:#6f879c;
+  font-size:12px;
+  margin-top:16px
+}
 
 @media(max-width:850px){
-  .wrap{width:min(var(--max),calc(100% - 30px))}
-  .nav{min-height:72px}
-  .links{gap:10px;font-size:13px}
-  .links a:not(.book-btn){display:none}
-  .book-btn{padding:10px 13px}
-  .hero{grid-template-columns:1fr;padding:70px 0 75px;gap:45px}
-  .hero-card{min-height:320px}
-  .section-grid,.contact-grid{grid-template-columns:1fr;gap:45px}
-  section{padding:75px 0}
-  .stats{grid-template-columns:1fr}
-  .stat+.stat{border-left:0;border-top:1px solid var(--line)}
-  .training{grid-template-columns:1fr}
-  .contact-item{display:block}
-  .contact-value{text-align:left;margin-top:7px}
-  .form-row{grid-template-columns:1fr}
-  .slots{grid-template-columns:repeat(2,1fr)}
-  .booking-box{padding:22px}
-  .footer-inner{display:block}
-  .footer-inner div+div{margin-top:8px}
+
+  .wrap{
+    width:min(var(--max),calc(100% - 30px))
+  }
+
+  .nav{
+    min-height:72px
+  }
+
+  .links{
+    gap:10px;
+    font-size:13px
+  }
+
+  .links a:not(.book-btn){
+    display:none
+  }
+
+  .book-btn{
+    padding:10px 13px
+  }
+
+  .hero{
+    grid-template-columns:1fr;
+    padding:70px 0 75px;
+    gap:45px
+  }
+
+  .hero-card{
+    min-height:320px
+  }
+
+  .section-grid,
+  .contact-grid{
+    grid-template-columns:1fr;
+    gap:45px
+  }
+
+  section{
+    padding:75px 0
+  }
+
+  .stats{
+    grid-template-columns:1fr
+  }
+
+  .stat+.stat{
+    border-left:0;
+    border-top:1px solid var(--line)
+  }
+
+  .training{
+    grid-template-columns:1fr
+  }
+
+  .contact-item{
+    display:block
+  }
+
+  .contact-value{
+    text-align:left;
+    margin-top:7px
+  }
+
+  .form-row{
+    grid-template-columns:1fr
+  }
+
+  .slots{
+    grid-template-columns:repeat(2,1fr)
+  }
+
+  .booking-box{
+    padding:22px
+  }
+
+  .footer-inner{
+    display:block
+  }
+
+  .footer-inner div+div{
+    margin-top:8px
+  }
 }
 </style>
 </head>
@@ -183,194 +657,500 @@ footer{border-top:1px solid var(--line);padding:30px 0;color:#647b90;font-size:1
 
 <header>
   <div class="wrap nav">
+
     <a class="brand" href="#top">
       <img src="assets/apex-logo.png" alt="APEX">
       <span>APEX <span class="brand-dot">.</span></span>
     </a>
+
     <nav class="links">
       <a href="#about">About</a>
       <a href="#training">Training</a>
       <a href="#contact">Contact</a>
       <a class="book-btn" href="#booking">BOOK NOW</a>
     </nav>
+
   </div>
 </header>
 
 <main id="top">
 
 <section class="hero" style="border-top:0">
+
   <div class="wrap" style="display:contents">
+
     <div>
-      <div class="eyebrow">Training • Heraklion • Crete</div>
-      <h1>Train<br>with <span>purpose.</span></h1>
+
+      <div class="eyebrow">
+        Training • Heraklion • Crete
+      </div>
+
+      <h1>
+        Train<br>
+        with <span>purpose.</span>
+      </h1>
+
       <p class="hero-copy">
         A small coaching floor, not a big box gym. Every session is built around
         the person doing it — your goal, your starting point and your progress.
       </p>
+
       <div class="hero-actions">
-        <a class="book-btn" href="#booking">BOOK NOW</a>
-        <a class="ghost-btn" href="#training">EXPLORE TRAINING</a>
+        <a class="book-btn" href="#booking">
+          BOOK NOW
+        </a>
+
+        <a class="ghost-btn" href="#training">
+          EXPLORE TRAINING
+        </a>
       </div>
+
     </div>
+
     <div class="hero-card">
+
       <div class="hero-card-content">
-        <div class="hero-card-number">1:1</div>
-        <div class="hero-card-label">Personal coaching when the session needs to be completely about you.</div>
+
+        <div class="hero-card-number">
+          1:1
+        </div>
+
+        <div class="hero-card-label">
+          Personal coaching when the session needs to be completely about you.
+        </div>
+
       </div>
+
     </div>
+
   </div>
+
 </section>
+
 
 <section id="about">
+
   <div class="wrap">
+
     <div class="section-grid">
+
       <div>
-        <h2 class="section-title">About<br>the Lab</h2>
-        <p class="section-intro">Coaching built around the person doing the work.</p>
+
+        <h2 class="section-title">
+          About<br>
+          the Lab
+        </h2>
+
+        <p class="section-intro">
+          Coaching built around the person doing the work.
+        </p>
+
       </div>
+
       <div class="text">
-        <p><strong>APEX Training Lab is a gym and fitness centre in Heraklion built around one idea:
-        training works best when it's built for the person doing it.</strong>
-        No two members need the same approach — each plan is shaped around your own goal,
-        your own starting point and your own schedule.</p>
-        <p>Every session is coached, not just supervised. Whether you train in a mini group
-        or one-on-one, the focus stays on quality — correct technique, sensible loading,
-        and sessions that move you toward your maximum potential.</p>
+
+        <p>
+          <strong>
+            APEX Training Lab is a gym and fitness centre in Heraklion built around one idea:
+            training works best when it's built for the person doing it.
+          </strong>
+
+          No two members need the same approach — each plan is shaped around your own goal,
+          your own starting point and your own schedule.
+        </p>
+
+        <p>
+          Every session is coached, not just supervised. Whether you train in a mini group
+          or one-on-one, the focus stays on quality — correct technique, sensible loading,
+          and sessions that move you toward your maximum potential.
+        </p>
+
       </div>
+
     </div>
+
 
     <div class="stats">
-      <div class="stat"><div class="stat-num">6</div><div class="stat-label">Members per mini group, max</div></div>
-      <div class="stat"><div class="stat-num">1:1</div><div class="stat-label">Personal training available</div></div>
-      <div class="stat"><div class="stat-num">6</div><div class="stat-label">Training days a week</div></div>
+
+      <div class="stat">
+        <div class="stat-num">6</div>
+        <div class="stat-label">
+          Members per mini group, max
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-num">1:1</div>
+        <div class="stat-label">
+          Personal training available
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-num">6</div>
+        <div class="stat-label">
+          Training days a week
+        </div>
+      </div>
+
     </div>
+
   </div>
+
 </section>
+
 
 <section id="training">
+
   <div class="wrap">
+
     <div class="section-grid">
-      <div><h2 class="section-title">How<br>training works</h2></div>
-      <div class="section-intro">From your first goal conversation to every session after it,
-        the aim is simple: purposeful training and quality coaching.</div>
+
+      <div>
+        <h2 class="section-title">
+          How<br>
+          training works
+        </h2>
+      </div>
+
+      <div class="section-intro">
+        From your first goal conversation to every session after it,
+        the aim is simple: purposeful training and quality coaching.
+      </div>
+
     </div>
+
 
     <div class="training">
-      <article class="training-card">
-        <div class="training-number">01 / PERSONAL</div>
-        <h3>Personal Training</h3>
-        <p>One coach. One athlete. A session built around your goals, technique, training needs and progress.</p>
-        <a href="#booking" onclick="selectService('Personal Training')">BOOK A SESSION →</a>
-      </article>
 
       <article class="training-card">
-        <div class="training-number">02 / GROUP</div>
-        <h3>Mini Group</h3>
-        <p>Small-group coaching with a maximum of 6 people, keeping the session focused, coached and personal.</p>
-        <a href="#booking" onclick="selectService('Mini Group')">BOOK A SESSION →</a>
+
+        <div class="training-number">
+          01 / PERSONAL
+        </div>
+
+        <h3>
+          Personal Training
+        </h3>
+
+        <p>
+          One coach. One athlete. A session built around your goals,
+          technique, training needs and progress.
+        </p>
+
+        <a href="#booking" onclick="selectService('Personal Training')">
+          BOOK A SESSION →
+        </a>
+
       </article>
+
+
+      <article class="training-card">
+
+        <div class="training-number">
+          02 / GROUP
+        </div>
+
+        <h3>
+          Mini Group
+        </h3>
+
+        <p>
+          Small-group coaching with a maximum of 6 people, keeping the session
+          focused, coached and personal.
+        </p>
+
+        <a href="#booking" onclick="selectService('Mini Group')">
+          BOOK A SESSION →
+        </a>
+
+      </article>
+
     </div>
+
   </div>
+
 </section>
+
 
 <section class="cta">
+
   <div class="wrap">
-    <h2>Ready to<br><span class="blue">train?</span></h2>
-    <p>Choose your training session and book your place through the APEX booking system.</p>
-    <a class="book-btn" href="#booking">BOOK NOW</a>
+
+    <h2>
+      Ready to<br>
+      <span class="blue">train?</span>
+    </h2>
+
+    <p>
+      Choose your training session and book your place through the APEX booking system.
+    </p>
+
+    <a class="book-btn" href="#booking">
+      BOOK NOW
+    </a>
+
   </div>
+
 </section>
+
 
 <section id="contact">
+
   <div class="wrap">
+
     <div class="contact-grid">
+
       <div>
-        <h2 class="section-title">Contact</h2>
-        <p class="section-intro">Find APEX Training Lab in Heraklion or get in touch before your first session.</p>
+
+        <h2 class="section-title">
+          Contact
+        </h2>
+
+        <p class="section-intro">
+          Find APEX Training Lab in Heraklion or get in touch before your first session.
+        </p>
+
       </div>
+
+
       <div class="contact-list">
+
         <div class="contact-item">
-          <div class="contact-label">Location</div>
-          <div class="contact-value">
-            <a href="https://www.google.com/maps/search/?api=1&query=Λεωφόρος+Ικάρου+97,+Ηράκλειο" target="_blank" rel="noopener">Λεωφόρος Ικάρου 97, Ηράκλειο</a>
+
+          <div class="contact-label">
+            Location
           </div>
+
+          <div class="contact-value">
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Λεωφόρος+Ικάρου+97,+Ηράκλειο"
+              target="_blank"
+              rel="noopener"
+            >
+              Λεωφόρος Ικάρου 97, Ηράκλειο
+            </a>
+          </div>
+
         </div>
+
+
         <div class="contact-item">
-          <div class="contact-label">Mobile</div>
-          <div class="contact-value"><a href="tel:6943820715">694 382 0715</a></div>
+
+          <div class="contact-label">
+            Mobile
+          </div>
+
+          <div class="contact-value">
+            <a href="tel:6943820715">
+              694 382 0715
+            </a>
+          </div>
+
         </div>
+
+
         <div class="contact-item">
-          <div class="contact-label">Phone</div>
-          <div class="contact-value"><a href="tel:2811815465">2811 815 465</a></div>
+
+          <div class="contact-label">
+            Phone
+          </div>
+
+          <div class="contact-value">
+            <a href="tel:2811815465">
+              2811 815 465
+            </a>
+          </div>
+
         </div>
+
+
         <div class="contact-item">
-          <div class="contact-label">Email</div>
-          <div class="contact-value"><a href="mailto:apextraininglab53@gmail.com">apextraininglab53@gmail.com</a></div>
+
+          <div class="contact-label">
+            Email
+          </div>
+
+          <div class="contact-value">
+            <a href="mailto:apextraininglab53@gmail.com">
+              apextraininglab53@gmail.com
+            </a>
+          </div>
+
         </div>
+
+
         <div class="contact-item">
-          <div class="contact-label">Booking</div>
-          <div class="contact-value"><a href="#booking">BOOK NOW →</a></div>
+
+          <div class="contact-label">
+            Booking
+          </div>
+
+          <div class="contact-value">
+            <a href="#booking">
+              BOOK NOW →
+            </a>
+          </div>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
+
 </section>
 
-<!-- BOOKING IS INSIDE THE SAME RAILWAY SITE -->
+
+<!-- BOOKING -->
+
 <section id="booking">
+
   <div class="booking-wrap">
+
     <div class="booking-head">
-      <div class="eyebrow">APEX Training Lab</div>
-      <h2>Book<br><span class="blue">Now.</span></h2>
-      <p>Διάλεξε υπηρεσία, ημερομηνία και διαθέσιμη ώρα.</p>
+
+      <div class="eyebrow">
+        APEX Training Lab
+      </div>
+
+      <h2>
+        Book<br>
+        <span class="blue">Now.</span>
+      </h2>
+
+      <p>
+        Διάλεξε υπηρεσία, ημερομηνία και διαθέσιμη ώρα.
+      </p>
+
     </div>
+
 
     <div class="booking-box">
+
       <div id="message" class="message"></div>
 
+
       <div class="field">
-        <label for="service">Υπηρεσία</label>
+
+        <label for="service">
+          Υπηρεσία
+        </label>
+
         <select id="service">
-          <option value="Personal Training">Personal Training</option>
-          <option value="Mini Group">Mini Group</option>
+
+          <option value="Personal Training">
+            Personal Training
+          </option>
+
+          <option value="Mini Group">
+            Mini Group
+          </option>
+
         </select>
+
       </div>
+
 
       <div class="field">
-        <label for="date">Ημερομηνία</label>
-        <input id="date" type="date">
+
+        <label for="date">
+          Ημερομηνία
+        </label>
+
+        <input
+          id="date"
+          type="date"
+        >
+
       </div>
 
-      <div class="slots-title">ΔΙΑΘΕΣΙΜΕΣ ΩΡΕΣ</div>
+
+      <div class="slots-title">
+        ΔΙΑΘΕΣΙΜΕΣ ΩΡΕΣ
+      </div>
+
       <div id="slots" class="slots"></div>
 
+
       <div class="form-row">
+
         <div class="field">
-          <label for="name">Ονοματεπώνυμο</label>
-          <input id="name" type="text" placeholder="Το όνομά σου">
+
+          <label for="name">
+            Ονοματεπώνυμο
+          </label>
+
+          <input
+            id="name"
+            type="text"
+            placeholder="Το όνομά σου"
+            autocomplete="name"
+          >
+
         </div>
+
+
         <div class="field">
-          <label for="phone">Τηλέφωνο</label>
-          <input id="phone" type="tel" placeholder="69XXXXXXXX">
+
+          <label for="phone">
+            Τηλέφωνο
+          </label>
+
+          <input
+            id="phone"
+            type="tel"
+            placeholder="69XXXXXXXX"
+            autocomplete="tel"
+          >
+
         </div>
+
       </div>
 
-      <button id="submit" class="submit" disabled>ΚΛΕΙΣΕ ΡΑΝΤΕΒΟΥ</button>
-      <div class="booking-note">Οι αλλαγές/ακυρώσεις δεν επιτρέπονται εντός 24 ωρών πριν από την προπόνηση.</div>
+
+      <button
+        id="submit"
+        class="submit"
+        disabled
+      >
+        ΚΛΕΙΣΕ ΡΑΝΤΕΒΟΥ
+      </button>
+
+
+      <div class="booking-note">
+        Οι αλλαγές/ακυρώσεις δεν επιτρέπονται εντός 24 ωρών πριν από την προπόνηση.
+      </div>
+
     </div>
+
   </div>
+
 </section>
 
 </main>
 
+
 <footer>
+
   <div class="wrap footer-inner">
-    <div>© 2026 APEX Training Lab</div>
-    <div>Heraklion, Crete</div>
+
+    <div>
+      © 2026 APEX Training Lab
+    </div>
+
+    <div>
+      Heraklion, Crete
+    </div>
+
   </div>
+
 </footer>
 
+
 <script>
+
 const serviceEl = document.getElementById("service");
 const dateEl = document.getElementById("date");
 const slotsEl = document.getElementById("slots");
@@ -381,140 +1161,334 @@ const messageEl = document.getElementById("message");
 
 let selectedSlot = null;
 
+
 function localDateString(d){
-  const y=d.getFullYear();
-  const m=String(d.getMonth()+1).padStart(2,"0");
-  const day=String(d.getDate()).padStart(2,"0");
+
+  const y = d.getFullYear();
+
+  const m = String(d.getMonth() + 1).padStart(2,"0");
+
+  const day = String(d.getDate()).padStart(2,"0");
+
   return `${y}-${m}-${day}`;
 }
+
 
 dateEl.min = localDateString(new Date());
 dateEl.value = dateEl.min;
 
+
 function showMessage(text,type=""){
-  messageEl.textContent=text;
-  messageEl.className="message show "+type;
+
+  messageEl.textContent = text;
+
+  messageEl.className = "message show " + type;
 }
+
 
 function clearMessage(){
-  messageEl.textContent="";
-  messageEl.className="message";
+
+  messageEl.textContent = "";
+
+  messageEl.className = "message";
 }
+
 
 function selectService(service){
-  serviceEl.value=service;
-  setTimeout(()=>loadSlots(),50);
+
+  serviceEl.value = service;
+
+  setTimeout(() => loadSlots(),50);
 }
 
+
 async function loadSlots(){
-  selectedSlot=null;
-  submitEl.disabled=true;
-  slotsEl.innerHTML="";
+
+  selectedSlot = null;
+
+  submitEl.disabled = true;
+
+  slotsEl.innerHTML = "";
+
   clearMessage();
 
-  if(!dateEl.value) return;
 
-  slotsEl.innerHTML="<div style='grid-column:1/-1;color:#71899d;padding:10px 0'>Φόρτωση διαθέσιμων ωρών...</div>";
+  if(!dateEl.value){
+
+    return;
+  }
+
+
+  slotsEl.innerHTML =
+    "<div style='grid-column:1/-1;color:#71899d;padding:10px 0'>Φόρτωση διαθέσιμων ωρών...</div>";
+
 
   try{
-    const url=`/api/slots?date=${encodeURIComponent(dateEl.value)}&service=${encodeURIComponent(serviceEl.value)}`;
-    const response=await fetch(url,{cache:"no-store"});
-    if(!response.ok) throw new Error("Αποτυχία φόρτωσης");
+
+    const url =
+      `/api/slots?date=${encodeURIComponent(dateEl.value)}&service=${encodeURIComponent(serviceEl.value)}`;
+
+
+    const response =
+      await fetch(url,{
+        cache:"no-store"
+      });
+
 
     if(!response.ok){
-      throw new Error("Η υπηρεσία διαθεσιμότητας δεν είναι διαθέσιμη.");
+
+      throw new Error(
+        "Η υπηρεσία διαθεσιμότητας δεν είναι διαθέσιμη."
+      );
+
     }
-    const slots=await response.json();
-    slotsEl.innerHTML="";
+
+
+    const slots =
+      await response.json();
+
+
+    if(!Array.isArray(slots)){
+
+      throw new Error(
+        "Μη έγκυρη απάντηση από το σύστημα."
+      );
+
+    }
+
+
+    slotsEl.innerHTML = "";
+
 
     if(!slots.length){
-      slotsEl.innerHTML="<div style='grid-column:1/-1;color:#71899d;padding:10px 0'>Δεν υπάρχουν διαθέσιμες ώρες για αυτή την ημερομηνία.</div>";
+
+      slotsEl.innerHTML =
+        "<div style='grid-column:1/-1;color:#71899d;padding:10px 0'>Δεν υπάρχουν διαθέσιμες ώρες για αυτή την ημερομηνία.</div>";
+
       return;
     }
 
-    slots.forEach(slot=>{
-      const button=document.createElement("button");
-      button.type="button";
-      button.className="slot";
-      button.innerHTML=`${slot.time}<small>${serviceEl.value==="Mini Group" ? `Μένουν ${slot.remaining}` : "Διαθέσιμο"}</small>`;
 
-      button.onclick=()=>{
-        document.querySelectorAll(".slot").forEach(x=>x.classList.remove("selected"));
+    slots.forEach(slot => {
+
+      const button =
+        document.createElement("button");
+
+
+      button.type = "button";
+
+      button.className = "slot";
+
+
+      button.innerHTML =
+        `${slot.time}<small>${
+          serviceEl.value === "Mini Group"
+          ? `Μένουν ${slot.remaining}`
+          : "Διαθέσιμο"
+        }</small>`;
+
+
+      button.setAttribute(
+        "aria-label",
+        `Κλείσε ${slot.time}`
+      );
+
+      button.setAttribute(
+        "aria-pressed",
+        "false"
+      );
+
+
+      button.onclick = () => {
+
+        document
+          .querySelectorAll(".slot")
+          .forEach(x => {
+
+            x.classList.remove("selected");
+
+            x.setAttribute(
+              "aria-pressed",
+              "false"
+            );
+
+          });
+
+
         button.classList.add("selected");
-        selectedSlot=slot.id;
-        submitEl.disabled=false;
+
+        button.setAttribute(
+          "aria-pressed",
+          "true"
+        );
+
+
+        selectedSlot = slot.id;
+
+        submitEl.disabled = false;
+
         clearMessage();
+
       };
 
+
       slotsEl.appendChild(button);
+
     });
+
 
   }catch(e){
-    slotsEl.innerHTML="";
-    showMessage("Δεν μπόρεσα να φορτώσω τις ώρες. Δοκίμασε ξανά.","error");
-  }
-}
 
-serviceEl.addEventListener("change",loadSlots);
-dateEl.addEventListener("change",loadSlots);
-
-submitEl.addEventListener("click",async()=>{
-  if(!selectedSlot){
-    showMessage("Διάλεξε πρώτα ώρα.","error");
-    return;
-  }
-
-  const name=nameEl.value.trim();
-  const phone=phoneEl.value.trim();
-
-  if(!name || !phone){
-    showMessage("Συμπλήρωσε ονοματεπώνυμο και τηλέφωνο.","error");
-    return;
-  }
-
-  submitEl.disabled=true;
-  submitEl.textContent="ΓΙΝΕΤΑΙ Η ΚΡΑΤΗΣΗ...";
-
-  try{
-    const response=await fetch("/api/book",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        slot_id:selectedSlot,
-        name,
-        phone
-      })
-    });
-
-    const data=await response.json();
-
-    if(!response.ok){
-      throw new Error(data.error || "Η κράτηση δεν ολοκληρώθηκε.");
-    }
+    slotsEl.innerHTML = "";
 
     showMessage(
-      `Η κράτησή σου ολοκληρώθηκε! ${data.slot.service} — ${data.slot.date} στις ${data.slot.time}.`,
-      "success"
+      "Δεν μπόρεσα να φορτώσω τις ώρες. Δοκίμασε ξανά.",
+      "error"
     );
 
-    nameEl.value="";
-    phoneEl.value="";
-    selectedSlot=null;
-    await loadSlots();
-
-  }catch(e){
-    showMessage(e.message,"error");
-    submitEl.disabled=false;
-  }finally{
-    submitEl.textContent="ΚΛΕΙΣΕ ΡΑΝΤΕΒΟΥ";
   }
-};
+
+}
+
+
+serviceEl.addEventListener(
+  "change",
+  loadSlots
+);
+
+
+dateEl.addEventListener(
+  "change",
+  loadSlots
+);
+
+
+submitEl.addEventListener(
+  "click",
+  async () => {
+
+    if(!selectedSlot){
+
+      showMessage(
+        "Διάλεξε πρώτα ώρα.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    const name =
+      nameEl.value.trim();
+
+    const phone =
+      phoneEl.value.trim();
+
+
+    if(!name || !phone){
+
+      showMessage(
+        "Συμπλήρωσε ονοματεπώνυμο και τηλέφωνο.",
+        "error"
+      );
+
+      return;
+    }
+
+
+    submitEl.disabled = true;
+
+    submitEl.textContent =
+      "ΓΙΝΕΤΑΙ Η ΚΡΑΤΗΣΗ...";
+
+
+    try{
+
+      const response =
+        await fetch(
+          "/api/book",
+          {
+            method:"POST",
+
+            headers:{
+              "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify({
+              slot_id:selectedSlot,
+              name,
+              phone
+            })
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if(!response.ok){
+
+        throw new Error(
+          data.error ||
+          "Η κράτηση δεν ολοκληρώθηκε."
+        );
+
+      }
+
+
+      showMessage(
+        `Η κράτησή σου ολοκληρώθηκε! ${data.slot.service} — ${data.slot.date} στις ${data.slot.time}.`,
+        "success"
+      );
+
+
+      nameEl.value = "";
+
+      phoneEl.value = "";
+
+      selectedSlot = null;
+
+
+      await loadSlots();
+
+
+    }catch(e){
+
+      showMessage(
+        e.message,
+        "error"
+      );
+
+      submitEl.disabled = false;
+
+
+    }finally{
+
+      submitEl.textContent =
+        "ΚΛΕΙΣΕ ΡΑΝΤΕΒΟΥ";
+
+    }
+
+  }
+);
+
 
 loadSlots();
 
-if(location.hash==="#booking"){
-  setTimeout(()=>document.getElementById("booking").scrollIntoView(),100);
+
+if(location.hash === "#booking"){
+
+  setTimeout(
+    () =>
+      document
+        .getElementById("booking")
+        .scrollIntoView(),
+    100
+  );
+
 }
+
 </script>
 
 </body>
