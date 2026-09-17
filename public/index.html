@@ -1,75 +1,563 @@
-<!doctype html>
-<html lang="el">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#08090b">
-<link rel="icon" type="image/png" href="/assets/favicon.png">
-<title>APEX Training Lab | Ραντεβού</title>
-<style>
-:root{--card:#111317;--card2:#181a20;--line:#2b2e36;--text:#f7f7f8;--muted:#a9adb6;--accent:#39a9ff}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -15%,#262b34,#090a0c 48%,#050506);color:var(--text);font-family:Arial,Helvetica,sans-serif}
-.wrap{max-width:940px;margin:auto;padding:28px 18px 55px}.logo{display:block;width:min(220px,60vw);margin:0 auto 25px;border-radius:16px}
-.card{border:1px solid var(--line);background:rgba(17,19,23,.96);border-radius:26px;padding:30px;box-shadow:0 25px 70px #0008}
-.kicker{font-size:11px;letter-spacing:3px;color:var(--accent);font-weight:900}.title{font-size:clamp(30px,5vw,48px);font-weight:900;line-height:1.05;margin:10px 0}.intro{color:var(--muted);margin:0 0 28px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.full{grid-column:1/-1}label{display:block;font-size:13px;font-weight:800;margin-bottom:8px}
-input,select{width:100%;padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--card2);color:#fff;font-size:16px;outline:none}
-select option{background:#181a20;color:#fff}input:focus,select:focus{border-color:var(--accent)}
-h3{font-size:13px;margin:0 0 10px}.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
-.slot{padding:15px;text-align:center;border:1px solid var(--line);border-radius:12px;background:#121419;cursor:pointer}.slot:hover{border-color:#656b77}.slot.selected{border-color:var(--accent);background:#39a9ff18}.slot strong{font-size:18px}.slot small{display:block;color:var(--muted);margin-top:4px}.empty{color:var(--muted);padding:8px 0}
-button{width:100%;border:0;border-radius:12px;padding:16px;background:linear-gradient(135deg,#39a9ff,#147dc9);color:#fff;font-weight:900;font-size:15px;cursor:pointer;margin-top:20px}.notice{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:13px;line-height:1.5}.message{text-align:center;min-height:24px;margin-top:13px;font-weight:800}.error{color:#ff8e8e}.footer{text-align:center;color:#70747d;font-size:12px;margin-top:20px}.confirm{display:none;text-align:center}.confirm .check{font-size:50px}.confirm h2{font-size:30px}.back{background:#292d35}
-@media(max-width:650px){.card{padding:22px}.grid{grid-template-columns:1fr}.full{grid-column:auto}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="APEX Training Lab — Personal Training & Mini Group coaching in Heraklion.">
+  <title>APEX Training Lab | Heraklion</title>
+
+  <style>
+    :root{
+      --bg:#07111d;
+      --bg2:#0a1522;
+      --nav:#111111;
+      --line:#26384a;
+      --text:#eef3f8;
+      --muted:#8ea5bb;
+      --blue:#1677ff;
+      --blue2:#4b9aff;
+      --max:1200px;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:Arial,Helvetica,sans-serif;
+      line-height:1.6;
+      overflow-x:hidden;
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{width:min(var(--max),calc(100% - 48px));margin:auto}
+
+    /* NAV */
+    header{
+      position:sticky;
+      top:0;
+      z-index:100;
+      background:rgba(17,17,17,.96);
+      border-bottom:1px solid #26313d;
+      backdrop-filter:blur(12px);
+    }
+    .nav{
+      min-height:82px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:30px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:800;
+      font-size:25px;
+      letter-spacing:.04em;
+    }
+    .brand img{
+      width:25px;
+      height:25px;
+      object-fit:contain;
+    }
+    .brand-dot{color:var(--blue)}
+    .links{
+      display:flex;
+      align-items:center;
+      gap:34px;
+      color:#9aabbc;
+      font-size:16px;
+    }
+    .links a:hover{color:white}
+    .book-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:11px 19px;
+      border:1px solid var(--blue);
+      color:white !important;
+      background:var(--blue);
+      font-weight:800;
+      letter-spacing:.04em;
+      transition:.2s ease;
+    }
+    .book-btn:hover{
+      background:#0f65db;
+      transform:translateY(-1px);
+    }
+
+    /* HERO */
+    .hero{
+      min-height:calc(100vh - 82px);
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      align-items:center;
+      gap:60px;
+      position:relative;
+      padding:85px 0 100px;
+    }
+    .hero:after{
+      content:"";
+      position:absolute;
+      width:520px;
+      height:520px;
+      right:-220px;
+      top:40px;
+      border:1px solid rgba(22,119,255,.25);
+      border-radius:50%;
+      box-shadow:0 0 0 70px rgba(22,119,255,.025),0 0 0 140px rgba(22,119,255,.018);
+      pointer-events:none;
+    }
+    .eyebrow{
+      color:var(--blue2);
+      font-size:13px;
+      font-weight:800;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      margin-bottom:20px;
+    }
+    h1{
+      font-size:clamp(64px,9vw,122px);
+      line-height:.88;
+      letter-spacing:-.055em;
+      text-transform:uppercase;
+      max-width:800px;
+    }
+    h1 span{color:var(--blue)}
+    .hero-copy{
+      margin-top:30px;
+      max-width:650px;
+      color:#9bb0c4;
+      font-size:19px;
+    }
+    .hero-actions{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-top:36px;
+    }
+    .hero-actions .book-btn{
+      padding:15px 25px;
+    }
+    .ghost-btn{
+      border:1px solid var(--line);
+      padding:15px 25px;
+      color:#c5d3df;
+      font-weight:700;
+    }
+    .ghost-btn:hover{border-color:#54708b}
+
+    .hero-card{
+      min-height:470px;
+      border:1px solid var(--line);
+      background:
+        linear-gradient(145deg,rgba(22,119,255,.12),transparent 45%),
+        var(--bg2);
+      position:relative;
+      overflow:hidden;
+      display:flex;
+      align-items:flex-end;
+      padding:34px;
+    }
+    .hero-card:before{
+      content:"APEX";
+      position:absolute;
+      right:-30px;
+      top:30px;
+      font-size:130px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:-.08em;
+      color:rgba(255,255,255,.025);
+      transform:rotate(90deg);
+    }
+    .hero-card:after{
+      content:"";
+      position:absolute;
+      inset:28px;
+      border:1px solid rgba(75,154,255,.18);
+    }
+    .hero-card-content{position:relative;z-index:2}
+    .hero-card-number{
+      font-size:90px;
+      line-height:.9;
+      font-weight:900;
+      color:var(--blue);
+    }
+    .hero-card-label{
+      margin-top:12px;
+      color:#a6bbcf;
+      font-size:17px;
+      max-width:260px;
+    }
+
+    /* SECTION */
+    section{
+      border-top:1px solid var(--line);
+      padding:110px 0;
+    }
+    .section-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:90px;
+    }
+    .section-title{
+      font-size:clamp(42px,6vw,72px);
+      line-height:.95;
+      text-transform:uppercase;
+      letter-spacing:-.045em;
+    }
+    .section-intro{
+      color:#a0b4c7;
+      font-size:18px;
+      max-width:520px;
+      margin-top:8px;
+    }
+    .text{
+      color:#91a8bd;
+      font-size:17px;
+      max-width:700px;
+    }
+    .text p + p{margin-top:22px}
+    .text strong{color:#f3f6fa}
+
+    /* STATS */
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      margin-top:55px;
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+    }
+    .stat{
+      padding:28px 24px;
+      min-height:130px;
+    }
+    .stat + .stat{border-left:1px solid var(--line)}
+    .stat-num{
+      font-size:42px;
+      line-height:1;
+      color:var(--blue);
+      font-weight:900;
+    }
+    .stat-label{
+      color:#9ab0c4;
+      margin-top:13px;
+      font-size:15px;
+    }
+
+    /* TRAINING */
+    .training{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-top:55px;
+    }
+    .training-card{
+      border:1px solid var(--line);
+      padding:38px;
+      min-height:300px;
+      background:linear-gradient(135deg,rgba(255,255,255,.02),rgba(22,119,255,.035));
+      position:relative;
+    }
+    .training-card:hover{border-color:#38546d}
+    .training-number{
+      color:var(--blue);
+      font-weight:900;
+      font-size:14px;
+      letter-spacing:.15em;
+    }
+    .training-card h3{
+      font-size:32px;
+      margin:35px 0 16px;
+      text-transform:uppercase;
+      letter-spacing:-.025em;
+    }
+    .training-card p{color:#91a8bd;font-size:16px}
+    .training-card a{
+      display:inline-block;
+      margin-top:28px;
+      color:#cbd8e4;
+      font-weight:800;
+      font-size:14px;
+      letter-spacing:.08em;
+    }
+
+    /* CTA */
+    .cta{
+      background:
+        linear-gradient(90deg,rgba(22,119,255,.11),transparent 55%),
+        var(--bg2);
+      text-align:center;
+      padding:115px 20px;
+    }
+    .cta h2{
+      font-size:clamp(48px,7vw,88px);
+      line-height:.92;
+      text-transform:uppercase;
+      letter-spacing:-.05em;
+    }
+    .cta p{
+      max-width:600px;
+      margin:24px auto 32px;
+      color:#94aabd;
+      font-size:18px;
+    }
+
+    /* CONTACT */
+    .contact-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:90px;
+    }
+    .contact-list{margin-top:34px}
+    .contact-item{
+      padding:20px 0;
+      border-top:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      gap:30px;
+    }
+    .contact-item:last-child{border-bottom:1px solid var(--line)}
+    .contact-label{
+      color:#6f879c;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.15em;
+    }
+    .contact-value{
+      color:#d7e1ea;
+      text-align:right;
+    }
+
+    footer{
+      border-top:1px solid var(--line);
+      padding:30px 0;
+      color:#647b90;
+      font-size:13px;
+    }
+    .footer-inner{
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+    }
+
+    /* MOBILE */
+    @media(max-width:850px){
+      .wrap{width:min(var(--max),calc(100% - 30px))}
+      .nav{min-height:72px}
+      .links{gap:12px;font-size:13px}
+      .links a:not(.book-btn){display:none}
+      .book-btn{padding:10px 13px}
+      .hero{
+        grid-template-columns:1fr;
+        padding:70px 0 75px;
+        gap:45px;
+      }
+      .hero-card{min-height:320px}
+      .section-grid,.contact-grid{grid-template-columns:1fr;gap:45px}
+      section{padding:75px 0}
+      .stats{grid-template-columns:1fr}
+      .stat + .stat{border-left:0;border-top:1px solid var(--line)}
+      .training{grid-template-columns:1fr}
+      .contact-item{display:block}
+      .contact-value{text-align:left;margin-top:7px}
+      .footer-inner{display:block}
+      .footer-inner div + div{margin-top:8px}
+    }
+  </style>
 </head>
-<body><div class="wrap">
-<img class="logo" src="/assets/apex-logo.png" alt="APEX Training Lab">
-<section class="card" id="booking">
-<div class="kicker">APEX TRAINING LAB</div><div class="title">Κλείσε το ραντεβού σου.</div>
-<p class="intro">Επίλεξε υπηρεσία, ημερομηνία και διαθέσιμη ώρα.</p>
-<div class="grid">
-<div><label for="service">Υπηρεσία</label><select id="service"><option value="">Επίλεξε υπηρεσία</option><option>Personal Training</option><option>Mini Group</option></select></div>
-<div><label for="date">Ημερομηνία</label><input id="date" type="date"></div>
-<div class="full"><h3>Διαθέσιμες ώρες</h3><div id="slots" class="slots"><div class="empty">Επίλεξε υπηρεσία και ημερομηνία.</div></div></div>
-<div><label for="name">Ονοματεπώνυμο</label><input id="name" autocomplete="name" placeholder="Ονοματεπώνυμο"></div>
-<div><label for="phone">Τηλέφωνο</label><input id="phone" autocomplete="tel" type="tel" placeholder="Τηλέφωνο"></div>
-</div>
-<button id="book">ΚΛΕΙΣΕ ΡΑΝΤΕΒΟΥ</button>
-<div class="notice">Οι αλλαγές ή ακυρώσεις ραντεβού δεν επιτρέπονται εντός 24 ωρών πριν από την έναρξη της προπόνησης.</div>
-<div id="msg" class="message"></div>
-</section>
-<section class="card confirm" id="confirm"><div class="check">✓</div><h2>Το ραντεβού καταχωρήθηκε!</h2><p id="details" class="intro"></p><button class="back" onclick="location.reload()">ΝΕΟ ΡΑΝΤΕΒΟΥ</button></section>
-<div class="footer">APEX Training Lab · Λεωφόρος Ικάρου 97 · Ηράκλειο</div>
-</div>
-<script>
-let selected=null;
-const $=id=>document.getElementById(id),service=$("service"),date=$("date"),slots=$("slots"),msg=$("msg");
-const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());date.min=d.toISOString().slice(0,10);
-async function load(){
- selected=null;msg.textContent="";msg.className="message";
- if(!service.value||!date.value){slots.innerHTML='<div class="empty">Επίλεξε υπηρεσία και ημερομηνία.</div>';return}
- slots.innerHTML='<div class="empty">Φόρτωση διαθέσιμων ωρών…</div>';
- try{
-  const r=await fetch(`/api/slots?date=${encodeURIComponent(date.value)}&service=${encodeURIComponent(service.value)}`,{cache:"no-store"});
-  const list=await r.json();
-  if(!Array.isArray(list)||!list.length){slots.innerHTML='<div class="empty">Δεν υπάρχουν διαθέσιμες ώρες για αυτή την ημερομηνία.</div>';return}
-  slots.innerHTML="";
-  list.forEach(x=>{
-   const el=document.createElement("div");el.className="slot";
-   const remaining=Number(x.remaining??1);
-   el.innerHTML=`<strong>${x.time}</strong><small>${service.value==="Mini Group"?`Διαθέσιμες θέσεις: ${remaining}/6`:"Διαθέσιμο"}</small>`;
-   el.onclick=()=>{document.querySelectorAll(".slot").forEach(a=>a.classList.remove("selected"));el.classList.add("selected");selected=x.id};
-   slots.appendChild(el);
-  });
- }catch(e){slots.innerHTML='<div class="empty">Δεν ήταν δυνατή η φόρτωση των ωρών.</div>'}
-}
-service.onchange=load;date.onchange=load;
-$("book").onclick=async()=>{
- if(!selected||!$("name").value.trim()||!$("phone").value.trim()){msg.textContent="Συμπλήρωσε όλα τα πεδία και επίλεξε ώρα.";msg.className="message error";return}
- $("book").disabled=true;
- try{
-  const r=await fetch("/api/book",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({slot_id:selected,name:$("name").value.trim(),phone:$("phone").value.trim()})});
-  const x=await r.json();if(!r.ok)throw Error(x.error||"Δεν ήταν δυνατή η κράτηση.");
-  $("booking").style.display="none";$("confirm").style.display="block";$("details").textContent=`${x.slot.service} · ${x.slot.date} · ${x.slot.time}`;
- }catch(e){msg.textContent=e.message;msg.className="message error";$("book").disabled=false}
-};
-</script></body></html>
+
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#top" aria-label="APEX Training Lab">
+      <img src="assets/apex-logo.png" alt="APEX">
+      <span>APEX <span class="brand-dot">.</span></span>
+    </a>
+
+    <nav class="links" aria-label="Main navigation">
+      <a href="#about">About</a>
+      <a href="#training">Training</a>
+      <a href="#contact">Contact</a>
+      <a class="book-btn" href="https://apex-appointment-system-production.up.railway.app/" target="_blank" rel="noopener">BOOK NOW</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero" style="border-top:0">
+    <div class="wrap" style="display:contents">
+      <div>
+        <div class="eyebrow">Training • Heraklion • Crete</div>
+        <h1>Train<br>with <span>purpose.</span></h1>
+        <p class="hero-copy">
+          A small coaching floor, not a big box gym.
+          Every session is built around the person doing it —
+          your goal, your starting point and your progress.
+        </p>
+
+        <div class="hero-actions">
+          <a class="book-btn" href="https://apex-appointment-system-production.up.railway.app/" target="_blank" rel="noopener">BOOK NOW</a>
+          <a class="ghost-btn" href="#training">EXPLORE TRAINING</a>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-card-content">
+          <div class="hero-card-number">1:1</div>
+          <div class="hero-card-label">
+            Personal coaching when the session needs to be completely about you.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="wrap">
+      <div class="section-grid">
+        <div>
+          <h2 class="section-title">About<br>the Lab</h2>
+          <p class="section-intro">
+            Coaching built around the person doing the work.
+          </p>
+        </div>
+
+        <div class="text">
+          <p>
+            <strong>APEX Training Lab is a gym and fitness centre in Heraklion built around one idea:
+            training works best when it's built for the person doing it.</strong>
+            No two members need the same approach — each plan is shaped around your own goal,
+            your own starting point and your own schedule.
+          </p>
+
+          <p>
+            Every session is coached, not just supervised. Whether you train in a mini group
+            or one-on-one, the focus stays on quality — correct technique, sensible loading,
+            and sessions that move you toward your maximum potential in weightlifting
+            and functional training.
+          </p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-num">6</div>
+          <div class="stat-label">Members per mini group, max</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">1:1</div>
+          <div class="stat-label">Personal training available</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">6</div>
+          <div class="stat-label">Coaching days a week</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="training">
+    <div class="wrap">
+      <div class="section-grid">
+        <div>
+          <h2 class="section-title">How<br>training works</h2>
+        </div>
+        <div class="section-intro">
+          From your first goal conversation to every session after it,
+          the aim is simple: purposeful training and quality coaching.
+        </div>
+      </div>
+
+      <div class="training">
+        <article class="training-card">
+          <div class="training-number">01 / PERSONAL</div>
+          <h3>Personal Training</h3>
+          <p>
+            One coach. One athlete. A session built around your goals,
+            technique, training needs and progress.
+          </p>
+          <a href="https://apex-appointment-system-production.up.railway.app/" target="_blank" rel="noopener">BOOK A SESSION →</a>
+        </article>
+
+        <article class="training-card">
+          <div class="training-number">02 / GROUP</div>
+          <h3>Mini Group</h3>
+          <p>
+            Small-group coaching with a maximum of 6 people,
+            keeping the session focused, coached and personal.
+          </p>
+          <a href="https://apex-appointment-system-production.up.railway.app/" target="_blank" rel="noopener">BOOK A SESSION →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="wrap">
+      <h2>Ready to<br><span style="color:var(--blue)">train?</span></h2>
+      <p>
+        Choose your training session and book your place through the APEX booking system.
+      </p>
+      <a class="book-btn" href="https://apex-appointment-system-production.up.railway.app/" target="_blank" rel="noopener">BOOK NOW</a>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap">
+      <div class="contact-grid">
+        <div>
+          <h2 class="section-title">Contact</h2>
+          <p class="section-intro">
+            Find APEX Training Lab in Heraklion or get in touch before your first session.
+          </p>
+        </div>
+
+        <div class="contact-list">
+          <div class="contact-item">
+            <div class="contact-label">Location</div>
+            <div class="contact-value"><a href="https://www.google.com/maps/search/?api=1&query=Λεωφόρος+Ικάρου+97,+Ηράκλειο" target="_blank" rel="noopener">Λεωφόρος Ικάρου 97, Ηράκλειο</a></div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-label">Mobile</div>
+            <div class="contact-value">
+              <a href="tel:6943820715">694 382 0715</a>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-label">Phone</div>
+            <div class="contact-value">
+              <a href="tel:2811815465">2811 815 465</a>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-label">Email</div>
+            <div class="contact-value">
+              <a href="mailto:apextraininglab53@gmail.com">apextraininglab53@gmail.com</a>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-label">Booking</div>
+            <div class="contact-value">
+              <a href="https://apex-appointment-system-production.up.railway.app/" target="_blank" rel="noopener">BOOK NOW →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div>© 2026 APEX Training Lab</div>
+    <div>Heraklion, Crete</div>
+  </div>
+</footer>
+
+</body>
+</html>
