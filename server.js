@@ -4,21 +4,23 @@ const path = require("path");
 const fs = require("fs");
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
 const DB_DIR = process.env.DB_DIR || "/data";
 
 fs.mkdirSync(DB_DIR, { recursive: true });
 
 const db = new Database(path.join(DB_DIR, "apex.db"));
+
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// =========================
-// APEX SETTINGS
-// =========================
+/* =========================
+   APEX SETTINGS
+========================= */
 
 const SERVICES = ["Personal Training", "Mini Group"];
 
@@ -27,16 +29,14 @@ const END_HOUR = 21; // τελευταίο ραντεβού 21:00-22:00
 
 const DAYS_TO_GENERATE = 90;
 
-// Δευτέρα / Τετάρτη / Παρασκευή:
-// 16:00, 17:00, 18:00, 19:00 κλειστά
+// Δευτέρα = 1, Τετάρτη = 3, Παρασκευή = 5
 const CLOSED_DAYS = [1, 3, 5];
 const CLOSED_FROM = 16;
 const CLOSED_TO = 19;
 
-
-// =========================
-// DATABASE
-// =========================
+/* =========================
+   DATABASE
+========================= */
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS slots (
@@ -59,7 +59,6 @@ const bookingTable = db
   .get();
 
 if (!bookingTable) {
-
   db.exec(`
     CREATE TABLE bookings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,19 +72,12 @@ if (!bookingTable) {
     CREATE INDEX IF NOT EXISTS idx_bookings_slot
     ON bookings(slot_id);
   `);
-
 } else {
-
-  // Αν υπάρχει παλιό unique index μόνο στο slot_id,
-  // το αφαιρούμε ώστε το Mini Group να μπορεί
-  // να έχει μέχρι 6 άτομα.
-
   const indexes = db
     .prepare("PRAGMA index_list(bookings)")
     .all();
 
   const hasUniqueSlotIndex = indexes.some(index => {
-
     if (!index.unique) return false;
 
     const columns = db
@@ -99,7 +91,6 @@ if (!bookingTable) {
   });
 
   if (hasUniqueSlotIndex) {
-
     db.exec(`
       ALTER TABLE bookings RENAME TO bookings_old;
 
@@ -123,9 +114,7 @@ if (!bookingTable) {
 
       DROP TABLE bookings_old;
     `);
-
   } else {
-
     db.exec(`
       CREATE INDEX IF NOT EXISTS idx_bookings_slot
       ON bookings(slot_id);
@@ -133,1366 +122,856 @@ if (!bookingTable) {
   }
 }
 
-
-// =========================
-// HELPERS
-// =========================
+/* =========================
+   DATE / TIME HELPERS
+========================= */
 
 function formatDate(date) {
-
   const year = date.getFullYear();
-
-  const month =
-    String(date.getMonth() + 1).padStart(2, "0");
-
-  const day =
-    String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 }
 
-
 function formatTime(hour) {
-
   return `${String(hour).padStart(2, "0")}:00`;
 }
 
-
-// =========================
-// ATHENS TIME
-// =========================
+/* =========================
+   REAL-TIME ATHENS TIME
+========================= */
 
 function getAthensNowParts() {
-
-  const parts =
-    new Intl.DateTimeFormat("en-GB", {
-
-      timeZone: "Europe/Athens",
-
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-
-      hour: "2-digit",
-      minute: "2-digit",
-
-      hour12: false
-
-    }).formatToParts(new Date());
-
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Athens",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).formatToParts(new Date());
 
   const result = {};
 
   for (const part of parts) {
-
     if (part.type !== "literal") {
-
       result[part.type] = part.value;
-
     }
   }
 
   return result;
 }
 
-
 function isSlotInPast(date, time) {
-
   const now = getAthensNowParts();
 
-  const currentDate =
-    `${now.year}-${now.month}-${now.day}`;
-
-  const currentTime =
-    `${now.hour}:${now.minute}`;
+  const currentDate = `${now.year}-${now.month}-${now.day}`;
+  const currentTime = `${now.hour}:${now.minute}`;
 
   return (
     date < currentDate ||
-    (
-      date === currentDate &&
-      time <= currentTime
-    )
+    (date === currentDate && time <= currentTime)
   );
 }
 
-
-// =========================
-// NORMALIZE CUSTOMER DATA
-// =========================
+/* =========================
+   CUSTOMER IDENTITY
+========================= */
 
 function normalizeName(value) {
-
   return String(value || "")
     .trim()
     .replace(/\s+/g, " ")
     .toLocaleLowerCase("el-GR");
 }
 
-
 function normalizePhone(value) {
-
-  let digits =
-    String(value || "").replace(/\D/g, "");
-
-  // 0030XXXXXXXXXX
-  // γίνεται 30XXXXXXXXXX
+  let digits = String(value || "").replace(/\D/g, "");
 
   if (digits.startsWith("0030")) {
-
     digits = digits.slice(2);
-
   }
 
-  // Ελληνικό 10ψήφιο τηλέφωνο
-  // γίνεται διεθνής μορφή 30XXXXXXXXXX
-
-  if (digits.length === 10) {
-
-    digits = "30" + digits;
-
+  if (digits.startsWith("69") && digits.length === 10) {
+    return "30" + digits;
   }
 
   return digits;
 }
 
+function hasExistingCustomerBooking(name, phone) {
+  const wantedName = normalizeName(name);
+  const wantedPhone = normalizePhone(phone);
 
-// =========================
-// OPENING HOURS
-// =========================
+  const bookings = db
+    .prepare("SELECT name, phone FROM bookings")
+    .all();
+
+  return bookings.some(booking =>
+    normalizeName(booking.name) === wantedName &&
+    normalizePhone(booking.phone) === wantedPhone
+  );
+}
+
+/* =========================
+   OPENING HOURS
+========================= */
 
 function isClosed(date, hour) {
-
   const day = date.getDay();
 
-
-  // Κυριακή κλειστά
-
+  // Κυριακή ΚΛΕΙΣΤΑ
   if (day === 0) {
-
     return true;
-
   }
 
-
-  // Σάββατο:
-  // 10:00
-  // 11:00
-  // 12:00
-  // 13:00
-
+  // Σάββατο 10:00-14:00
   if (day === 6) {
-
     return hour < 10 || hour > 13;
-
   }
-
 
   // Δευτέρα / Τετάρτη / Παρασκευή
-  // 16:00 - 19:00 κλειστά
-
+  // 16:00, 17:00, 18:00, 19:00 κλειστά
   if (
     CLOSED_DAYS.includes(day) &&
     hour >= CLOSED_FROM &&
     hour <= CLOSED_TO
   ) {
-
     return true;
-
   }
 
   return false;
 }
 
+/* =========================
+   AUTOMATIC SLOT CREATION
+========================= */
 
-// =========================
-// NORMALIZED BOOKING FIELDS
-// =========================
+function generateSlots(days = DAYS_TO_GENERATE) {
+  const insert = db.prepare(`
+    INSERT OR IGNORE INTO slots
+    (date, time, service)
+    VALUES (?, ?, ?)
+  `);
 
-// Προσθέτουμε τα πεδία στη βάση
-// χωρίς να αλλάζουμε τα στοιχεία
-// που βλέπει ο πελάτης.
+  const transaction = db.transaction(() => {
+    for (let dayOffset = 0; dayOffset < days; dayOffset++) {
+      const date = new Date();
 
-let bookingColumns =
-  db.prepare("PRAGMA table_info(bookings)").all();
+      date.setHours(0, 0, 0, 0);
+      date.setDate(date.getDate() + dayOffset);
 
-
-if (
-  !bookingColumns.some(
-    c => c.name === "name_normalized"
-  )
-) {
-
-  db.exec(
-    "ALTER TABLE bookings ADD COLUMN name_normalized TEXT"
-  );
-
-}
-
-
-if (
-  !bookingColumns.some(
-    c => c.name === "phone_normalized"
-  )
-) {
-
-  db.exec(
-    "ALTER TABLE bookings ADD COLUMN phone_normalized TEXT"
-  );
-
-}
-
-
-// Γεμίζουμε τα νέα πεδία
-// και στις παλιές κρατήσεις.
-
-const backfillBookings =
-  db.transaction(() => {
-
-    const rows =
-      db
-        .prepare(
-          "SELECT id, name, phone FROM bookings"
-        )
-        .all();
-
-
-    const update =
-      db.prepare(`
-        UPDATE bookings
-        SET
-          name_normalized = ?,
-          phone_normalized = ?
-        WHERE id = ?
-      `);
-
-
-    for (const row of rows) {
-
-      update.run(
-
-        normalizeName(row.name),
-
-        normalizePhone(row.phone),
-
-        row.id
-
-      );
-    }
-
-  });
-
-
-backfillBookings();
-
-
-db.exec(`
-  CREATE INDEX IF NOT EXISTS idx_bookings_identity
-  ON bookings(name_normalized, phone_normalized);
-`);
-
-
-// =========================
-// AUTOMATIC SLOT CREATION
-// =========================
-
-function generateSlots(
-  days = DAYS_TO_GENERATE
-) {
-
-  const insert =
-    db.prepare(`
-      INSERT OR IGNORE INTO slots
-        (date, time, service)
-      VALUES (?, ?, ?)
-    `);
-
-
-  const transaction =
-    db.transaction(() => {
+      const dateString = formatDate(date);
 
       for (
-        let dayOffset = 0;
-        dayOffset < days;
-        dayOffset++
+        let hour = START_HOUR;
+        hour <= END_HOUR;
+        hour++
       ) {
+        if (isClosed(date, hour)) {
+          continue;
+        }
 
-        const date = new Date();
+        const time = formatTime(hour);
 
-        date.setHours(
-          0,
-          0,
-          0,
-          0
-        );
-
-        date.setDate(
-          date.getDate() + dayOffset
-        );
-
-
-        const dateString =
-          formatDate(date);
-
-
-        for (
-          let hour = START_HOUR;
-          hour <= END_HOUR;
-          hour++
-        ) {
-
-          if (
-            isClosed(date, hour)
-          ) {
-
-            continue;
-
-          }
-
-
-          const time =
-            formatTime(hour);
-
-
-          for (
-            const service of SERVICES
-          ) {
-
-            insert.run(
-              dateString,
-              time,
-              service
-            );
-
-          }
+        for (const service of SERVICES) {
+          insert.run(dateString, time, service);
         }
       }
-
-    });
-
+    }
+  });
 
   transaction();
 }
 
-
 generateSlots();
 
-
-// =========================
-// CLEAN WRONG OLD SLOTS
-// =========================
-
-// Αφαιρούμε ώρες που δεν ανήκουν
-// πλέον στο ωράριο.
-//
-// ΠΟΤΕ δεν διαγράφουμε slot
-// που έχει κράτηση.
+/* =========================
+   CLEAN WRONG OLD SLOTS
+========================= */
 
 db.prepare(`
   DELETE FROM slots
-
   WHERE id NOT IN (
-    SELECT slot_id
-    FROM bookings
+    SELECT slot_id FROM bookings
   )
-
   AND (
-
-    time IN (
-      '08:00',
-      '09:00'
-    )
+    time IN ('08:00', '09:00')
 
     OR strftime('%w', date) = '0'
 
     OR (
-
       strftime('%w', date) = '6'
-
       AND time NOT IN (
         '10:00',
         '11:00',
         '12:00',
         '13:00'
       )
-
     )
 
     OR (
-
-      strftime('%w', date)
-      IN ('1', '3', '5')
-
+      strftime('%w', date) IN ('1', '3', '5')
       AND time IN (
         '16:00',
         '17:00',
         '18:00',
         '19:00'
       )
-
     )
-
   )
 `).run();
 
-
-// =========================
-// ADMIN AUTHENTICATION
-// =========================
+/* =========================
+   ADMIN AUTHENTICATION
+========================= */
 
 function admin(req, res, next) {
-
   const expected =
-    process.env.ADMIN_PASSWORD ||
-    "CHANGE_ME";
-
+    process.env.ADMIN_PASSWORD || "CHANGE_ME";
 
   const supplied =
     req.get("x-admin-password");
 
-
-  if (
-    !supplied ||
-    supplied !== expected
-  ) {
-
+  if (!supplied || supplied !== expected) {
     return res.status(401).json({
-
-      error:
-        "Μη έγκυρος κωδικός διαχειριστή."
-
+      error: "Μη έγκυρος κωδικός διαχειριστή."
     });
-
   }
-
 
   next();
 }
 
-
-// =========================
-// HEALTH
-// =========================
+/* =========================
+   HEALTH
+========================= */
 
 app.get("/health", (req, res) => {
-
   res.json({
-
     ok: true,
-
-    service:
-      "APEX Training Lab Booking"
-
+    service: "APEX Training Lab Booking"
   });
-
 });
 
+/* =========================
+   PUBLIC AVAILABLE SLOTS
+========================= */
 
-// =========================
-// PUBLIC AVAILABLE SLOTS
-// =========================
+app.get("/api/slots", (req, res) => {
+  const date =
+    String(req.query.date || "").trim();
 
-app.get(
-  "/api/slots",
-  (req, res) => {
+  const service =
+    String(req.query.service || "").trim();
 
-    const date =
-      String(
-        req.query.date || ""
-      ).trim();
+  if (!date || !SERVICES.includes(service)) {
+    return res.json([]);
+  }
 
+  const rows = db
+    .prepare(`
+      SELECT
+        s.id,
+        s.date,
+        s.time,
+        s.service,
+        COUNT(b.id) AS bookings
+      FROM slots s
+      LEFT JOIN bookings b
+        ON b.slot_id = s.id
+      WHERE s.date = ?
+        AND s.service = ?
+      GROUP BY s.id
+      ORDER BY s.time
+    `)
+    .all(date, service);
 
-    const service =
-      String(
-        req.query.service || ""
-      ).trim();
+  const available = [];
 
+  for (const row of rows) {
 
-    if (
-      !date ||
-      !SERVICES.includes(service)
-    ) {
-
-      return res.json([]);
-
+    if (isSlotInPast(row.date, row.time)) {
+      continue;
     }
 
-
-    const rows =
-      db.prepare(`
-        SELECT
-
-          s.id,
-          s.date,
-          s.time,
-          s.service,
-
-          COUNT(b.id)
-            AS bookings
-
-        FROM slots s
-
-        LEFT JOIN bookings b
-          ON b.slot_id = s.id
-
-        WHERE
-          s.date = ?
-          AND s.service = ?
-
-        GROUP BY s.id
-
-        ORDER BY s.time
-      `)
-      .all(
-        date,
-        service
-      );
-
-
-    const available = [];
-
-
-    for (const row of rows) {
-
-
-      // Η ώρα έχει περάσει
-      // στην Ελλάδα.
-
-      if (
-        isSlotInPast(
-          row.date,
-          row.time
-        )
-      ) {
-
-        continue;
-
-      }
-
-
-      // Πόσοι έχουν κλείσει
-      // την ίδια ώρα συνολικά.
-
-      const totalBookingsSameTime =
-        db.prepare(`
-          SELECT
-            COUNT(*) AS count
-
+    const totalBookingsSameTime =
+      db
+        .prepare(`
+          SELECT COUNT(*) AS count
           FROM bookings b
-
           JOIN slots s
             ON s.id = b.slot_id
-
-          WHERE
-            s.date = ?
+          WHERE s.date = ?
             AND s.time = ?
         `)
-        .get(
-          row.date,
-          row.time
-        ).count;
+        .get(row.date, row.time).count;
 
-
-      // =====================
-      // PERSONAL TRAINING
-      // =====================
-
-      if (
-        service === "Personal Training"
-      ) {
-
-        if (
-          totalBookingsSameTime === 0
-        ) {
-
-          available.push({
-
-            id: row.id,
-
-            date: row.date,
-
-            time: row.time,
-
-            service: row.service,
-
-            remaining: 1
-
-          });
-
-        }
-
+    // PERSONAL TRAINING
+    if (service === "Personal Training") {
+      if (totalBookingsSameTime === 0) {
+        available.push({
+          id: row.id,
+          date: row.date,
+          time: row.time,
+          service: row.service,
+          remaining: 1
+        });
       }
+    }
 
+    // MINI GROUP
+    if (service === "Mini Group") {
 
-      // =====================
-      // MINI GROUP
-      // =====================
-
-      if (
-        service === "Mini Group"
-      ) {
-
-
-        // Αν υπάρχει PT
-        // η ώρα δεν είναι διαθέσιμη
-        // για Mini Group.
-
-        const personalBooking =
-          db.prepare(`
+      const personalBooking =
+        db
+          .prepare(`
             SELECT b.id
-
             FROM bookings b
-
             JOIN slots s
               ON s.id = b.slot_id
-
-            WHERE
-              s.date = ?
+            WHERE s.date = ?
               AND s.time = ?
-              AND s.service =
-                'Personal Training'
-
+              AND s.service = 'Personal Training'
             LIMIT 1
           `)
-          .get(
-            row.date,
-            row.time
-          );
+          .get(row.date, row.time);
 
+      if (
+        !personalBooking &&
+        totalBookingsSameTime < 6
+      ) {
+        available.push({
+          id: row.id,
+          date: row.date,
+          time: row.time,
+          service: row.service,
+          remaining: 6 - totalBookingsSameTime
+        });
+      }
+    }
+  }
 
-        // Mini Group μέχρι 6 άτομα.
+  res.json(available);
+});
 
-        if (
-          !personalBooking &&
-          totalBookingsSameTime < 6
-        ) {
+/* =========================
+   CREATE BOOKING
+========================= */
 
-          available.push({
+app.post("/api/book", (req, res) => {
 
-            id: row.id,
+  const slot_id =
+    Number(req.body?.slot_id);
 
-            date: row.date,
+  const name =
+    String(req.body?.name || "").trim();
 
-            time: row.time,
+  const phone =
+    String(req.body?.phone || "").trim();
 
-            service: row.service,
+  if (!slot_id || !name || !phone) {
+    return res.status(400).json({
+      error: "Συμπλήρωσε όλα τα πεδία."
+    });
+  }
 
-            remaining:
-              6 - totalBookingsSameTime
+  try {
 
-          });
+    const transaction = db.transaction(() => {
 
-        }
+      const slot =
+        db
+          .prepare(`
+            SELECT
+              id,
+              date,
+              time,
+              service
+            FROM slots
+            WHERE id = ?
+          `)
+          .get(slot_id);
 
+      if (!slot) {
+        throw new Error("Η ώρα δεν υπάρχει.");
       }
 
-    }
+      if (isSlotInPast(slot.date, slot.time)) {
+        throw new Error(
+          "Η συγκεκριμένη ώρα έχει ήδη περάσει."
+        );
+      }
 
+      // ΔΕΥΤΕΡΗ ΚΡΑΤΗΣΗ ΙΔΙΟΥ ΠΕΛΑΤΗ
+      if (hasExistingCustomerBooking(name, phone)) {
+        throw new Error(
+          "Υπάρχει ήδη ενεργό ραντεβού με τα ίδια στοιχεία ονοματεπωνύμου και τηλεφώνου."
+        );
+      }
 
-    res.json(available);
+      const totalBookingsSameTime =
+        db
+          .prepare(`
+            SELECT COUNT(*) AS count
+            FROM bookings b
+            JOIN slots s
+              ON s.id = b.slot_id
+            WHERE s.date = ?
+              AND s.time = ?
+          `)
+          .get(slot.date, slot.time).count;
 
-  }
-);
+      // PERSONAL TRAINING
+      if (slot.service === "Personal Training") {
 
+        if (totalBookingsSameTime > 0) {
+          throw new Error(
+            "Η συγκεκριμένη ώρα έχει ήδη κλειστεί."
+          );
+        }
+      }
 
-// =========================
-// CREATE BOOKING
-// =========================
+      // MINI GROUP
+      if (slot.service === "Mini Group") {
 
-app.post(
-  "/api/book",
-  (req, res) => {
-
-    const slot_id =
-      Number(
-        req.body?.slot_id
-      );
-
-
-    const name =
-      String(
-        req.body?.name || ""
-      ).trim();
-
-
-    const phone =
-      String(
-        req.body?.phone || ""
-      ).trim();
-
-
-    if (
-      !slot_id ||
-      !name ||
-      !phone
-    ) {
-
-      return res.status(400).json({
-
-        error:
-          "Συμπλήρωσε όλα τα πεδία."
-
-      });
-
-    }
-
-
-    try {
-
-      const transaction =
-        db.transaction(() => {
-
-
-          const slot =
-            db.prepare(`
-              SELECT
-
-                id,
-                date,
-                time,
-                service
-
-              FROM slots
-
-              WHERE id = ?
-            `)
-            .get(slot_id);
-
-
-          if (!slot) {
-
-            throw new Error(
-              "Η ώρα δεν υπάρχει."
-            );
-
-          }
-
-
-          // =====================
-          // PAST TIME PROTECTION
-          // =====================
-
-          if (
-            isSlotInPast(
-              slot.date,
-              slot.time
-            )
-          ) {
-
-            throw new Error(
-              "Η συγκεκριμένη ώρα έχει ήδη περάσει."
-            );
-
-          }
-
-
-          // =====================
-          // DUPLICATE CUSTOMER
-          // =====================
-
-          const normalizedName =
-            normalizeName(name);
-
-
-          const normalizedPhone =
-            normalizePhone(phone);
-
-
-          const duplicateBooking =
-            db.prepare(`
-              SELECT id
-
-              FROM bookings
-
-              WHERE
-                name_normalized = ?
-                AND phone_normalized = ?
-
-              LIMIT 1
-            `)
-            .get(
-              normalizedName,
-              normalizedPhone
-            );
-
-
-          if (duplicateBooking) {
-
-            throw new Error(
-              "Υπάρχει ήδη ενεργό ραντεβού με τα ίδια στοιχεία (ονοματεπώνυμο και τηλέφωνο)."
-            );
-
-          }
-
-
-          // =====================
-          // SAME TIME BOOKINGS
-          // =====================
-
-          const totalBookingsSameTime =
-            db.prepare(`
-              SELECT
-                COUNT(*) AS count
-
+        const personalBooking =
+          db
+            .prepare(`
+              SELECT b.id
               FROM bookings b
-
               JOIN slots s
                 ON s.id = b.slot_id
-
-              WHERE
-                s.date = ?
+              WHERE s.date = ?
                 AND s.time = ?
+                AND s.service = 'Personal Training'
+              LIMIT 1
             `)
-            .get(
-              slot.date,
-              slot.time
-            ).count;
+            .get(slot.date, slot.time);
 
+        if (personalBooking) {
+          throw new Error(
+            "Η συγκεκριμένη ώρα έχει κλειστεί για Personal Training."
+          );
+        }
 
-          // =====================
-          // PERSONAL TRAINING
-          // =====================
-
-          if (
-            slot.service ===
-              "Personal Training"
-          ) {
-
-            if (
-              totalBookingsSameTime > 0
-            ) {
-
-              throw new Error(
-                "Η συγκεκριμένη ώρα έχει ήδη κλειστεί."
-              );
-
-            }
-
-          }
-
-
-          // =====================
-          // MINI GROUP
-          // =====================
-
-          if (
-            slot.service ===
-              "Mini Group"
-          ) {
-
-
-            const personalBooking =
-              db.prepare(`
-                SELECT b.id
-
-                FROM bookings b
-
-                JOIN slots s
-                  ON s.id = b.slot_id
-
-                WHERE
-                  s.date = ?
-                  AND s.time = ?
-
-                  AND s.service =
-                    'Personal Training'
-
-                LIMIT 1
-              `)
-              .get(
-                slot.date,
-                slot.time
-              );
-
-
-            if (
-              personalBooking
-            ) {
-
-              throw new Error(
-                "Η συγκεκριμένη ώρα έχει κλειστεί για Personal Training."
-              );
-
-            }
-
-
-            if (
-              totalBookingsSameTime >= 6
-            ) {
-
-              throw new Error(
-                "Το Mini Group έχει συμπληρώσει 6 άτομα."
-              );
-
-            }
-
-          }
-
-
-          // =====================
-          // INSERT BOOKING
-          // =====================
-
-          const result =
-            db.prepare(`
-              INSERT INTO bookings
-
-                (
-                  slot_id,
-                  name,
-                  phone,
-                  name_normalized,
-                  phone_normalized
-                )
-
-              VALUES (?, ?, ?, ?, ?)
-            `)
-            .run(
-
-              slot_id,
-
-              name,
-
-              phone,
-
-              normalizedName,
-
-              normalizedPhone
-
-            );
-
-
-          return {
-
-            booking_id:
-              result.lastInsertRowid,
-
-            slot
-
-          };
-
-        });
-
+        if (totalBookingsSameTime >= 6) {
+          throw new Error(
+            "Το Mini Group έχει συμπληρώσει 6 άτομα."
+          );
+        }
+      }
 
       const result =
-        transaction();
+        db
+          .prepare(`
+            INSERT INTO bookings
+            (slot_id, name, phone)
+            VALUES (?, ?, ?)
+          `)
+          .run(slot_id, name, phone);
 
+      return {
+        booking_id: result.lastInsertRowid,
+        slot
+      };
+    });
 
-      res.json({
+    const result = transaction();
 
-        ok: true,
+    res.json({
+      ok: true,
+      ...result
+    });
 
-        ...result
+  } catch (error) {
 
-      });
-
-
-    } catch (error) {
-
-      res.status(409).json({
-
-        error:
-          error.message ||
-          "Δεν ήταν δυνατή η κράτηση."
-
-      });
-
-    }
-
+    res.status(409).json({
+      error:
+        error.message ||
+        "Δεν ήταν δυνατή η κράτηση."
+    });
   }
-);
+});
 
-
-// =========================
-// ADMIN - FUTURE SLOTS ONLY
-// =========================
+/* =========================
+   ADMIN - UPCOMING SLOTS
+========================= */
 
 app.get(
   "/api/admin/slots",
   admin,
   (req, res) => {
 
-
-    const now =
-      getAthensNowParts();
-
+    const now = getAthensNowParts();
 
     const currentDate =
       `${now.year}-${now.month}-${now.day}`;
 
-
     const currentTime =
       `${now.hour}:${now.minute}`;
 
-
-    // ΠΡΟΣΟΧΗ:
-    // Οι περασμένες ώρες
-    // δεν στέλνονται καν
-    // στον Admin.
-
     const rows =
-      db.prepare(`
-        SELECT
-
-          s.id,
-          s.date,
-          s.time,
-          s.service,
-
-          COUNT(b.id)
-            AS booking_count
-
-        FROM slots s
-
-        LEFT JOIN bookings b
-          ON b.slot_id = s.id
-
-        WHERE NOT (
-
-          s.date < ?
-
-          OR (
-            s.date = ?
-            AND s.time <= ?
+      db
+        .prepare(`
+          SELECT
+            s.id,
+            s.date,
+            s.time,
+            s.service,
+            COUNT(b.id) AS booking_count
+          FROM slots s
+          LEFT JOIN bookings b
+            ON b.slot_id = s.id
+          WHERE NOT (
+            s.date < ?
+            OR (
+              s.date = ?
+              AND s.time <= ?
+            )
           )
-
-        )
-
-        GROUP BY s.id
-
-        ORDER BY
-
-          s.date,
-          s.time,
-          s.service
-
-      `)
-      .all(
-        currentDate,
-        currentDate,
-        currentTime
-      );
-
+          GROUP BY s.id
+          ORDER BY
+            s.date,
+            s.time,
+            s.service
+        `)
+        .all(
+          currentDate,
+          currentDate,
+          currentTime
+        );
 
     const result =
       rows.map(row => {
 
-
         const bookings =
-          db.prepare(`
-            SELECT
-
-              b.id,
-              b.name,
-              b.phone,
-              b.created_at
-
-            FROM bookings b
-
-            WHERE
-              b.slot_id = ?
-
-            ORDER BY
-              b.created_at
-
-          `)
-          .all(row.id);
-
+          db
+            .prepare(`
+              SELECT
+                b.id,
+                b.name,
+                b.phone,
+                b.created_at
+              FROM bookings b
+              WHERE b.slot_id = ?
+              ORDER BY b.created_at
+            `)
+            .all(row.id);
 
         const capacity =
-          row.service ===
-            "Mini Group"
-
+          row.service === "Mini Group"
             ? 6
             : 1;
 
-
         return {
-
           ...row,
-
           capacity,
 
           remaining:
             Math.max(
-              capacity -
-                bookings.length,
+              capacity - bookings.length,
               0
             ),
 
           bookings
-
         };
-
       });
 
-
     res.json(result);
-
   }
 );
 
-
-// =========================
-// ADMIN - CREATE SLOT
-// =========================
+/* =========================
+   ADMIN - CREATE SLOT
+========================= */
 
 app.post(
   "/api/admin/slots",
   admin,
   (req, res) => {
 
-
     const date =
-      String(
-        req.body?.date || ""
-      ).trim();
-
+      String(req.body?.date || "").trim();
 
     const time =
-      String(
-        req.body?.time || ""
-      ).trim();
-
+      String(req.body?.time || "").trim();
 
     const service =
-      String(
-        req.body?.service || ""
-      ).trim();
-
+      String(req.body?.service || "").trim();
 
     if (
       !date ||
       !time ||
       !SERVICES.includes(service)
     ) {
-
       return res.status(400).json({
-
         error:
           "Συμπλήρωσε σωστά ημερομηνία, ώρα και υπηρεσία."
-
       });
-
     }
-
 
     try {
 
-
-      // Δεν επιτρέπουμε
-      // δημιουργία περασμένης ώρας.
-
-      if (
-        isSlotInPast(
-          date,
-          time
-        )
-      ) {
-
-        return res.status(409).json({
-
-          error:
-            "Δεν μπορεί να δημιουργηθεί ώρα που έχει ήδη περάσει."
-
-        });
-
-      }
-
-
       const result =
-        db.prepare(`
-          INSERT INTO slots
+        db
+          .prepare(`
+            INSERT INTO slots
             (date, time, service)
-
-          VALUES (?, ?, ?)
-
-        `)
-        .run(
-          date,
-          time,
-          service
-        );
-
+            VALUES (?, ?, ?)
+          `)
+          .run(
+            date,
+            time,
+            service
+          );
 
       res.json({
-
         ok: true,
-
-        id:
-          result.lastInsertRowid
-
+        id: result.lastInsertRowid
       });
-
 
     } catch (error) {
 
       res.status(409).json({
-
         error:
           "Υπάρχει ήδη αυτή η ώρα για τη συγκεκριμένη υπηρεσία."
-
       });
-
     }
-
   }
 );
 
-
-// =========================
-// ADMIN - DELETE SLOT
-// =========================
+/* =========================
+   ADMIN - DELETE SLOT
+========================= */
 
 app.delete(
   "/api/admin/slots/:id",
   admin,
   (req, res) => {
 
-
     const id =
-      Number(
-        req.params.id
-      );
-
+      Number(req.params.id);
 
     const booking =
-      db.prepare(`
-        SELECT id
-
-        FROM bookings
-
-        WHERE slot_id = ?
-
-        LIMIT 1
-
-      `)
-      .get(id);
-
+      db
+        .prepare(`
+          SELECT id
+          FROM bookings
+          WHERE slot_id = ?
+          LIMIT 1
+        `)
+        .get(id);
 
     if (booking) {
-
       return res.status(409).json({
-
         error:
           "Η ώρα έχει ήδη κρατήσεις. Ακύρωσε πρώτα τα ραντεβού."
-
       });
-
     }
 
-
-    db.prepare(`
-      DELETE FROM slots
-
-      WHERE id = ?
-
-    `)
-    .run(id);
-
+    db
+      .prepare(`
+        DELETE FROM slots
+        WHERE id = ?
+      `)
+      .run(id);
 
     res.json({
-
       ok: true
-
     });
-
   }
 );
 
-
-// =========================
-// ADMIN - CANCEL BOOKING
-// =========================
+/* =========================
+   ADMIN - CANCEL BOOKING
+========================= */
 
 app.delete(
   "/api/admin/bookings/:id",
   admin,
   (req, res) => {
 
-
     const id =
-      Number(
-        req.params.id
-      );
+      Number(req.params.id);
 
-
-    db.prepare(`
-      DELETE FROM bookings
-
-      WHERE id = ?
-
-    `)
-    .run(id);
-
+    db
+      .prepare(`
+        DELETE FROM bookings
+        WHERE id = ?
+      `)
+      .run(id);
 
     res.json({
-
       ok: true
-
     });
-
   }
 );
 
+/* =========================
+   ADMIN - BOOKING HISTORY
+========================= */
 
-// =========================
-// FRONTEND
-// =========================
-
-app.use(
+app.get(
+  "/api/admin/history",
+  admin,
   (req, res) => {
 
+    const rows =
+      db
+        .prepare(`
+          SELECT
+            b.id,
+            b.name,
+            b.phone,
+            b.created_at,
+            s.date,
+            s.time,
+            s.service
+          FROM bookings b
+          JOIN slots s
+            ON s.id = b.slot_id
+          ORDER BY
+            s.date DESC,
+            s.time DESC,
+            b.created_at DESC
+        `)
+        .all();
 
-    if (
-
-      req.method === "GET" &&
-
-      !req.path.startsWith("/api/") &&
-
-      req.path !== "/health"
-
-    ) {
-
-
-      return res.sendFile(
-
-        path.join(
-
-          __dirname,
-
-          "public",
-
-          "index.html"
-
-        )
-
-      );
-
-    }
-
-
-    res.status(404).json({
-
-      error:
-        "Not found"
-
-    });
-
+    res.json(rows);
   }
 );
 
+/* =========================
+   ADMIN - DASHBOARD SUMMARY
+========================= */
 
-// =========================
-// START SERVER
-// =========================
+app.get(
+  "/api/admin/summary",
+  admin,
+  (req, res) => {
+
+    const now =
+      getAthensNowParts();
+
+    const today =
+      `${now.year}-${now.month}-${now.day}`;
+
+    const todayBookings =
+      db
+        .prepare(`
+          SELECT COUNT(*) AS count
+          FROM bookings b
+          JOIN slots s
+            ON s.id = b.slot_id
+          WHERE s.date = ?
+        `)
+        .get(today).count;
+
+    const todayMiniPeople =
+      db
+        .prepare(`
+          SELECT COUNT(*) AS count
+          FROM bookings b
+          JOIN slots s
+            ON s.id = b.slot_id
+          WHERE s.date = ?
+            AND s.service = 'Mini Group'
+        `)
+        .get(today).count;
+
+    const todayPT =
+      db
+        .prepare(`
+          SELECT COUNT(*) AS count
+          FROM bookings b
+          JOIN slots s
+            ON s.id = b.slot_id
+          WHERE s.date = ?
+            AND s.service = 'Personal Training'
+        `)
+        .get(today).count;
+
+    const totalBookings =
+      db
+        .prepare(`
+          SELECT COUNT(*) AS count
+          FROM bookings
+        `)
+        .get().count;
+
+    const totalMiniPeople =
+      db
+        .prepare(`
+          SELECT COUNT(*) AS count
+          FROM bookings b
+          JOIN slots s
+            ON s.id = b.slot_id
+          WHERE s.service = 'Mini Group'
+        `)
+        .get().count;
+
+    const uniqueCustomers =
+      new Set(
+        db
+          .prepare(`
+            SELECT name, phone
+            FROM bookings
+          `)
+          .all()
+          .map(row =>
+            `${normalizeName(row.name)}|${normalizePhone(row.phone)}`
+          )
+      ).size;
+
+    res.json({
+      today,
+      todayBookings,
+      todayMiniPeople,
+      todayPT,
+      totalBookings,
+      totalMiniPeople,
+      uniqueCustomers
+    });
+  }
+);
+
+/* =========================
+   FRONTEND
+========================= */
+
+app.use((req, res) => {
+
+  if (
+    req.method === "GET" &&
+    !req.path.startsWith("/api/") &&
+    req.path !== "/health"
+  ) {
+
+    return res.sendFile(
+      path.join(
+        __dirname,
+        "public",
+        "index.html"
+      )
+    );
+  }
+
+  res.status(404).json({
+    error: "Not found"
+  });
+});
+
+/* =========================
+   START SERVER
+========================= */
 
 app.listen(
   PORT,
   () => {
-
     console.log(
       `APEX Training Lab Booking running on port ${PORT}`
     );
-
   }
 );
