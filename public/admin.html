@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="el">
+
 <head>
 
 <meta charset="UTF-8">
@@ -9,7 +10,9 @@
   content="width=device-width,initial-scale=1.0"
 >
 
-<title>APEX Training Lab — Admin</title>
+<title>
+  APEX Training Lab — Admin
+</title>
 
 <link
   rel="icon"
@@ -19,15 +22,27 @@
 <style>
 
 :root{
-  --black:#070707;
+
+  --bg:#070707;
+
   --panel:#121212;
+
   --panel2:#181818;
+
   --line:#2a2a2a;
+
   --white:#fff;
+
   --muted:#999;
+
   --accent:#d7ff00;
-  --danger:#ff5555;
-  --green:#55d98a;
+
+  --red:#ff5b5b;
+
+  --green:#59db91;
+
+  --blue:#8bb8ff;
+
 }
 
 *{
@@ -35,227 +50,362 @@
 }
 
 body{
+
   margin:0;
-  background:var(--black);
-  color:var(--white);
-  font-family:Arial,Helvetica,sans-serif;
+
+  background:var(--bg);
+
+  color:#fff;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
 }
 
 button,
 input,
 select{
+
   font:inherit;
+
 }
 
 .hidden{
+
   display:none!important;
+
 }
 
-/* =========================
+
+/* =========================================================
    LOGIN
-========================= */
+========================================================= */
 
 .login{
+
   min-height:100vh;
+
   display:grid;
+
   place-items:center;
+
   padding:20px;
 
   background:
     radial-gradient(
       circle at 50% 0,
-      #242424 0,
-      transparent 42%
+      #242424,
+      transparent 45%
     ),
     #070707;
+
 }
 
 .login-card{
-  width:min(430px,100%);
+
+  width:min(
+    430px,
+    100%
+  );
+
+  padding:35px;
+
   background:#141414;
-  border:1px solid var(--line);
+
+  border:
+    1px solid
+    var(--line);
+
   border-radius:24px;
-  padding:34px;
+
+  text-align:center;
 
   box-shadow:
     0 20px 60px #000;
 
-  text-align:center;
 }
 
 .login-card img{
-  width:155px;
-  max-width:75%;
-  margin-bottom:22px;
+
+  width:160px;
+
+  max-width:80%;
+
+  margin-bottom:20px;
+
 }
 
 .login-card h1{
-  margin:0 0 7px;
-  font-size:24px;
-  letter-spacing:1px;
+
+  margin:
+    0 0 8px;
+
 }
 
 .login-card p{
+
   color:var(--muted);
-  margin:0 0 24px;
+
+  margin:
+    0 0 25px;
+
 }
 
-/* =========================
+
+/* =========================================================
    FIELDS
-========================= */
+========================================================= */
 
 .field{
+
   text-align:left;
+
 }
 
 .field label{
+
   display:block;
+
   color:#999;
-  font-size:11px;
+
+  font-size:10px;
+
   font-weight:800;
-  margin:0 0 7px;
-  letter-spacing:.5px;
+
+  letter-spacing:.7px;
+
+  margin-bottom:7px;
+
 }
 
 input,
 select{
+
   width:100%;
+
   background:#0b0b0b;
+
   color:#fff;
-  border:1px solid #333;
+
+  border:
+    1px solid
+    #333;
+
   border-radius:10px;
+
   padding:12px;
+
   outline:0;
+
 }
 
 input:focus,
 select:focus{
-  border-color:var(--accent);
+
+  border-color:
+    var(--accent);
+
 }
 
-/* =========================
+
+/* =========================================================
    BUTTONS
-========================= */
+========================================================= */
 
 .btn{
+
   border:0;
+
   border-radius:10px;
-  padding:11px 15px;
+
+  padding:
+    11px 15px;
+
   font-weight:800;
+
   cursor:pointer;
+
 }
 
 .primary{
-  background:var(--accent);
+
+  background:
+    var(--accent);
+
   color:#000;
+
 }
 
 .dark{
+
   background:#222;
+
   color:#fff;
-  border:1px solid #333;
+
+  border:
+    1px solid
+    #333;
+
 }
 
 .danger{
-  background:#351313;
-  color:#ff9999;
-  border:1px solid #642626;
+
+  background:#381414;
+
+  color:#ffaaaa;
+
+  border:
+    1px solid
+    #682828;
+
 }
 
 .btn:hover{
-  filter:brightness(1.1);
+
+  filter:
+    brightness(1.1);
+
 }
 
 .error{
+
   color:#ff8585;
+
   min-height:20px;
+
   font-size:13px;
+
   margin-top:10px;
+
 }
 
-/* =========================
+
+/* =========================================================
    HEADER
-========================= */
+========================================================= */
 
 header{
+
   position:sticky;
+
   top:0;
-  z-index:10;
 
-  background:rgba(7,7,7,.94);
+  z-index:20;
 
-  backdrop-filter:blur(12px);
+  background:
+    rgba(7,7,7,.95);
 
-  border-bottom:1px solid var(--line);
+  backdrop-filter:
+    blur(12px);
+
+  border-bottom:
+    1px solid
+    var(--line);
+
 }
 
-.topbar{
+.top{
+
   width:min(
     1400px,
     calc(100% - 30px)
   );
 
-  min-height:82px;
+  min-height:80px;
 
   margin:auto;
 
   display:flex;
+
   align-items:center;
+
   justify-content:space-between;
 
   gap:15px;
+
 }
 
 .brand{
+
   display:flex;
+
   align-items:center;
+
   gap:14px;
+
 }
 
 .brand img{
+
   width:78px;
+
   max-height:58px;
+
   object-fit:contain;
+
 }
 
 .brand strong{
+
   font-size:15px;
+
   letter-spacing:1.4px;
+
 }
 
 .brand small{
+
   display:block;
+
   color:#888;
-  font-size:10px;
-  margin-top:4px;
+
+  font-size:9px;
+
   letter-spacing:1px;
+
+  margin-top:4px;
+
 }
 
 .actions{
+
   display:flex;
+
   gap:8px;
+
   flex-wrap:wrap;
+
   justify-content:flex-end;
+
 }
 
-/* =========================
+
+/* =========================================================
    MAIN
-========================= */
+========================================================= */
 
 main{
+
   width:min(
     1400px,
     calc(100% - 30px)
   );
 
-  margin:25px auto 60px;
+  margin:
+    24px auto
+    60px;
+
 }
 
-/* =========================
+
+/* =========================================================
    HERO
-========================= */
+========================================================= */
 
 .hero{
+
   background:
     linear-gradient(
       135deg,
@@ -263,181 +413,249 @@ main{
       #0d0d0d
     );
 
-  border:1px solid var(--line);
+  border:
+    1px solid
+    var(--line);
 
-  border-radius:22px;
+  border-radius:20px;
 
-  padding:25px;
+  padding:24px;
 
   box-shadow:
     0 15px 45px #000;
 
-  margin-bottom:16px;
+  margin-bottom:15px;
+
 }
 
 .hero h1{
-  margin:0 0 6px;
-  font-size:29px;
+
+  margin:
+    0 0 7px;
+
+  font-size:28px;
+
 }
 
 .hero p{
+
   margin:0;
+
   color:#999;
+
 }
 
 .accent{
-  color:var(--accent);
+
+  color:
+    var(--accent);
+
 }
 
 .notice{
-  margin-top:14px;
 
-  padding:11px 13px;
+  margin-top:13px;
 
-  background:#0e0e0e;
+  padding:11px;
 
-  border:1px solid #2d2d2d;
+  background:#0d0d0d;
+
+  border:
+    1px solid
+    #292929;
 
   border-radius:10px;
 
   color:#999;
 
   font-size:12px;
+
 }
 
-/* =========================
+
+/* =========================================================
    STATS
-========================= */
+========================================================= */
 
 .stats{
+
   display:grid;
 
   grid-template-columns:
-    repeat(6,1fr);
+    repeat(7,1fr);
 
-  gap:11px;
+  gap:10px;
 
-  margin:16px 0;
+  margin:
+    15px 0;
+
 }
 
 .stat{
-  background:var(--panel);
 
-  border:1px solid var(--line);
+  background:
+    var(--panel);
 
-  border-radius:16px;
+  border:
+    1px solid
+    var(--line);
 
-  padding:17px;
+  border-radius:15px;
+
+  padding:15px;
+
 }
 
 .stat .label{
-  font-size:10px;
+
+  font-size:9px;
+
   color:#999;
+
   font-weight:800;
-  letter-spacing:.5px;
+
 }
 
 .stat .num{
-  font-size:28px;
+
+  font-size:25px;
+
   font-weight:900;
+
   margin-top:7px;
+
 }
 
-/* =========================
+
+/* =========================================================
    TABS
-========================= */
+========================================================= */
 
 .tabs{
+
   display:flex;
+
   gap:8px;
 
-  border-bottom:1px solid var(--line);
+  margin-bottom:14px;
 
-  padding-bottom:10px;
-
-  margin-bottom:15px;
 }
 
 .tab{
+
   background:#141414;
 
   color:#999;
 
-  border:1px solid #2b2b2b;
+  border:
+    1px solid
+    #2b2b2b;
 
   border-radius:10px;
 
-  padding:11px 16px;
+  padding:
+    11px 16px;
 
   font-weight:800;
 
   cursor:pointer;
+
 }
 
 .tab.active{
-  background:var(--accent);
+
+  background:
+    var(--accent);
+
   color:#000;
-  border-color:var(--accent);
+
+  border-color:
+    var(--accent);
+
 }
 
-/* =========================
-   PANELS
-========================= */
+
+/* =========================================================
+   PANEL
+========================================================= */
 
 .panel{
-  background:var(--panel);
 
-  border:1px solid var(--line);
+  background:
+    var(--panel);
 
-  border-radius:19px;
+  border:
+    1px solid
+    var(--line);
 
-  overflow:hidden;
+  border-radius:20px;
 
   box-shadow:
     0 15px 45px #000;
+
+  overflow:hidden;
+
 }
 
 .toolbar{
+
   padding:15px;
 
   display:grid;
 
   grid-template-columns:
-    1.2fr 1fr 1fr auto auto;
+    1.2fr
+    1fr
+    1fr
+    auto
+    auto;
 
   gap:10px;
 
-  border-bottom:1px solid var(--line);
+  border-bottom:
+    1px solid
+    var(--line);
+
 }
 
-/* =========================
+
+/* =========================================================
    TABLE
-========================= */
+========================================================= */
 
 .table-wrap{
+
   overflow:auto;
+
 }
 
 table{
+
   width:100%;
 
   border-collapse:collapse;
 
-  min-width:900px;
+  min-width:950px;
+
 }
 
 th,
 td{
+
   padding:13px;
 
-  border-bottom:1px solid #242424;
+  border-bottom:
+    1px solid
+    #242424;
 
   text-align:left;
 
   vertical-align:top;
+
 }
 
 th{
+
   background:#0f0f0f;
 
   color:#888;
@@ -445,145 +663,435 @@ th{
   font-size:10px;
 
   letter-spacing:.7px;
+
 }
 
 td{
+
   font-size:13px;
+
 }
 
 tr:hover td{
+
   background:#171717;
+
 }
 
-/* =========================
-   STATUS
-========================= */
+
+/* =========================================================
+   PILLS
+========================================================= */
 
 .pill{
+
   display:inline-block;
 
   border-radius:999px;
 
-  padding:5px 8px;
+  padding:
+    5px 8px;
 
-  font-size:10px;
+  font-size:9px;
 
   font-weight:900;
+
 }
 
 .open{
+
   background:#173322;
+
   color:#75e6a1;
+
 }
 
 .full{
+
   background:#392f08;
+
   color:#f1d65b;
+
 }
 
 .booked{
+
   background:#252d38;
+
   color:#aacaff;
+
 }
 
-/* =========================
-   CUSTOMERS
-========================= */
+.cancel{
 
-.customer{
-  margin-bottom:6px;
+  background:#351414;
+
+  color:#ff9999;
+
 }
 
-.customer:last-child{
-  margin-bottom:0;
+
+/* =========================================================
+   CUSTOMER NAME
+========================================================= */
+
+.name-btn{
+
+  padding:0;
+
+  border:0;
+
+  background:none;
+
+  color:#fff;
+
+  font-weight:800;
+
+  text-decoration:underline;
+
+  cursor:pointer;
+
+  text-align:left;
+
 }
 
-.customer small{
-  display:block;
+.name-btn:hover{
 
-  color:#888;
+  color:
+    var(--accent);
 
-  margin-top:2px;
 }
 
-/* =========================
+
+/* =========================================================
    EMPTY
-========================= */
+========================================================= */
 
 .empty{
+
   text-align:center;
 
   padding:40px;
 
   color:#777;
+
 }
 
 .history-note{
-  padding:14px 15px;
+
+  padding:
+    13px 15px;
 
   color:#999;
 
   font-size:12px;
 
-  border-bottom:1px solid var(--line);
+  border-bottom:
+    1px solid
+    var(--line);
+
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
 
-@media(max-width:1100px){
+/* =========================================================
+   CUSTOMER MODAL
+========================================================= */
+
+.modal{
+
+  position:fixed;
+
+  inset:0;
+
+  z-index:50;
+
+  background:
+    rgba(0,0,0,.78);
+
+  display:none;
+
+  align-items:center;
+
+  justify-content:center;
+
+  padding:18px;
+
+}
+
+.modal.show{
+
+  display:flex;
+
+}
+
+.modal-card{
+
+  width:min(
+    900px,
+    100%
+  );
+
+  max-height:90vh;
+
+  overflow:auto;
+
+  background:#111;
+
+  border:
+    1px solid
+    #333;
+
+  border-radius:20px;
+
+  box-shadow:
+    0 25px 80px #000;
+
+}
+
+.modal-head{
+
+  position:sticky;
+
+  top:0;
+
+  background:#111;
+
+  border-bottom:
+    1px solid
+    #2b2b2b;
+
+  padding:18px;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  gap:15px;
+
+  align-items:flex-start;
+
+}
+
+.modal-head h2{
+
+  margin:
+    0 0 5px;
+
+}
+
+.modal-head p{
+
+  margin:0;
+
+  color:#999;
+
+}
+
+.modal-body{
+
+  padding:18px;
+
+}
+
+.customer-summary{
+
+  display:grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap:10px;
+
+  margin-bottom:18px;
+
+}
+
+.info{
+
+  background:#181818;
+
+  border:
+    1px solid
+    #292929;
+
+  border-radius:12px;
+
+  padding:13px;
+
+}
+
+.info label{
+
+  display:block;
+
+  color:#888;
+
+  font-size:9px;
+
+  font-weight:800;
+
+  margin-bottom:5px;
+
+}
+
+.info strong{
+
+  font-size:15px;
+
+}
+
+.section-title{
+
+  font-size:12px;
+
+  font-weight:900;
+
+  letter-spacing:.7px;
+
+  margin:
+    20px 0 8px;
+
+}
+
+.history-item{
+
+  display:grid;
+
+  grid-template-columns:
+    115px
+    85px
+    1fr
+    120px;
+
+  gap:10px;
+
+  padding:12px;
+
+  border-bottom:
+    1px solid
+    #292929;
+
+  align-items:center;
+
+}
+
+.close{
+
+  background:#222;
+
+  color:#fff;
+
+  border:
+    1px solid
+    #333;
+
+  border-radius:10px;
+
+  padding:
+    9px 12px;
+
+  cursor:pointer;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:1150px){
 
   .stats{
+
     grid-template-columns:
-      repeat(3,1fr);
+      repeat(4,1fr);
+
   }
 
   .toolbar{
+
     grid-template-columns:
       1fr 1fr;
+
   }
 
 }
+
 
 @media(max-width:650px){
 
-  .topbar{
-    padding:10px 0;
+  .top{
+
+    padding:
+      9px 0;
+
   }
 
   .brand img{
-    width:62px;
+
+    width:60px;
+
   }
 
   .brand strong{
-    font-size:12px;
+
+    font-size:11px;
+
   }
 
   .brand small{
-    font-size:8px;
+
+    font-size:7px;
+
   }
 
   .actions .btn{
-    font-size:11px;
+
+    font-size:10px;
+
     padding:9px;
+
   }
 
   .stats{
+
     grid-template-columns:
       repeat(2,1fr);
+
   }
 
   .toolbar{
-    grid-template-columns:1fr;
-  }
 
-  .hero h1{
-    font-size:23px;
+    grid-template-columns:
+      1fr;
+
   }
 
   main{
-    width:calc(100% - 20px);
+
+    width:
+      calc(100% - 20px);
+
+  }
+
+  .history-item{
+
+    grid-template-columns:
+      1fr 1fr;
+
+  }
+
+  .customer-summary{
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+  .modal-head h2{
+
+    font-size:18px;
+
   }
 
 }
@@ -592,11 +1100,13 @@ tr:hover td{
 
 </head>
 
+
 <body>
 
-<!-- =========================
+
+<!-- =======================================================
      LOGIN
-========================= -->
+======================================================= -->
 
 <section
   id="loginView"
@@ -619,6 +1129,7 @@ tr:hover td{
       Διαχείριση Ραντεβού
     </p>
 
+
     <div class="field">
 
       <label>
@@ -634,13 +1145,17 @@ tr:hover td{
 
     </div>
 
+
     <button
       class="btn primary"
       style="width:100%;margin-top:14px"
       onclick="login()"
     >
+
       ΕΙΣΟΔΟΣ
+
     </button>
+
 
     <div
       id="loginError"
@@ -652,18 +1167,20 @@ tr:hover td{
 </section>
 
 
-<!-- =========================
+<!-- =======================================================
      APP
-========================= -->
+======================================================= -->
 
 <div
   id="appView"
   class="hidden"
 >
 
+
 <header>
 
-  <div class="topbar">
+  <div class="top">
+
 
     <div class="brand">
 
@@ -686,6 +1203,7 @@ tr:hover td{
 
     </div>
 
+
     <div class="actions">
 
       <button
@@ -695,12 +1213,14 @@ tr:hover td{
         ΣΗΜΕΡΑ
       </button>
 
+
       <button
         class="btn dark"
         onclick="refreshAll()"
       >
         ↻ ΑΝΑΝΕΩΣΗ
       </button>
+
 
       <button
         class="btn danger"
@@ -718,44 +1238,53 @@ tr:hover td{
 
 <main>
 
-<!-- =========================
+
+<!-- =======================================================
      HERO
-========================= -->
+======================================================= -->
 
 <section class="hero">
 
   <h1>
+
     APEX
     <span class="accent">
       ADMIN
     </span>
+
   </h1>
 
+
   <p>
-    Κρατήσεις, διαθεσιμότητα και
-    ιστορικό σε ένα σημείο.
+    Ραντεβού, πελάτες και
+    πλήρες ιστορικό.
   </p>
+
 
   <div class="notice">
 
-    Οι περασμένες ώρες δεν εμφανίζονται.
-    Το ιστορικό των κρατήσεων παραμένει
-    ξεχωριστά στη βάση.
+    Οι περασμένες ώρες δεν εμφανίζονται
+    στα «ΕΠΟΜΕΝΑ».
+
+    Όλες οι κρατήσεις και όλες οι ακυρώσεις
+    αποθηκεύονται μόνιμα στο ιστορικό.
 
   </div>
 
 </section>
 
 
-<!-- =========================
+<!-- =======================================================
      STATS
-========================= -->
+======================================================= -->
 
 <section class="stats">
 
+
   <div class="stat">
+
     <div class="label">
-      ΣΗΜΕΡΑ — ΡΑΝΤΕΒΟΥ
+      ΣΗΜΕΡΑ ΡΑΝΤΕΒΟΥ
     </div>
 
     <div
@@ -764,12 +1293,14 @@ tr:hover td{
     >
       —
     </div>
+
   </div>
 
 
   <div class="stat">
+
     <div class="label">
-      ΣΗΜΕΡΑ — MINI GROUP
+      ΣΗΜΕΡΑ MINI GROUP
     </div>
 
     <div
@@ -778,12 +1309,14 @@ tr:hover td{
     >
       —
     </div>
+
   </div>
 
 
   <div class="stat">
+
     <div class="label">
-      ΣΗΜΕΡΑ — PERSONAL
+      ΣΗΜΕΡΑ PERSONAL
     </div>
 
     <div
@@ -792,12 +1325,14 @@ tr:hover td{
     >
       —
     </div>
+
   </div>
 
 
   <div class="stat">
+
     <div class="label">
-      ΣΥΝΟΛΟ ΡΑΝΤΕΒΟΥ
+      ΣΥΝΟΛΟ ΕΝΕΡΓΩΝ
     </div>
 
     <div
@@ -806,10 +1341,12 @@ tr:hover td{
     >
       —
     </div>
+
   </div>
 
 
   <div class="stat">
+
     <div class="label">
       ΣΥΝΟΛΟ MINI GROUP
     </div>
@@ -820,10 +1357,12 @@ tr:hover td{
     >
       —
     </div>
+
   </div>
 
 
   <div class="stat">
+
     <div class="label">
       ΜΟΝΑΔΙΚΟΙ ΠΕΛΑΤΕΣ
     </div>
@@ -834,46 +1373,73 @@ tr:hover td{
     >
       —
     </div>
+
   </div>
+
+
+  <div class="stat">
+
+    <div class="label">
+      ΑΚΥΡΩΣΕΙΣ
+    </div>
+
+    <div
+      class="num"
+      id="totalCancellations"
+    >
+      —
+    </div>
+
+  </div>
+
 
 </section>
 
 
-<!-- =========================
+<!-- =======================================================
      TABS
-========================= -->
+======================================================= -->
 
 <div class="tabs">
+
 
   <button
     id="tabUpcoming"
     class="tab active"
     onclick="showTab('upcoming')"
   >
+
     ΕΠΟΜΕΝΑ ΡΑΝΤΕΒΟΥ
+
   </button>
+
 
   <button
     id="tabHistory"
     class="tab"
     onclick="showTab('history')"
   >
-    ΙΣΤΟΡΙΚΟ ΡΑΝΤΕΒΟΥ
+
+    ΙΣΤΟΡΙΚΟ ΟΛΩΝ
+
   </button>
+
 
 </div>
 
 
-<!-- =========================
+<!-- =======================================================
      UPCOMING
-========================= -->
+======================================================= -->
 
 <section
   id="upcomingPanel"
   class="panel"
 >
 
+
   <div class="toolbar">
+
 
     <div class="field">
 
@@ -954,7 +1520,9 @@ tr:hover td{
       class="btn dark"
       onclick="clearFilters()"
     >
+
       ΚΑΘΑΡΙΣΜΟΣ
+
     </button>
 
 
@@ -962,8 +1530,11 @@ tr:hover td{
       class="btn primary"
       onclick="today()"
     >
+
       ΣΗΜΕΡΑ
+
     </button>
+
 
   </div>
 
@@ -997,7 +1568,7 @@ tr:hover td{
           </th>
 
           <th>
-            ΠΕΛΑΤΕΣ / ΤΗΛΕΦΩΝΑ
+            ΠΕΛΑΤΕΣ
           </th>
 
           <th>
@@ -1007,6 +1578,7 @@ tr:hover td{
         </tr>
 
       </thead>
+
 
       <tbody
         id="upcomingBody"
@@ -1019,37 +1591,39 @@ tr:hover td{
 </section>
 
 
-<!-- =========================
+<!-- =======================================================
      HISTORY
-========================= -->
+======================================================= -->
 
 <section
   id="historyPanel"
   class="panel hidden"
 >
 
+
   <div class="history-note">
 
-    Το ιστορικό κρατήσεων είναι ξεχωριστό
-    από τις επόμενες ώρες.
+    Εδώ αποθηκεύονται μόνιμα
+    <b>όλες οι κρατήσεις και όλες οι ακυρώσεις</b>.
 
-    Μπορείς να αναζητήσεις πελάτη,
-    ημερομηνία ή υπηρεσία.
+    Πάτησε πάνω στο όνομα ενός πελάτη
+    για να δεις ολόκληρη την καρτέλα του.
 
   </div>
 
 
   <div class="toolbar">
 
+
     <div class="field">
 
       <label>
-        ΑΝΑΖΗΤΗΣΗ ΠΕΛΑΤΗ
+        ΑΝΑΖΗΤΗΣΗ ΟΝΟΜΑ / ΤΗΛΕΦΩΝΟ
       </label>
 
       <input
         id="historySearch"
-        placeholder="Όνομα ή τηλέφωνο"
+        placeholder="π.χ. Γιώργος ή 694..."
         oninput="renderHistory()"
       >
 
@@ -1087,7 +1661,7 @@ tr:hover td{
     <div class="field">
 
       <label>
-        ΗΜΕΡΟΜΗΝΙΑ
+        ΗΜΕΡΟΜΗΝΙΑ ΡΑΝΤΕΒΟΥ
       </label>
 
       <input
@@ -1103,8 +1677,11 @@ tr:hover td{
       class="btn dark"
       onclick="clearHistoryFilters()"
     >
+
       ΚΑΘΑΡΙΣΜΟΣ
+
     </button>
+
 
     <div></div>
 
@@ -1132,11 +1709,15 @@ tr:hover td{
           </th>
 
           <th>
-            ΟΝΟΜΑ
+            ΠΕΛΑΤΗΣ
           </th>
 
           <th>
             ΤΗΛΕΦΩΝΟ
+          </th>
+
+          <th>
+            ΚΑΤΑΣΤΑΣΗ
           </th>
 
           <th>
@@ -1146,6 +1727,7 @@ tr:hover td{
         </tr>
 
       </thead>
+
 
       <tbody
         id="historyBody"
@@ -1157,12 +1739,80 @@ tr:hover td{
 
 </section>
 
+
 </main>
 
 </div>
 
 
+<!-- =======================================================
+     CUSTOMER MODAL
+======================================================= -->
+
+<div
+  id="customerModal"
+  class="modal"
+  onclick="
+    if(event.target===this)
+      closeCustomer()
+  "
+>
+
+
+  <div class="modal-card">
+
+
+    <div class="modal-head">
+
+
+      <div>
+
+        <h2
+          id="customerTitle"
+        >
+          ΠΕΛΑΤΗΣ
+        </h2>
+
+
+        <p
+          id="customerSub"
+        >
+          —
+        </p>
+
+      </div>
+
+
+      <button
+        class="close"
+        onclick="closeCustomer()"
+      >
+
+        ΚΛΕΙΣΙΜΟ ✕
+
+      </button>
+
+
+    </div>
+
+
+    <div
+      id="customerBody"
+      class="modal-body"
+    ></div>
+
+
+  </div>
+
+</div>
+
+
 <script>
+
+
+/* =========================================================
+   STATE
+========================================================= */
 
 let password = "";
 
@@ -1171,143 +1821,235 @@ let upcomingRows = [];
 let historyRows = [];
 
 
-/* =========================
-   SECURITY / HTML ESCAPE
-========================= */
+/* =========================================================
+   HELPERS
+========================================================= */
 
 const esc = value =>
-  String(value ?? "")
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
+
+  String(
+    value ?? ""
+  )
+
+  .replace(
+    /&/g,
+    "&amp;"
+  )
+
+  .replace(
+    /</g,
+    "&lt;"
+  )
+
+  .replace(
+    />/g,
+    "&gt;"
+  )
+
+  .replace(
+    /"/g,
+    "&quot;"
+  )
+
+  .replace(
+    /'/g,
+    "&#039;"
+  );
 
 
-const norm = value =>
-  String(value || "")
-    .trim()
-    .toLocaleLowerCase("el-GR");
+const normalizeText =
+  value =>
+
+    String(value || "")
+
+      .trim()
+
+      .replace(
+        /\s+/g,
+        " "
+      )
+
+      .toLocaleLowerCase(
+        "el-GR"
+      );
 
 
-/* =========================
-   DATE
-========================= */
+const onlyDigits =
+  value =>
 
-function formatDate(value){
+    String(
+      value || ""
+    ).replace(
+      /\D/g,
+      ""
+    );
+
+
+function formatDate(
+  value
+){
 
   if(!value){
+
     return "";
+
   }
 
-  const [y,m,d] =
+  const [
+    year,
+    month,
+    day
+  ] =
     value.split("-");
 
-  return `${d}/${m}/${y}`;
+  return (
+    day +
+    "/" +
+    month +
+    "/" +
+    year
+  );
+
 }
 
 
-/* =========================
+/* =========================================================
    API
-========================= */
+========================================================= */
 
 async function api(
   url,
-  options={}
+  options = {}
 ){
 
   const response =
     await fetch(
       url,
       {
+
         ...options,
 
         headers:{
-          "x-admin-password":password,
+
+          "x-admin-password":
+            password,
+
           ...(options.headers || {})
+
         },
 
-        cache:"no-store"
+        cache:
+          "no-store"
+
       }
     );
+
 
   const data =
     await response
       .json()
-      .catch(()=>({}));
+      .catch(
+        () => ({})
+      );
 
-  if(!response.ok){
+
+  if(
+    !response.ok
+  ){
 
     throw new Error(
       data.error ||
       "Παρουσιάστηκε σφάλμα."
     );
+
   }
 
+
   return data;
+
 }
 
 
-/* =========================
+/* =========================================================
    LOGIN
-========================= */
+========================================================= */
 
 async function login(){
 
   password =
     document
-      .getElementById("password")
+      .getElementById(
+        "password"
+      )
       .value
       .trim();
+
 
   if(!password){
 
     document
-      .getElementById("loginError")
+      .getElementById(
+        "loginError"
+      )
       .textContent =
         "Βάλε τον κωδικό διαχειριστή.";
 
     return;
+
   }
+
 
   try{
 
-    upcomingRows =
-      await api(
-        "/api/admin/slots"
-      );
+    await api(
+      "/api/admin/summary"
+    );
+
 
     document
-      .getElementById("loginView")
+      .getElementById(
+        "loginView"
+      )
       .classList
       .add("hidden");
 
+
     document
-      .getElementById("appView")
+      .getElementById(
+        "appView"
+      )
       .classList
       .remove("hidden");
 
+
     document
-      .getElementById("loginError")
+      .getElementById(
+        "loginError"
+      )
       .textContent = "";
 
+
     await refreshAll();
+
 
   }catch(error){
 
     document
-      .getElementById("loginError")
+      .getElementById(
+        "loginError"
+      )
       .textContent =
         error.message ||
         "Μη έγκυρος κωδικός.";
 
   }
+
 }
 
 
-/* =========================
-   REFRESH
-========================= */
+/* =========================================================
+   REFRESH ALL
+========================================================= */
 
 async function refreshAll(){
 
@@ -1318,6 +2060,7 @@ async function refreshAll(){
       history,
       summary
     ] =
+
       await Promise.all([
 
         api(
@@ -1334,52 +2077,80 @@ async function refreshAll(){
 
       ]);
 
-    upcomingRows = slots;
 
-    historyRows = history;
+    upcomingRows =
+      slots;
+
+    historyRows =
+      history;
 
 
     document
-      .getElementById("todayBookings")
+      .getElementById(
+        "todayBookings"
+      )
       .textContent =
         summary.todayBookings;
 
 
     document
-      .getElementById("todayMini")
+      .getElementById(
+        "todayMini"
+      )
       .textContent =
         summary.todayMiniPeople;
 
 
     document
-      .getElementById("todayPT")
+      .getElementById(
+        "todayPT"
+      )
       .textContent =
         summary.todayPT;
 
 
     document
-      .getElementById("totalBookings")
+      .getElementById(
+        "totalBookings"
+      )
       .textContent =
         summary.totalBookings;
 
 
     document
-      .getElementById("totalMini")
+      .getElementById(
+        "totalMini"
+      )
       .textContent =
         summary.totalMiniPeople;
 
 
     document
-      .getElementById("uniqueCustomers")
+      .getElementById(
+        "uniqueCustomers"
+      )
       .textContent =
         summary.uniqueCustomers;
+
+
+    document
+      .getElementById(
+        "totalCancellations"
+      )
+      .textContent =
+        summary.totalCancellations;
 
 
     renderUpcoming();
 
     renderHistory();
 
+
   }catch(error){
+
+    console.error(
+      error
+    );
 
     alert(
       error.message ||
@@ -1387,73 +2158,101 @@ async function refreshAll(){
     );
 
   }
+
 }
 
 
-/* =========================
+/* =========================================================
    TODAY
-========================= */
+========================================================= */
 
 function today(){
 
   const d =
     new Date();
 
+
   const local =
     new Date(
       d.getTime() -
-      d.getTimezoneOffset() * 60000
+      d.getTimezoneOffset()
+      * 60000
     );
 
+
   document
-    .getElementById("dateFilter")
+    .getElementById(
+      "dateFilter"
+    )
     .value =
       local
         .toISOString()
-        .slice(0,10);
+        .slice(
+          0,
+          10
+        );
+
 
   renderUpcoming();
+
 }
 
 
-/* =========================
-   CLEAR UPCOMING FILTERS
-========================= */
+/* =========================================================
+   CLEAR UPCOMING
+========================================================= */
 
 function clearFilters(){
 
   document
-    .getElementById("dateFilter")
+    .getElementById(
+      "dateFilter"
+    )
     .value = "";
 
-  document
-    .getElementById("serviceFilter")
-    .value = "";
 
   document
-    .getElementById("statusFilter")
+    .getElementById(
+      "serviceFilter"
+    )
     .value = "";
+
+
+  document
+    .getElementById(
+      "statusFilter"
+    )
+    .value = "";
+
 
   renderUpcoming();
+
 }
 
 
-/* =========================
+/* =========================================================
    TABS
-========================= */
+========================================================= */
 
-function showTab(tab){
+function showTab(
+  tab
+){
 
   document
-    .getElementById("upcomingPanel")
+    .getElementById(
+      "upcomingPanel"
+    )
     .classList
     .toggle(
       "hidden",
       tab !== "upcoming"
     );
 
+
   document
-    .getElementById("historyPanel")
+    .getElementById(
+      "historyPanel"
+    )
     .classList
     .toggle(
       "hidden",
@@ -1462,7 +2261,9 @@ function showTab(tab){
 
 
   document
-    .getElementById("tabUpcoming")
+    .getElementById(
+      "tabUpcoming"
+    )
     .classList
     .toggle(
       "active",
@@ -1471,7 +2272,9 @@ function showTab(tab){
 
 
   document
-    .getElementById("tabHistory")
+    .getElementById(
+      "tabHistory"
+    )
     .classList
     .toggle(
       "active",
@@ -1481,25 +2284,33 @@ function showTab(tab){
 }
 
 
-/* =========================
-   UPCOMING TABLE
-========================= */
+/* =========================================================
+   UPCOMING
+========================================================= */
 
 function renderUpcoming(){
 
   const date =
     document
-      .getElementById("dateFilter")
+      .getElementById(
+        "dateFilter"
+      )
       .value;
+
 
   const service =
     document
-      .getElementById("serviceFilter")
+      .getElementById(
+        "serviceFilter"
+      )
       .value;
+
 
   const status =
     document
-      .getElementById("statusFilter")
+      .getElementById(
+        "statusFilter"
+      )
       .value;
 
 
@@ -1518,238 +2329,397 @@ function renderUpcoming(){
 
 
   rows =
-    rows.filter(row => {
+    rows.filter(
+      row => {
 
-      const bookings =
-        Number(
-          row.booking_count || 0
-        );
-
-      const capacity =
-        Number(
-          row.capacity || 0
-        );
+        const bookings =
+          Number(
+            row.booking_count ||
+            0
+          );
 
 
-      if(status === "available"){
-        return bookings === 0;
+        const capacity =
+          Number(
+            row.capacity ||
+            0
+          );
+
+
+        if(
+          status ===
+          "available"
+        ){
+
+          return (
+            bookings === 0
+          );
+
+        }
+
+
+        if(
+          status ===
+          "booked"
+        ){
+
+          return (
+            bookings > 0 &&
+            bookings < capacity
+          );
+
+        }
+
+
+        if(
+          status ===
+          "full"
+        ){
+
+          return (
+            bookings >= capacity
+          );
+
+        }
+
+
+        return true;
+
       }
-
-      if(status === "booked"){
-        return (
-          bookings > 0 &&
-          bookings < capacity
-        );
-      }
-
-      if(status === "full"){
-        return bookings >= capacity;
-      }
-
-      return true;
-
-    });
+    );
 
 
   const body =
     document
-      .getElementById("upcomingBody");
+      .getElementById(
+        "upcomingBody"
+      );
 
 
-  if(!rows.length){
+  if(
+    !rows.length
+  ){
 
-    body.innerHTML =
-      `
+    body.innerHTML = `
+
       <tr>
+
         <td
           colspan="7"
           class="empty"
         >
+
           Δεν υπάρχουν ώρες
           με τα συγκεκριμένα φίλτρα.
+
         </td>
+
       </tr>
-      `;
+
+    `;
 
     return;
+
   }
 
 
   body.innerHTML =
-    rows.map(row => {
 
-      const bookings =
-        Number(
-          row.booking_count || 0
-        );
+    rows.map(
+      row => {
 
-      const capacity =
-        Number(
-          row.capacity || 0
-        );
-
-      const full =
-        bookings >= capacity;
+        const bookings =
+          Number(
+            row.booking_count ||
+            0
+          );
 
 
-      let pill;
+        const capacity =
+          Number(
+            row.capacity ||
+            0
+          );
 
 
-      if(full){
+        const full =
+          bookings >=
+          capacity;
 
-        pill =
-          `
-          <span class="pill full">
-            ΓΕΜΑΤΗ
-            ${bookings}/${capacity}
-          </span>
+
+        let pill;
+
+
+        if(full){
+
+          pill = `
+
+            <span class="pill full">
+
+              ΓΕΜΑΤΗ
+              ${bookings}/${capacity}
+
+            </span>
+
           `;
 
-      }else if(bookings){
+        }else if(
+          bookings
+        ){
 
-        pill =
-          `
-          <span class="pill booked">
-            ${bookings}/${capacity}
-            ΚΛΕΙΣΜΕΝΑ
-          </span>
+          pill = `
+
+            <span class="pill booked">
+
+              ${bookings}/${capacity}
+              ΚΛΕΙΣΜΕΝΑ
+
+            </span>
+
           `;
 
-      }else{
+        }else{
 
-        pill =
-          `
-          <span class="pill open">
-            ΔΙΑΘΕΣΙΜΗ
-          </span>
+          pill = `
+
+            <span class="pill open">
+
+              ΔΙΑΘΕΣΙΜΗ
+
+            </span>
+
           `;
 
-      }
+        }
 
 
-      const customers =
-        (row.bookings || [])
-          .map(booking =>
+        const customers =
 
-            `
-            <div class="customer">
+          (row.bookings || [])
+            .map(
+              booking => `
+
+                <div
+                  style="margin-bottom:7px"
+                >
+
+                  <button
+
+                    class="name-btn"
+
+                    onclick='openCustomer(
+                      ${JSON.stringify(
+                        booking.name
+                      )},
+                      ${JSON.stringify(
+                        booking.phone
+                      )}
+                    )'
+                  >
+
+                    ${esc(
+                      booking.name
+                    )}
+
+                  </button>
+
+
+                  <small
+                    style="
+                      display:block;
+                      color:#888
+                    "
+                  >
+
+                    ${esc(
+                      booking.phone
+                    )}
+
+                  </small>
+
+                </div>
+
+              `
+            )
+            .join("")
+
+          ||
+
+          `
+            <span
+              style="color:#777"
+            >
+              —
+            </span>
+          `;
+
+
+        const actions =
+
+          (row.bookings || [])
+            .map(
+              booking => `
+
+                <button
+
+                  class="btn danger"
+
+                  style="margin:2px"
+
+                  onclick="
+                    cancelBooking(
+                      ${Number(
+                        booking.id
+                      )}
+                    )
+                  "
+                >
+
+                  ΑΚΥΡΩΣΗ
+                  #${Number(
+                    booking.id
+                  )}
+
+                </button>
+
+              `
+            )
+            .join("")
+
+          ||
+
+          `
+            <span
+              style="color:#777"
+            >
+              —
+            </span>
+          `;
+
+
+        return `
+
+          <tr>
+
+            <td>
+              ${formatDate(
+                row.date
+              )}
+            </td>
+
+
+            <td>
 
               <strong>
-                ${esc(booking.name)}
+                ${esc(
+                  row.time
+                )}
               </strong>
 
-              <small>
-                ${esc(booking.phone)}
-              </small>
+            </td>
 
-            </div>
-            `
-          )
-          .join("")
 
-        ||
+            <td>
+              ${esc(
+                row.service
+              )}
+            </td>
 
-        `
-        <span style="color:#777">
-          —
-        </span>
+
+            <td>
+
+              ${bookings}/${capacity}
+
+            </td>
+
+
+            <td>
+
+              ${pill}
+
+            </td>
+
+
+            <td>
+
+              ${customers}
+
+            </td>
+
+
+            <td>
+
+              ${actions}
+
+            </td>
+
+          </tr>
+
         `;
 
-
-      const actions =
-        (row.bookings || [])
-          .map(booking =>
-
-            `
-            <button
-              class="btn danger"
-              style="margin:2px 0"
-              onclick="
-                cancelBooking(
-                  ${Number(booking.id)}
-                )
-              "
-            >
-              ΑΚΥΡΩΣΗ
-              #${Number(booking.id)}
-            </button>
-            `
-          )
-          .join("")
-
-        ||
-
-        `
-        <span style="color:#777">
-          —
-        </span>
-        `;
-
-
-      return `
-
-        <tr>
-
-          <td>
-            ${formatDate(row.date)}
-          </td>
-
-          <td>
-            <strong>
-              ${esc(row.time)}
-            </strong>
-          </td>
-
-          <td>
-            ${esc(row.service)}
-          </td>
-
-          <td>
-            ${bookings}/${capacity}
-          </td>
-
-          <td>
-            ${pill}
-          </td>
-
-          <td>
-            ${customers}
-          </td>
-
-          <td>
-            ${actions}
-          </td>
-
-        </tr>
-
-      `;
-
-    }).join("");
+      }
+    )
+    .join("");
 
 }
 
 
-/* =========================
-   HISTORY
-========================= */
+/* =========================================================
+   HISTORY SEARCH
+========================================================= */
 
 function renderHistory(){
 
+  /*
+    Πολύ σημαντικό:
+
+    Δεν ψάχνουμε μόνο το όνομα.
+
+    Ψάχνουμε:
+
+    - όνομα
+    - μέρος ονόματος
+    - τηλέφωνο
+    - μέρος τηλεφώνου
+
+    και χειριζόμαστε σωστά
+    κενά / σύμβολα.
+  */
+
+  const rawSearch =
+    document
+      .getElementById(
+        "historySearch"
+      )
+      .value
+      .trim();
+
+
   const search =
-    norm(
-      document
-        .getElementById("historySearch")
-        .value
+    normalizeText(
+      rawSearch
     );
+
+
+  const searchDigits =
+    onlyDigits(
+      rawSearch
+    );
+
 
   const service =
     document
-      .getElementById("historyService")
+      .getElementById(
+        "historyService"
+      )
       .value;
+
 
   const date =
     document
-      .getElementById("historyDate")
+      .getElementById(
+        "historyDate"
+      )
       .value;
 
 
@@ -1758,7 +2728,8 @@ function renderHistory(){
       .filter(
         row =>
           !service ||
-          row.service === service
+          row.service ===
+            service
       )
       .filter(
         row =>
@@ -1767,141 +2738,671 @@ function renderHistory(){
       );
 
 
-  if(search){
+  /*
+    Αν υπάρχει αναζήτηση,
+    εφαρμόζουμε OR:
+
+    όνομα
+    Ή
+    τηλέφωνο
+  */
+
+  if(
+    rawSearch
+  ){
 
     rows =
-      rows.filter(row => {
+      rows.filter(
+        row => {
 
-        const name =
-          norm(row.name);
+          const name =
+            normalizeText(
+              row.name
+            );
 
-        const phone =
-          String(
-            row.phone || ""
-          )
-          .replace(/\D/g,"");
 
-        const searchPhone =
-          search.replace(
-            /\D/g,
-            ""
+          const phone =
+            onlyDigits(
+              row.phone
+            );
+
+
+          const nameMatch =
+            search.length > 0 &&
+            name.includes(
+              search
+            );
+
+
+          const phoneMatch =
+            searchDigits.length > 0 &&
+            phone.includes(
+              searchDigits
+            );
+
+
+          return (
+            nameMatch ||
+            phoneMatch
           );
 
-        return (
-          name.includes(search) ||
-          phone.includes(searchPhone)
-        );
-
-      });
+        }
+      );
 
   }
 
 
   const body =
     document
-      .getElementById("historyBody");
+      .getElementById(
+        "historyBody"
+      );
 
 
-  if(!rows.length){
+  if(
+    !rows.length
+  ){
 
-    body.innerHTML =
-      `
+    body.innerHTML = `
+
       <tr>
 
         <td
-          colspan="6"
+          colspan="7"
           class="empty"
         >
+
           Δεν βρέθηκαν
-          καταχωρημένες κρατήσεις.
+          κρατήσεις ή ακυρώσεις.
+
         </td>
 
       </tr>
-      `;
+
+    `;
 
     return;
+
   }
 
 
   body.innerHTML =
-    rows.map(row =>
 
-      `
+    rows.map(
+      row => {
 
-      <tr>
+        const cancelled =
+          row.action ===
+          "CANCELLED";
 
-        <td>
-          ${formatDate(row.date)}
-        </td>
 
-        <td>
-          <strong>
-            ${esc(row.time)}
-          </strong>
-        </td>
+        const status =
+          cancelled
 
-        <td>
-          ${esc(row.service)}
-        </td>
+            ?
 
-        <td>
-          <strong>
-            ${esc(row.name)}
-          </strong>
-        </td>
+          `
+            <span
+              class="pill cancel"
+            >
+              ΑΚΥΡΩΘΗΚΕ
+            </span>
+          `
 
-        <td>
-          ${esc(row.phone)}
-        </td>
+            :
 
-        <td>
-          #${Number(row.id)}
-        </td>
+          `
+            <span
+              class="pill open"
+            >
+              ΚΡΑΤΗΘΗΚΕ
+            </span>
+          `;
 
-      </tr>
 
-      `
+        return `
 
-    ).join("");
+          <tr>
+
+
+            <td>
+
+              ${formatDate(
+                row.date
+              )}
+
+            </td>
+
+
+            <td>
+
+              <strong>
+
+                ${esc(
+                  row.time
+                )}
+
+              </strong>
+
+            </td>
+
+
+            <td>
+
+              ${esc(
+                row.service
+              )}
+
+            </td>
+
+
+            <td>
+
+              <button
+
+                class="name-btn"
+
+                onclick='openCustomer(
+                  ${JSON.stringify(
+                    row.name
+                  )},
+                  ${JSON.stringify(
+                    row.phone
+                  )}
+                )'
+              >
+
+                ${esc(
+                  row.name
+                )}
+
+              </button>
+
+            </td>
+
+
+            <td>
+
+              ${esc(
+                row.phone
+              )}
+
+            </td>
+
+
+            <td>
+
+              ${status}
+
+            </td>
+
+
+            <td>
+
+              #${Number(
+                row.booking_id
+              )}
+
+            </td>
+
+
+          </tr>
+
+        `;
+
+      }
+    )
+    .join("");
 
 }
 
 
-/* =========================
-   CLEAR HISTORY FILTERS
-========================= */
+/* =========================================================
+   CLEAR HISTORY
+========================================================= */
 
 function clearHistoryFilters(){
 
   document
-    .getElementById("historySearch")
+    .getElementById(
+      "historySearch"
+    )
     .value = "";
 
-  document
-    .getElementById("historyService")
-    .value = "";
 
   document
-    .getElementById("historyDate")
+    .getElementById(
+      "historyService"
+    )
     .value = "";
+
+
+  document
+    .getElementById(
+      "historyDate"
+    )
+    .value = "";
+
 
   renderHistory();
 
 }
 
 
-/* =========================
-   CANCEL BOOKING
-========================= */
+/* =========================================================
+   CUSTOMER PROFILE
+========================================================= */
 
-async function cancelBooking(id){
+async function openCustomer(
+  name,
+  phone
+){
 
-  if(
-    !confirm(
-      `Θέλεις σίγουρα να ακυρώσεις το ραντεβού #${id};`
+  document
+    .getElementById(
+      "customerTitle"
     )
-  ){
+    .textContent =
+      name;
+
+
+  document
+    .getElementById(
+      "customerSub"
+    )
+    .textContent =
+      phone;
+
+
+  document
+    .getElementById(
+      "customerBody"
+    )
+    .innerHTML = `
+
+      <div class="empty">
+
+        Φόρτωση καρτέλας πελάτη...
+
+      </div>
+
+    `;
+
+
+  document
+    .getElementById(
+      "customerModal"
+    )
+    .classList
+    .add("show");
+
+
+  try{
+
+    const data =
+      await api(
+        `/api/admin/customer?name=${encodeURIComponent(
+          name
+        )}&phone=${encodeURIComponent(
+          phone
+        )}`
+      );
+
+
+    const active =
+      data.active || [];
+
+
+    const history =
+      data.history || [];
+
+
+    /*
+      ΕΝΕΡΓΑ ΡΑΝΤΕΒΟΥ
+    */
+
+    const activeHtml =
+
+      active.length
+
+        ?
+
+      active
+        .map(
+          row => `
+
+            <div
+              class="history-item"
+            >
+
+              <div>
+
+                <b>
+
+                  ${formatDate(
+                    row.date
+                  )}
+
+                </b>
+
+              </div>
+
+
+              <div>
+
+                ${esc(
+                  row.time
+                )}
+
+              </div>
+
+
+              <div>
+
+                ${esc(
+                  row.service
+                )}
+
+              </div>
+
+
+              <div>
+
+                <span
+                  class="pill open"
+                >
+
+                  ΕΝΕΡΓΟ
+
+                </span>
+
+              </div>
+
+            </div>
+
+          `
+        )
+        .join("")
+
+        :
+
+      `
+
+        <div class="empty">
+
+          Δεν υπάρχει
+          ενεργό ραντεβού.
+
+        </div>
+
+      `;
+
+
+    /*
+      ΟΛΟ ΤΟ ΙΣΤΟΡΙΚΟ
+    */
+
+    const historyHtml =
+
+      history.length
+
+        ?
+
+      history
+        .map(
+          row => {
+
+            const cancelled =
+              row.action ===
+              "CANCELLED";
+
+
+            const status =
+              cancelled
+
+                ?
+
+              `
+                <span
+                  class="pill cancel"
+                >
+                  ΑΚΥΡΩΘΗΚΕ
+                </span>
+              `
+
+                :
+
+              `
+                <span
+                  class="pill open"
+                >
+                  ΚΡΑΤΗΘΗΚΕ
+                </span>
+              `;
+
+
+            return `
+
+              <div
+                class="history-item"
+              >
+
+
+                <div>
+
+                  <b>
+
+                    ${formatDate(
+                      row.date
+                    )}
+
+                  </b>
+
+                </div>
+
+
+                <div>
+
+                  ${esc(
+                    row.time
+                  )}
+
+                </div>
+
+
+                <div>
+
+                  ${esc(
+                    row.service
+                  )}
+
+                  <br>
+
+                  <small
+                    style="
+                      color:#777
+                    "
+                  >
+
+                    Καταχώρηση:
+                    ${esc(
+                      row.created_at ||
+                      ""
+                    )}
+
+                  </small>
+
+                </div>
+
+
+                <div>
+
+                  ${status}
+
+                </div>
+
+
+              </div>
+
+            `;
+
+          }
+        )
+        .join("")
+
+        :
+
+      `
+
+        <div class="empty">
+
+          Δεν υπάρχει ιστορικό.
+
+        </div>
+
+      `;
+
+
+    document
+      .getElementById(
+        "customerBody"
+      )
+      .innerHTML = `
+
+
+        <div
+          class="customer-summary"
+        >
+
+
+          <div
+            class="info"
+          >
+
+            <label>
+              ΟΝΟΜΑ
+            </label>
+
+            <strong>
+
+              ${esc(
+                data.customer.name
+              )}
+
+            </strong>
+
+          </div>
+
+
+          <div
+            class="info"
+          >
+
+            <label>
+              ΤΗΛΕΦΩΝΟ
+            </label>
+
+            <strong>
+
+              ${esc(
+                data.customer.phone
+              )}
+
+            </strong>
+
+          </div>
+
+
+        </div>
+
+
+        <div
+          class="section-title"
+        >
+
+          ΕΝΕΡΓΑ ΡΑΝΤΕΒΟΥ
+          (${active.length})
+
+        </div>
+
+
+        ${activeHtml}
+
+
+        <div
+          class="section-title"
+        >
+
+          ΟΛΟ ΤΟ ΙΣΤΟΡΙΚΟ
+          (${history.length})
+
+        </div>
+
+
+        ${historyHtml}
+
+      `;
+
+
+  }catch(error){
+
+    document
+      .getElementById(
+        "customerBody"
+      )
+      .innerHTML = `
+
+        <div
+          class="empty"
+        >
+
+          ${esc(
+            error.message
+          )}
+
+        </div>
+
+      `;
+
+  }
+
+}
+
+
+/* =========================================================
+   CLOSE CUSTOMER
+========================================================= */
+
+function closeCustomer(){
+
+  document
+    .getElementById(
+      "customerModal"
+    )
+    .classList
+    .remove("show");
+
+}
+
+
+/* =========================================================
+   CANCEL
+========================================================= */
+
+async function cancelBooking(
+  id
+){
+
+  const confirmed =
+    confirm(
+      `Θέλεις σίγουρα να ακυρώσεις το ραντεβού #${id};\n\nΗ ακύρωση θα καταγραφεί μόνιμα στο ιστορικό.`
+    );
+
+
+  if(!confirmed){
+
     return;
+
   }
 
 
@@ -1910,7 +3411,8 @@ async function cancelBooking(id){
     await api(
       `/api/admin/bookings/${id}`,
       {
-        method:"DELETE"
+        method:
+          "DELETE"
       }
     );
 
@@ -1919,8 +3421,9 @@ async function cancelBooking(id){
 
 
     alert(
-      "Το ραντεβού ακυρώθηκε."
+      "Το ραντεβού ακυρώθηκε και καταγράφηκε στο ιστορικό."
     );
+
 
   }catch(error){
 
@@ -1934,9 +3437,9 @@ async function cancelBooking(id){
 }
 
 
-/* =========================
+/* =========================================================
    LOGOUT
-========================= */
+========================================================= */
 
 function logout(){
 
@@ -1947,56 +3450,79 @@ function logout(){
   historyRows = [];
 
 
+  closeCustomer();
+
+
   document
-    .getElementById("password")
+    .getElementById(
+      "password"
+    )
     .value = "";
 
 
   document
-    .getElementById("appView")
+    .getElementById(
+      "appView"
+    )
     .classList
     .add("hidden");
 
 
   document
-    .getElementById("loginView")
+    .getElementById(
+      "loginView"
+    )
     .classList
     .remove("hidden");
 
 }
 
 
-/* =========================
-   ENTER LOGIN
-========================= */
+/* =========================================================
+   ENTER TO LOGIN
+========================================================= */
 
 document
-  .getElementById("password")
+  .getElementById(
+    "password"
+  )
   .addEventListener(
     "keydown",
     event => {
 
-      if(event.key === "Enter"){
+      if(
+        event.key ===
+        "Enter"
+      ){
+
         login();
+
       }
 
     }
   );
 
 
-/* =========================
+/* =========================================================
    AUTO REFRESH
-========================= */
+========================================================= */
 
 setInterval(
-
   () => {
 
+    const app =
+      document
+        .getElementById(
+          "appView"
+        );
+
+
     if(
-      !document
-        .getElementById("appView")
+      !app
         .classList
-        .contains("hidden")
+        .contains(
+          "hidden"
+        )
     ){
 
       refreshAll();
@@ -2004,12 +3530,11 @@ setInterval(
     }
 
   },
-
   30000
-
 );
 
 </script>
 
 </body>
+
 </html>
