@@ -2519,17 +2519,17 @@ premiumSyncCustomers();
 /* ----- Premium auth ----- */
 
 app.post("/api/premium/auth/login", (req, res) => {
-  const key = String(req.body?.phone || req.body?.email || "").trim();
+  const key = String(req.body?.phone || "").trim();
   const password = String(req.body?.password || "");
-  if (!key || !password) return res.status(400).json({ error: "Συμπλήρωσε στοιχεία σύνδεσης." });
+  if (!key || !password) return res.status(400).json({ error: "Συμπλήρωσε τηλέφωνο και κωδικό." });
 
   premiumSyncCustomers();
 
   const client = db.prepare(`
     SELECT * FROM premium_clients
-    WHERE deleted=0 AND (phone = ? OR lower(email) = lower(?))
+    WHERE deleted=0 AND phone = ?
     LIMIT 1
-  `).get(key, key);
+  `).get(key);
 
   if (!client || !premiumVerifyPassword(password, client.password_hash)) {
     return res.status(401).json({ error: "Λάθος στοιχεία σύνδεσης." });
