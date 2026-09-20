@@ -37,7 +37,7 @@ button:active{transform:scale(.98)}
 .ok{background:#102410;border:1px solid #285728;padding:12px;border-radius:10px;margin:10px 0}
 .sectionBtn{width:100%;text-align:left;background:#111;border:1px solid #292929;font-size:18px;font-weight:800}
 #status{font-size:12px;color:#888;margin-top:10px}
-@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.clients,.cols{grid-template-columns:1fr}}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.clients,.cols{grid-template-columns:1fr}.wrap{padding:12px}.card{padding:14px;border-radius:16px}.sheet{padding:14px;max-height:95vh}.sheet .card{margin:10px 0}.row{gap:10px;align-items:flex-start}.row>span:last-child,.row>b{text-align:right}.toolbar{flex-direction:column}.toolbar button{width:100%}header{padding:12px 14px}.brand{font-size:14px}header button{width:auto;font-size:12px;padding:8px 10px}}
 </style>
 </head>
 <body>
@@ -257,6 +257,30 @@ async function openClient(id) {
       <p class="muted">${esc(d.client.phone)} ${esc(d.client.email || "")}</p>
 
       <div class="card">
+        <h3>ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</h3>
+        <label class="muted">Ονοματεπώνυμο</label>
+        <input id="clientNameEdit" type="text" value="${esc(d.client.name)}" autocomplete="name">
+        <button type="button" class="primary" id="renameBtn" style="margin-top:10px">ΑΠΟΘΗΚΕΥΣΗ ΟΝΟΜΑΤΟΣ</button>
+      </div>
+
+      <div class="card">
+        <h3>ΠΡΟΣΘΗΚΗ ΠΑΡΟΥΣΙΑΣ</h3>
+        <p class="muted">Για όταν ο πελάτης ήρθε χωρίς ραντεβού. Η ημερομηνία είναι υποχρεωτική και η παρουσία μετράει ως χρησιμοποιημένη συνεδρία.</p>
+        <div class="cols">
+          <input id="attendanceDate" type="date" required>
+          <input id="attendanceTime" type="time">
+          <select id="attendanceService">
+            <option value="Personal">Personal</option>
+            <option value="Mini Group">Mini Group</option>
+          </select>
+          <input id="attendanceNotes" placeholder="Σημείωση (προαιρετικά)">
+        </div>
+        <button type="button" class="primary" id="addAttendanceBtn" style="margin-top:10px">ΠΡΟΣΘΗΚΗ ΠΑΡΟΥΣΙΑΣ</button>
+        <div id="attendanceMessage" class="hidden"></div>
+        <div id="manualAttendanceList" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card">
         <h3>Συνδρομή</h3>
         ${d.subscription ? `
           <div class="row"><span>Πακέτο</span><b>${d.subscription.package_sessions}</b></div>
@@ -303,10 +327,18 @@ async function openClient(id) {
       </div>`;
 
     await fillProgramSelect();
+    $("attendanceDate").value = localToday();
+    $("renameBtn").onclick = () => renameClient(id);
+    $("addAttendanceBtn").onclick = () => addManualAttendance(id);
     $("renewBtn").onclick = () => renew(id);
     $("correctBtn").onclick = () => correct(id);
     $("assignBtn").onclick = () => assign(id);
     $("passBtn").onclick = () => setPass(id);
+    await loadManualAttendance(id);
+    $("manualAttendanceList").addEventListener("click", e => {
+      const b = e.target.closest(".deleteAttendance");
+      if (b) deleteManualAttendance(id, Number(b.dataset.attendanceId));
+    });
   } catch(e) {
     showError(e.message);
   }
@@ -317,6 +349,69 @@ async function fillProgramSelect() {
   $("programSelect").innerHTML = ps.map(p =>
     `<option value="${p.id}">${esc(p.name)} — ${p.days_per_week} ημέρες</option>`
   ).join("") || "<option value=''>Δεν υπάρχουν προγράμματα</option>";
+}
+
+async function renameClient(id) {
+  try {
+    const name = $("clientNameEdit").value.trim();
+    if (!name) throw new Error("Βάλε ονοματεπώνυμο.");
+    const result = await api("/api/premium/admin/clients/" + id + "/rename", {
+      method:"POST", body:JSON.stringify({name})
+    });
+    showDetailOk(result.message || "Το όνομα αποθηκεύτηκε.");
+    await refresh();
+    await openClient(id);
+  } catch(e) { showDetailError(e.message); }
+}
+
+function localToday() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
+async function loadManualAttendance(id) {
+  const rows = await api("/api/premium/admin/clients/" + id + "/manual-attendance");
+  $("manualAttendanceList").innerHTML = rows.length ? rows.map(r => `
+    <div class="row">
+      <span><b>${esc(r.date)}</b>${r.time ? ` — ${esc(r.time)}` : ""}<br><small>${esc(r.service)}${r.notes ? " — " + esc(r.notes) : ""}</small></span>
+      <button type="button" data-attendance-id="${r.id}" class="deleteAttendance" style="width:auto;min-width:90px">ΔΙΑΓΡΑΦΗ</button>
+    </div>
+  `).join("") : `<div class="notice">Δεν υπάρχουν χειροκίνητες παρουσίες.</div>`;
+}
+
+async function addManualAttendance(id) {
+  const btn = $("addAttendanceBtn");
+  try {
+    const date = $("attendanceDate").value;
+    const time = $("attendanceTime").value;
+    const service = $("attendanceService").value;
+    const notes = $("attendanceNotes").value.trim();
+    if (!date) throw new Error("Βάλε ημερομηνία παρουσίας.");
+    btn.disabled = true; btn.textContent = "ΑΠΟΘΗΚΕΥΣΗ...";
+    const result = await api("/api/premium/admin/clients/" + id + "/manual-attendance", {
+      method:"POST", body:JSON.stringify({date,time,service,notes})
+    });
+    $("attendanceNotes").value = "";
+    showDetailOk(result.message || "Η παρουσία καταχωρήθηκε.");
+    await loadManualAttendance(id);
+    await refresh();
+    await openClient(id);
+  } catch(e) {
+    showDetailError(e.message);
+  } finally {
+    if ($("addAttendanceBtn")) { $("addAttendanceBtn").disabled = false; $("addAttendanceBtn").textContent = "ΠΡΟΣΘΗΚΗ ΠΑΡΟΥΣΙΑΣ"; }
+  }
+}
+
+async function deleteManualAttendance(id, attendanceId) {
+  if (!confirm("Να διαγραφεί αυτή η παρουσία;")) return;
+  try {
+    const result = await api("/api/premium/admin/manual-attendance/" + attendanceId + "/delete", {method:"POST"});
+    showDetailOk(result.message || "Η παρουσία διαγράφηκε.");
+    await refresh();
+    await openClient(id);
+  } catch(e) { showDetailError(e.message); }
 }
 
 async function renew(id) {
