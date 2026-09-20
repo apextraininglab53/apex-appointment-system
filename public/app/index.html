@@ -3,60 +3,245 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0a0a0a">
-<link rel="manifest" href="/app/manifest.webmanifest">
-<title>APEX Training App</title>
-<link rel="stylesheet" href="/app/styles.css">
+<meta name="theme-color" content="#08090b">
+<title>APEX Training Lab — My Account</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#08090b;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:900px;margin:auto;padding:24px}
+.logo{text-align:center;font-weight:900;letter-spacing:3px;font-size:22px;margin:18px 0 30px}
+.logo span{display:block;font-size:10px;color:#6f7884;letter-spacing:2px;margin-top:5px}
+.card{background:#111318;border:1px solid #252a32;border-radius:20px;padding:20px;margin:14px 0}
+h1,h2,h3{margin-top:0}
+input,button{width:100%;min-height:48px;border-radius:11px;border:1px solid #333;background:#090b0e;color:#fff;padding:12px 14px;font-size:15px}
+button{cursor:pointer;font-weight:800}
+.primary{background:#fff;color:#000;border:0}
+.secondary{background:#151920}
+.row{display:flex;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid #252932}
+.row:last-child{border-bottom:0}
+.label{color:#858e99;font-size:12px}
+.value{font-weight:800;text-align:right}
+.balance{font-size:54px;font-weight:900;line-height:1}
+.balance small{font-size:16px;color:#8c949f;font-weight:500}
+.badge{display:inline-block;padding:7px 10px;border-radius:999px;border:1px solid #333;font-size:12px;font-weight:800}
+.active{border-color:#275f35;color:#7ce18f;background:#102015}
+.expired{border-color:#693333;color:#ff8b8b;background:#211010}
+.booking{padding:13px 0;border-bottom:1px solid #252932}
+.booking:last-child{border-bottom:0}
+.muted{color:#8c949f}
+.error{display:none;background:#2a1111;border:1px solid #633;padding:12px;border-radius:10px;margin-top:10px}
+.hidden{display:none!important}
+.topactions{display:flex;gap:10px}
+.topactions button{width:auto;padding:10px 16px}
+@media(max-width:600px){.wrap{padding:16px}.row{align-items:flex-start}.value{max-width:55%}.topactions{flex-direction:column}.topactions button{width:100%}}
+</style>
 </head>
 <body>
-<header class="top">
-  <div class="brand">APEX <span>TRAINING LAB</span></div>
-  <span class="premium">PREMIUM</span>
-</header>
+<div class="wrap">
 
-<main>
-  <section id="loginView" class="hero">
-    <div class="eyebrow">APEX TRAINING APP</div>
-    <h1>Το πρόγραμμα σου.<br>Οι προπονήσεις σου.</h1>
-    <p>Όλα συγκεντρωμένα σε ένα premium περιβάλλον.</p>
-    <div class="card login">
-      <input id="loginKey" placeholder="Τηλέφωνο ή email">
-      <input id="loginPassword" type="password" placeholder="Κωδικός">
-      <button onclick="login()">ΕΙΣΟΔΟΣ</button>
-      <div id="loginMsg" class="msg"></div>
-    </div>
-  </section>
+<div class="logo">
+APEX TRAINING LAB
+<span>MY ACCOUNT</span>
+</div>
 
-  <section id="appView" class="hidden">
-    <div class="welcome">
-      <div><div class="eyebrow">MY APEX</div><h2 id="name">—</h2></div>
-      <button class="ghost" onclick="logout()">Έξοδος</button>
-    </div>
+<section id="loginCard" class="card">
+<h1>LOG IN</h1>
+<p class="muted">Μπες στον προσωπικό σου λογαριασμό για να δεις τη συνδρομή και τα ραντεβού σου.</p>
 
-    <div class="stats">
-      <div class="stat"><small>ΠΑΚΕΤΟ</small><b id="package">—</b></div>
-      <div class="stat"><small>ΥΠΟΛΟΙΠΟ</small><b id="remaining">—</b></div>
-      <div class="stat"><small>ΕΝΑΡΞΗ</small><b id="start">—</b></div>
-      <div class="stat"><small>ΛΗΞΗ</small><b id="end">—</b></div>
-    </div>
+<input id="loginKey" type="text" inputmode="tel" autocomplete="username"
+       placeholder="Τηλέφωνο / Username">
 
-    <div class="card">
-      <h3>Το πρόγραμμά σου</h3>
-      <div id="program">—</div>
-    </div>
+<input id="loginPassword" type="password" autocomplete="current-password"
+       placeholder="Κωδικός" style="margin-top:10px">
 
-    <div class="card">
-      <h3>Διασταύρωση booking</h3>
-      <p class="muted">Η συνδρομή υπολογίζεται από τα πραγματικά ραντεβού.</p>
-      <div id="bookings"></div>
-    </div>
+<button id="loginBtn" class="primary" style="margin-top:10px">ΣΥΝΔΕΣΗ</button>
+<div id="loginError" class="error"></div>
+</section>
 
-    <div class="card">
-      <h3>Ιστορικό προπονήσεων</h3>
-      <div id="workouts"></div>
+<section id="account" class="hidden">
+
+<div class="topactions">
+<button id="bookingBtn" class="primary">ΚΛΕΙΣΕ ΡΑΝΤΕΒΟΥ</button>
+<button id="logoutBtn" class="secondary">ΕΞΟΔΟΣ</button>
+</div>
+
+<div class="card">
+<h2 id="welcome">Καλώς ήρθες</h2>
+<div id="profile"></div>
+</div>
+
+<div class="card">
+<h2>Η ΣΥΝΔΡΟΜΗ ΜΟΥ</h2>
+<div id="subscription"></div>
+</div>
+
+<div class="card">
+<h2>ΡΑΝΤΕΒΟΥ</h2>
+<div id="bookings"></div>
+</div>
+
+<div id="accountError" class="error"></div>
+
+</section>
+</div>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+
+async function api(url, options={}) {
+  const r = await fetch(url,{
+    credentials:"same-origin",
+    cache:"no-store",
+    ...options,
+    headers:{
+      "Content-Type":"application/json",
+      ...(options.headers||{})
+    }
+  });
+  const data = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data.error || "Παρουσιάστηκε σφάλμα.");
+  return data;
+}
+
+function esc(s){
+  return String(s ?? "").replace(/[&<>"']/g,m=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
+async function login(){
+  $("loginError").style.display="none";
+
+  const key=$("loginKey").value.trim();
+  const password=$("loginPassword").value;
+
+  if(!key || !password){
+    $("loginError").textContent="Συμπλήρωσε το τηλέφωνό σου και τον κωδικό σου.";
+    $("loginError").style.display="block";
+    return;
+  }
+
+  try{
+    await api("/api/premium/auth/login",{
+      method:"POST",
+      body:JSON.stringify({
+        phone:key,
+        password
+      })
+    });
+
+    await loadAccount();
+
+    $("loginCard").classList.add("hidden");
+    $("account").classList.remove("hidden");
+
+  }catch(e){
+    $("loginError").textContent=e.message;
+    $("loginError").style.display="block";
+  }
+}
+
+async function loadAccount(){
+  const d=await api("/api/premium/me");
+
+  $("welcome").textContent="Καλώς ήρθες, "+d.client.name;
+
+  $("profile").innerHTML=`
+    <div class="row">
+      <span class="label">ΟΝΟΜΑ</span>
+      <span class="value">${esc(d.client.name)}</span>
     </div>
-  </section>
-</main>
-<script src="/app/app.js"></script>
+    <div class="row">
+      <span class="label">ΤΗΛΕΦΩΝΟ</span>
+      <span class="value">${esc(d.client.phone)}</span>
+    </div>
+    ${d.client.email?`
+    <div class="row">
+      <span class="label">EMAIL</span>
+      <span class="value">${esc(d.client.email)}</span>
+    </div>`:""}
+  `;
+
+  const s=d.subscription;
+
+  if(!s){
+    $("subscription").innerHTML=
+      `<p class="muted">Δεν υπάρχει ενεργή συνδρομή.</p>`;
+  }else{
+    $("subscription").innerHTML=`
+      <div style="text-align:center;padding:12px 0 22px">
+        <div class="balance">${s.remaining}<small> συνεδρίες υπόλοιπο</small></div>
+        <div style="margin-top:14px">
+          <span class="badge active">ΕΝΕΡΓΗ</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="label">ΠΑΚΕΤΟ</span>
+        <span class="value">${s.package_sessions} ΣΥΝΕΔΡΙΕΣ</span>
+      </div>
+      <div class="row">
+        <span class="label">ΧΡΗΣΙΜΟΠΟΙΗΘΗΚΑΝ</span>
+        <span class="value">${s.used}</span>
+      </div>
+      <div class="row">
+        <span class="label">ΥΠΟΛΟΙΠΟ</span>
+        <span class="value">${s.remaining}</span>
+      </div>
+      <div class="row">
+        <span class="label">ΕΝΑΡΞΗ</span>
+        <span class="value">${s.start_date}</span>
+      </div>
+      <div class="row">
+        <span class="label">ΛΗΞΗ</span>
+        <span class="value">${s.end_date}</span>
+      </div>
+    `;
+  }
+
+  const rows=d.booking_history || [];
+
+  $("bookings").innerHTML=rows.length
+    ? rows.map(b=>`
+      <div class="booking">
+        <b>${esc(b.date)} — ${esc(b.time)}</b>
+        <div class="muted">${esc(b.service)}</div>
+        <div style="margin-top:6px">
+          <span class="badge ${b.counted?"active":""}">
+            ${b.counted?"ΧΡΕΩΘΗΚΕ":"ΔΕΝ ΧΡΕΩΘΗΚΕ"}
+          </span>
+        </div>
+      </div>
+    `).join("")
+    : `<p class="muted">Δεν υπάρχουν ραντεβού στο ιστορικό.</p>`;
+}
+
+async function logout(){
+  try{await api("/api/premium/auth/logout",{method:"POST"});}catch(e){}
+  location.reload();
+}
+
+$("loginBtn").onclick=login;
+$("loginPassword").addEventListener("keydown",e=>{
+  if(e.key==="Enter") login();
+});
+$("loginKey").addEventListener("keydown",e=>{
+  if(e.key==="Enter") login();
+});
+$("logoutBtn").onclick=logout;
+$("bookingBtn").onclick=()=>location.href="/#booking";
+
+(async()=>{
+  try{
+    await loadAccount();
+    $("loginCard").classList.add("hidden");
+    $("account").classList.remove("hidden");
+  }catch(e){
+    // Δεν υπάρχει ενεργή σύνδεση — μένουμε στη σελίδα login.
+  }
+})();
+</script>
 </body>
 </html>
