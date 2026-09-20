@@ -21,7 +21,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manip
 button:active{transform:scale(.98)}
 .primary{background:#fff;color:#000;border:0;font-weight:800}
 .clients{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.client{border:1px solid #292929;border-radius:14px;padding:14px;cursor:pointer}
+.client{border:1px solid #292929;border-radius:14px;padding:14px;cursor:pointer;touch-action:manipulation;user-select:none}
 .client:active{border-color:#fff}
 .muted{color:#999}
 .tag{display:inline-block;padding:5px 8px;border:1px solid #333;border-radius:999px;font-size:10px;margin:3px}
@@ -95,6 +95,7 @@ button:active{transform:scale(.98)}
 <div id="modal" class="modal">
   <div class="sheet">
     <button type="button" id="closeModalBtn">ΚΛΕΙΣΙΜΟ ✕</button>
+    <div id="detailMessage" class="hidden"></div>
     <div id="detail"></div>
   </div>
 </div>
@@ -139,6 +140,22 @@ function showOk(msg) {
   $("pageOk").textContent = msg;
   $("pageOk").classList.remove("hidden");
   $("pageError").style.display = "none";
+}
+
+function showDetailOk(msg) {
+  const el = $("detailMessage");
+  if (!el) return;
+  el.className = "ok";
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+function showDetailError(msg) {
+  const el = $("detailMessage");
+  if (!el) return;
+  el.className = "error";
+  el.textContent = msg || "Παρουσιάστηκε σφάλμα.";
+  el.style.display = "block";
 }
 function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, m => ({
@@ -333,15 +350,28 @@ async function correct(id) {
 }
 
 async function setPass(id) {
+  const btn = $("passBtn");
   try {
-    const p = $("newpass").value;
+    const p = $("newpass").value.trim();
     if (!p) throw new Error("Βάλε νέο κωδικό.");
-    await api("/api/premium/admin/clients/" + id + "/password", {
+    if (p.length < 6) throw new Error("Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.");
+
+    btn.disabled = true;
+    btn.textContent = "ΑΠΟΘΗΚΕΥΣΗ...";
+
+    const result = await api("/api/premium/admin/clients/" + id + "/password", {
       method:"POST",
       body:JSON.stringify({password:p})
     });
-    showOk("Ο κωδικός του πελάτη άλλαξε.");
-  } catch(e) { showError(e.message); }
+
+    $("newpass").value = "";
+    showDetailOk(result.message || "Ο κωδικός του πελάτη άλλαξε επιτυχώς.");
+  } catch(e) {
+    showDetailError(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "ΑΛΛΑΓΗ ΚΩΔΙΚΟΥ";
+  }
 }
 
 async function assign(id) {
