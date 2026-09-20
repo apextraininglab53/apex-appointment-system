@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>APEX PREMIUM ADMIN</title>
 <style>
+:root{--navy:#07152f;--blue:#176cff;--blue2:#38a0ff;--ink:#07152f;--muted:#70809a;--line:#dce5f2;--soft:#f5f8fc;--white:#fff;--shadow:0 18px 50px rgba(7,21,47,.10)}
 *{box-sizing:border-box}
-body{margin:0;background:#090909;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{margin:0;background:linear-gradient(180deg,#f7faff 0%,#eef4fb 100%);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 header{padding:18px 22px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#090909f5;backdrop-filter:blur(14px);z-index:50}
 .brand{font-weight:900;letter-spacing:2px}.brand small{display:block;color:#888;font-size:10px;margin-top:5px}
 .wrap{max-width:1200px;margin:auto;padding:22px}
@@ -52,14 +53,35 @@ button:active{transform:scale(.98)}
 .sectionBtn{width:100%;text-align:left;background:#111;border:1px solid #292929;font-size:18px;font-weight:800}
 #status{font-size:12px;color:#888;margin-top:10px}
 @media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.clients,.cols{grid-template-columns:1fr}.wrap{padding:12px}.card{padding:14px;border-radius:16px}.sheet{padding:14px;max-height:95vh}.sheet .card{margin:10px 0}.row{gap:10px;align-items:flex-start}.row>span:last-child,.row>b{text-align:right}.toolbar{flex-direction:column}.toolbar button{width:100%}header{padding:12px 14px}.brand{font-size:14px}header button{width:auto;font-size:12px;padding:8px 10px}}
+
+body:before{content:"";display:block;height:4px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--blue2))}
+header{padding:14px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(16px);z-index:50;box-shadow:0 8px 30px rgba(7,21,47,.06)}
+.brand{display:flex;align-items:center;gap:14px;font-weight:900;letter-spacing:1.5px;color:var(--navy)}
+.brand img{width:145px;height:auto;display:block}
+.brand small{display:block;color:var(--muted);font-size:10px;margin-top:4px;letter-spacing:2px}
+.wrap{max-width:1200px;margin:auto;padding:26px 22px 50px}
+.card{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:22px;padding:20px;margin:16px 0;box-shadow:var(--shadow)}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.stat{padding:17px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#fff,#f7faff);box-shadow:0 8px 24px rgba(7,21,47,.05)}
+.stat small{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.7px}.stat b{display:block;font-size:27px;margin-top:7px;color:var(--navy)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap}
+input,select,button{min-height:48px;border-radius:13px;border:1px solid #cfd9e7;background:#fff;color:var(--navy);padding:11px 14px;font-size:15px;box-shadow:0 4px 12px rgba(7,21,47,.04)}
+input,select{width:100%}button{cursor:pointer;font-weight:800;touch-action:manipulation}button:active{transform:scale(.98)}
+.primary{background:linear-gradient(135deg,var(--navy),#12366f);color:#fff;border:0;box-shadow:0 8px 20px rgba(7,21,47,.18)}
+.clients{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.customer-folder{border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden;box-shadow:0 8px 24px rgba(7,21,47,.05)}
+.customer-folder-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px;cursor:pointer;background:linear-gradient(135deg,#fff,#f7faff)}
+.customer-folder-head:active{background:#eef5ff}.folder-left{display:flex;align-items:center;gap:12px;min-width:0}.folder-icon{font-size:25px;line-height:1}.folder-title{font-weight:900;color:var(--navy);letter-spacing:.4px}.folder-phone{color:var(--muted);font-size:13px;margin-top:3px}.folder-count{font-size:11px;color:#28558f;border:1px solid #c8d9ef;border-radius:999px;padding:5px 9px;white-space:nowrap;background:#f1f7ff}.customer-folder-body{display:none;border-top:1px solid var(--line);padding:9px;background:#f8fbff}.customer-folder.open .customer-folder-body{display:block}.folder-customer{padding:13px;border:1px solid var(--line);border-radius:13px;margin:6px 0;cursor:pointer;background:#fff}.folder-customer:active{border-color:var(--blue)}.folder-customer-name{font-weight:850;color:var(--navy)}.folder-customer-meta{color:var(--muted);font-size:12px;margin-top:4px}
+.muted{color:var(--muted)}.tag{display:inline-block;padding:5px 8px;border:1px solid #cbd8e8;border-radius:999px;font-size:10px;margin:3px;background:#f7faff;color:#31577f}.modal{position:fixed;inset:0;background:rgba(7,21,47,.48);display:none;align-items:flex-end;justify-content:center;z-index:100;backdrop-filter:blur(5px)}.modal.show{display:flex}.sheet{width:min(900px,100%);max-height:92vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:26px 26px 0 0;padding:22px;box-shadow:0 -20px 60px rgba(7,21,47,.25)}.row{display:flex;justify-content:space-between;gap:15px;padding:12px 0;border-bottom:1px solid var(--line)}.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.login{max-width:430px;margin:10vh auto}.hidden{display:none!important}.error{display:none;background:#fff0f0;border:1px solid #f0bcbc;color:#8b1e1e;padding:12px;border-radius:12px;margin:10px 0}.notice{background:#f2f7ff;border:1px solid #c9daf0;padding:12px;border-radius:12px;margin:10px 0}.ok{background:#edf9f1;border:1px solid #b9dfc4;color:#185c2d;padding:12px;border-radius:12px;margin:10px 0}.sectionBtn{width:100%;text-align:left;background:linear-gradient(135deg,#fff,#f5f9ff);border:1px solid var(--line);font-size:18px;font-weight:900;color:var(--navy)}#status{font-size:12px;color:var(--muted);margin-top:10px}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.clients,.cols{grid-template-columns:1fr}.wrap{padding:14px 12px 35px}.card{padding:15px;border-radius:18px}.sheet{padding:15px;max-height:95vh}.row{gap:10px;align-items:flex-start}.row>span:last-child,.row>b{text-align:right}.toolbar{flex-direction:column}.toolbar button{width:100%}header{padding:10px 12px}.brand img{width:122px}header button{width:auto;font-size:12px;padding:8px 10px}}
 </style>
 </head>
 <body>
 
 <header>
   <div class="brand">
-    APEX TRAINING LAB
-    <small>PREMIUM ADMIN</small>
+    <img src="/assets/apex-logo.png" alt="APEX Training Lab">
+    <div><small>PREMIUM ADMIN</small></div>
   </div>
   <button type="button" id="bookingAdminBtn">BOOKING ADMIN</button>
 </header>
@@ -261,6 +283,7 @@ async function loadClients() {
 
     $("clients").innerHTML = sortedGroups.map(group => {
       const phone = group[0]?.phone || "Χωρίς τηλέφωνο";
+      const displayName = group[0]?.name || "Χωρίς όνομα";
       const folderId = "folder-" + phoneKey(phone) + "-" + group[0].id;
       const names = group.map(c => {
         const s = c.subscription;
@@ -278,7 +301,7 @@ async function loadClients() {
           <div class="folder-left">
             <span class="folder-icon">📁</span>
             <div>
-              <div class="folder-title">ΠΕΛΑΤΗΣ</div>
+              <div class="folder-title">${esc(displayName)}</div>
               <div class="folder-phone">${esc(phone)}</div>
             </div>
           </div>
