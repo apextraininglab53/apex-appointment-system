@@ -23,6 +23,20 @@ button:active{transform:scale(.98)}
 .clients{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .client{border:1px solid #292929;border-radius:14px;padding:14px;cursor:pointer;touch-action:manipulation;user-select:none}
 .client:active{border-color:#fff}
+.customer-folder{border:1px solid #303030;border-radius:16px;background:#0d0d0d;overflow:hidden}
+.customer-folder-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px;cursor:pointer}
+.customer-folder-head:active{background:#151515}
+.folder-left{display:flex;align-items:center;gap:11px;min-width:0}
+.folder-icon{font-size:26px;line-height:1}
+.folder-title{font-weight:900;letter-spacing:.2px}
+.folder-phone{color:#999;font-size:13px;margin-top:3px}
+.folder-count{font-size:11px;color:#aaa;border:1px solid #333;border-radius:999px;padding:5px 8px;white-space:nowrap}
+.customer-folder-body{display:none;border-top:1px solid #222;padding:8px}
+.customer-folder.open .customer-folder-body{display:block}
+.folder-customer{padding:12px;border:1px solid #252525;border-radius:12px;margin:6px 0;cursor:pointer;background:#111}
+.folder-customer:active{border-color:#fff}
+.folder-customer-name{font-weight:800}
+.folder-customer-meta{color:#999;font-size:12px;margin-top:4px}
 .muted{color:#999}
 .tag{display:inline-block;padding:5px 8px;border:1px solid #333;border-radius:999px;font-size:10px;margin:3px}
 .modal{position:fixed;inset:0;background:#000b;display:none;align-items:flex-end;justify-content:center;z-index:100}
@@ -213,22 +227,64 @@ async function refresh() {
   }
 }
 
+function phoneKey(phone) {
+  return String(phone || "").replace(/\D/g, "");
+}
+
+function toggleCustomerFolder(el) {
+  el.classList.toggle("open");
+}
+
 async function loadClients() {
   try {
-    const q = $("search").value.trim();
-    const rows = await api("/api/premium/admin/clients?q=" + encodeURIComponent(q));
+    const q = $("search").value.trim().toLowerCase();
+    // Load the full customer list so that a search by one name never hides
+    // the other customers that share the same mobile number.
+    const allRows = await api("/api/premium/admin/clients");
+    const rows = q
+      ? allRows.filter(c =>
+          String(c.name || "").toLowerCase().includes(q) ||
+          String(c.phone || "").toLowerCase().includes(q)
+        )
+      : allRows;
 
-    $("clients").innerHTML = rows.map(c => {
-      const s = c.subscription;
-      const rem = s?.remaining ?? 0;
-      return `<div class="client" data-client-id="${c.id}">
-        <b>${esc(c.name)}</b><br>
-        <span class="muted">${esc(c.phone)}</span>
-        <div>${s
-          ? `<span class="tag">${s.package_sessions} ΣΥΝΕΔΡΙΕΣ</span>
-             <span class="tag">ΥΠΟΛΟΙΠΟ ${rem}</span>
-             <span class="tag">${s.start_date} → ${s.end_date}</span>`
-          : `<span class="tag">ΧΩΡΙΣ ΣΥΝΔΡΟΜΗ</span>`}</div>
+    const groups = new Map();
+    for (const c of rows) {
+      const key = phoneKey(c.phone) || ("client-" + c.id);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(c);
+    }
+
+    const sortedGroups = [...groups.values()].sort((a,b) =>
+      String(a[0]?.name || "").localeCompare(String(b[0]?.name || ""), "el")
+    );
+
+    $("clients").innerHTML = sortedGroups.map(group => {
+      const phone = group[0]?.phone || "Χωρίς τηλέφωνο";
+      const folderId = "folder-" + phoneKey(phone) + "-" + group[0].id;
+      const names = group.map(c => {
+        const s = c.subscription;
+        const rem = s?.remaining ?? 0;
+        return `<div class="folder-customer" data-client-id="${c.id}">
+          <div class="folder-customer-name">${esc(c.name)}</div>
+          <div class="folder-customer-meta">${esc(c.email || "")}
+            ${s ? ` • ${s.package_sessions} συνεδρίες • Υπόλοιπο ${rem}` : " • Χωρίς συνδρομή"}
+          </div>
+        </div>`;
+      }).join("");
+
+      return `<div class="customer-folder" id="${esc(folderId)}">
+        <div class="customer-folder-head" data-folder-head="1">
+          <div class="folder-left">
+            <span class="folder-icon">📁</span>
+            <div>
+              <div class="folder-title">ΠΕΛΑΤΗΣ</div>
+              <div class="folder-phone">${esc(phone)}</div>
+            </div>
+          </div>
+          <span class="folder-count">${group.length} ${group.length === 1 ? "όνομα" : "ονόματα"}</span>
+        </div>
+        <div class="customer-folder-body">${names}</div>
       </div>`;
     }).join("") || `<div class="notice">Δεν βρέθηκαν πελάτες.</div>`;
   } catch(e) {
@@ -527,8 +583,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   $("clients").addEventListener("click", e => {
-    const card = e.target.closest(".client");
-    if(card) openClient(Number(card.dataset.clientId));
+    const customer = e.target.closest(".folder-customer");
+    if (customer) {
+      openClient(Number(customer.dataset.clientId));
+      return;
+    }
+
+    const head = e.target.closest(".customer-folder-head");
+    if (head) {
+      toggleCustomerFolder(head.parentElement);
+    }
   });
 });
 </script>
