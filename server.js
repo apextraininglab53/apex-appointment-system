@@ -59,8 +59,8 @@ const SERVICES = [
   "Mini Group"
 ];
 
-const START_HOUR = 8;
-const END_HOUR = 22;
+const START_HOUR = 10;
+const END_HOUR = 21;
 
 const DAYS_TO_GENERATE = 90;
 
@@ -545,8 +545,16 @@ function isClosed(
 
   }
 
-  // Σάββατο: ίδιο ωράριο 08:00 - 22:00.
-  // Η Κυριακή παραμένει κλειστή.
+  // Σάββατο
+  // 10:00 - 14:00
+  if (day === 6) {
+
+    return (
+      hour < 10 ||
+      hour > 13
+    );
+
+  }
 
   // Δευτέρα / Τετάρτη / Παρασκευή
   // 16:00 - 20:00 κλειστά
@@ -662,12 +670,62 @@ generateSlots();
 
 
 /* =========================================================
-   SLOT CLEANUP
-
-   Δεν διαγράφουμε παλιές/κρατημένες εγγραφές.
-   Τα slots δημιουργούνται με INSERT OR IGNORE και
-   τα υπάρχοντα δεδομένα παραμένουν στη βάση.
+   REMOVE WRONG OLD SLOTS
 ========================================================= */
+
+db.prepare(`
+  DELETE FROM slots
+
+  WHERE id NOT IN (
+    SELECT slot_id
+    FROM bookings
+  )
+
+  AND (
+
+    time IN (
+      '08:00',
+      '09:00'
+    )
+
+    OR
+
+    strftime('%w', date) = '0'
+
+    OR
+
+    (
+      strftime('%w', date) = '6'
+
+      AND
+
+      time NOT IN (
+        '10:00',
+        '11:00',
+        '12:00',
+        '13:00'
+      )
+    )
+
+    OR
+
+    (
+      strftime('%w', date)
+      IN ('1','3','5')
+
+      AND
+
+      time IN (
+        '16:00',
+        '17:00',
+        '18:00',
+        '19:00'
+      )
+    )
+
+  )
+`).run();
+
 
 /* =========================================================
    ADMIN AUTH
