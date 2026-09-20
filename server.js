@@ -8,6 +8,10 @@ const helmet = require("helmet");
 
 const app = express();
 
+// Railway terminates HTTPS before forwarding the request to Node.
+// Trust the proxy so express-session can correctly set secure cookies.
+app.set("trust proxy", 1);
+
 const PORT = process.env.PORT || 3000;
 const DB_DIR = process.env.DB_DIR || "/data";
 
@@ -30,6 +34,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET || "CHANGE_THIS_SESSION_SECRET_IN_RAILWAY",
   resave: false,
   saveUninitialized: false,
+  proxy: true,
   cookie: {
     httpOnly: true,
     sameSite: "lax",
