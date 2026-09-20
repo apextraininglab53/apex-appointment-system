@@ -1,35 +1,348 @@
 <!doctype html>
 <html lang="el">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>APEX PREMIUM ADMIN</title>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>APEX PREMIUM ADMIN</title>
 <style>
-body{margin:0;background:#090909;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{padding:18px 22px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#090909ee;backdrop-filter:blur(14px);z-index:5}.brand{font-weight:900;letter-spacing:2px}.wrap{max-width:1200px;margin:auto;padding:22px}.card{background:#111;border:1px solid #242424;border-radius:18px;padding:18px;margin:14px 0}.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.stat{padding:15px;border:1px solid #2a2a2a;border-radius:15px;background:#101010}.stat small{color:#888;font-size:9px}.stat b{display:block;font-size:24px;margin-top:6px}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.toolbar input,.toolbar button,input,select{height:44px;border-radius:10px;border:1px solid #333;background:#090909;color:#fff;padding:0 12px}.toolbar input{flex:1;min-width:220px}button{cursor:pointer}.primary{background:#fff;color:#000;border:0;font-weight:800}.danger{background:#2a1111}.clients{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.client{border:1px solid #292929;border-radius:14px;padding:14px;cursor:pointer}.client:hover{border-color:#666}.muted{color:#999}.tag{display:inline-block;padding:5px 8px;border:1px solid #333;border-radius:999px;font-size:10px;margin:3px}.two{color:#fff}.modal{position:fixed;inset:0;background:#000b;display:none;align-items:flex-end;justify-content:center;z-index:20}.modal.show{display:flex}.sheet{width:min(900px,100%);max-height:90vh;overflow:auto;background:#111;border:1px solid #333;border-radius:22px 22px 0 0;padding:20px}.row{display:flex;justify-content:space-between;gap:15px;padding:11px 0;border-bottom:1px solid #222}.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cols>*{width:100%}.login{max-width:420px;margin:12vh auto}.hidden{display:none}@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.clients,.cols{grid-template-columns:1fr}}
-</style></head>
+*{box-sizing:border-box}
+body{margin:0;background:#090909;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{padding:18px 22px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#090909f2;backdrop-filter:blur(14px);z-index:50}
+.brand{font-weight:900;letter-spacing:2px}
+.wrap{max-width:1200px;margin:auto;padding:22px}
+.card{background:#111;border:1px solid #242424;border-radius:18px;padding:18px;margin:14px 0}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.stat{padding:15px;border:1px solid #2a2a2a;border-radius:15px;background:#101010}
+.stat small{color:#888;font-size:9px}.stat b{display:block;font-size:24px;margin-top:6px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+input,select,button{height:46px;border-radius:10px;border:1px solid #333;background:#090909;color:#fff;padding:0 13px;font-size:15px}
+input,select{width:100%}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button:active{transform:scale(.98)}
+.primary{background:#fff;color:#000;border:0;font-weight:800}
+.clients{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.client{border:1px solid #292929;border-radius:14px;padding:14px;cursor:pointer}
+.client:active{border-color:#fff}
+.muted{color:#999}.tag{display:inline-block;padding:5px 8px;border:1px solid #333;border-radius:999px;font-size:10px;margin:3px}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:flex-end;justify-content:center;z-index:100}
+.modal.show{display:flex}
+.sheet{width:min(900px,100%);max-height:92vh;overflow:auto;background:#111;border:1px solid #333;border-radius:22px 22px 0 0;padding:20px}
+.row{display:flex;justify-content:space-between;gap:15px;padding:11px 0;border-bottom:1px solid #222}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cols>*{width:100%}
+.login{max-width:420px;margin:12vh auto}.hidden{display:none}
+.error{display:none;background:#2a1111;border:1px solid #633;padding:12px;border-radius:10px;margin:10px 0}
+.notice{background:#151515;border:1px solid #333;padding:12px;border-radius:10px;margin:10px 0}
+.sectionBtn{width:100%;text-align:left;background:#111;border:1px solid #292929;font-size:18px;font-weight:800}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.clients,.cols{grid-template-columns:1fr}.toolbar>*{width:100%}}
+</style>
+</head>
 <body>
-<header><div class="brand">APEX TRAINING LAB <span style="color:#888;font-size:10px">PREMIUM ADMIN</span></div><button onclick="location.href='/admin.html'">BOOKING ADMIN</button></header>
+<header>
+  <div class="brand">APEX TRAINING LAB <span style="color:#888;font-size:10px">PREMIUM ADMIN</span></div>
+  <button type="button" id="bookingAdminBtn">BOOKING ADMIN</button>
+</header>
+
 <div class="wrap">
-<section id="login" class="card login"><h2>Premium Admin</h2><input id="pw" type="password" placeholder="ADMIN_PASSWORD"><button class="primary" onclick="login()">ΕΙΣΟΔΟΣ</button><p id="err" class="muted"></p></section>
-<section id="app" class="hidden">
-<div class="grid" id="stats"></div>
-<div class="card"><div class="toolbar"><input id="search" placeholder="Αναζήτηση πελάτη / τηλέφωνο" oninput="loadClients()"><button onclick="sync()">ΑΝΑΝΕΩΣΗ ΠΕΛΑΤΩΝ</button><button onclick="loadPrograms()">ΠΡΟΓΡΑΜΜΑΤΑ</button></div></div>
-<div class="card"><h2>Πελάτες</h2><div id="clients" class="clients"></div></div>
-<div class="card"><h2>Δημιουργία προγράμματος</h2><div class="cols"><input id="pname" placeholder="Όνομα προγράμματος"><select id="pdays"><option value="2">2 ημέρες</option><option value="3">3 ημέρες</option></select><input id="pdesc" placeholder="Περιγραφή"><button class="primary" onclick="createProgram()">ΔΗΜΙΟΥΡΓΙΑ</button></div><div id="programs"></div></div>
-</section></div>
-<div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="sheet"><button onclick="closeModal()">ΚΛΕΙΣΙΜΟ ✕</button><div id="detail"></div></div></div>
+  <section id="login" class="card login">
+    <h2>Premium Admin</h2>
+    <input id="pw" type="password" placeholder="ADMIN_PASSWORD" autocomplete="current-password">
+    <button type="button" class="primary" id="loginBtn">ΕΙΣΟΔΟΣ</button>
+    <div id="err" class="error"></div>
+  </section>
+
+  <section id="app" class="hidden">
+    <div id="pageError" class="error"></div>
+    <div class="grid" id="stats"></div>
+
+    <div class="card">
+      <div class="toolbar">
+        <input id="search" placeholder="Αναζήτηση πελάτη / τηλέφωνο">
+        <button type="button" id="refreshClientsBtn">ΑΝΑΝΕΩΣΗ ΠΕΛΑΤΩΝ</button>
+        <button type="button" id="programsBtn">ΠΡΟΓΡΑΜΜΑΤΑ</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <button type="button" class="sectionBtn" id="clientsBtn">ΠΕΛΑΤΕΣ</button>
+      <div id="clients" class="clients" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <h2>Δημιουργία προγράμματος</h2>
+      <div class="cols">
+        <input id="pname" placeholder="Όνομα προγράμματος">
+        <select id="pdays"><option value="2">2 ημέρες</option><option value="3">3 ημέρες</option></select>
+        <input id="pdesc" placeholder="Περιγραφή">
+        <button type="button" class="primary" id="createProgramBtn">ΔΗΜΙΟΥΡΓΙΑ</button>
+      </div>
+      <div id="programs"></div>
+    </div>
+  </section>
+</div>
+
+<div id="modal" class="modal">
+  <div class="sheet">
+    <button type="button" id="closeModalBtn">ΚΛΕΙΣΙΜΟ ✕</button>
+    <div id="detail"></div>
+  </div>
+</div>
+
 <script>
-let loggedIn=false;
-async function api(url,opts={}){const r=await fetch(url,{...opts,headers:{"Content-Type":"application/json",...(opts.headers||{})}});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||"Σφάλμα");return d}
-async function login(){const password=document.getElementById("pw").value.trim();try{await api("/api/premium/admin/login",{method:"POST",body:JSON.stringify({password})});loggedIn=true;document.getElementById("login").classList.add("hidden");document.getElementById("app").classList.remove("hidden");await refresh()}catch(e){document.getElementById("err").textContent=e.message}}
-async function refresh(){const s=await api("/api/premium/admin/dashboard");document.getElementById("stats").innerHTML=Object.entries({ΠΕΛΑΤΕΣ:s.totalClients,ΕΝΕΡΓΟΙ:s.active,"ΑΚΡΙΒΩΣ 2":s.exact2,"2+":s.gt2,"0":s.zero,ΛΗΓΜΕΝΕΣ:s.expired}).map(([k,v])=>`<div class="stat"><small>${k}</small><b>${v}</b></div>`).join("");await loadClients();await loadPrograms()}
-async function loadClients(){const q=document.getElementById("search").value;const rows=await api("/api/premium/admin/clients?q="+encodeURIComponent(q));document.getElementById("clients").innerHTML=rows.map(c=>{const s=c.subscription;const rem=s?.remaining??0;return `<div class="client" onclick="openClient(${c.id})"><b>${esc(c.name)}</b><br><span class="muted">${esc(c.phone)}</span><div>${s?`<span class="tag">${s.package_sessions} ΣΥΝΕΔΡΙΕΣ</span><span class="tag">ΥΠΟΛΟΙΠΟ ${rem}</span><span class="tag">${s.start_date} → ${s.end_date}</span>`:`<span class="tag">ΧΩΡΙΣ ΣΥΝΔΡΟΜΗ</span>`}</div></div>`}).join("")||"Δεν βρέθηκαν πελάτες."}
-async function openClient(id){const d=await api("/api/premium/admin/clients/"+id);document.getElementById("modal").classList.add("show");document.getElementById("detail").innerHTML=`<h2>${esc(d.client.name)}</h2><p class="muted">${esc(d.client.phone)} ${esc(d.client.email||"")}</p><div class="card"><h3>Συνδρομή</h3>${d.subscription?`<div class="row"><span>Πακέτο</span><b>${d.subscription.package_sessions}</b></div><div class="row"><span>Έναρξη</span><b>${d.subscription.start_date}</b></div><div class="row"><span>Λήξη</span><b>${d.subscription.end_date}</b></div><div class="row"><span>Χρήση από booking</span><b>${d.subscription.used}</b></div><div class="row"><span>Υπόλοιπο</span><b>${d.subscription.remaining}</b></div>`:"Δεν υπάρχει ενεργή συνδρομή."}</div><div class="card"><h3>Ανανέωση</h3><div class="cols"><select id="ss"><option value="8">8 συνεδρίες</option><option value="12">12 συνεδρίες</option></select><input id="sd" type="date"><input id="ed" type="date"><button class="primary" onclick="renew(${id})">ΑΝΑΝΕΩΣΗ</button><button onclick="correct(${id})">ΔΙΟΡΘΩΣΗ ΧΡΗΣΗΣ</button><input id="used" type="number" min="0" placeholder="Χρησιμοποιημένες συνεδρίες"></div></div><div class="card"><h3>Booking — διασταύρωση</h3>${d.booking_history.map(x=>`<div class="row"><span>${x.date} ${x.time}<br><small>${esc(x.service)}</small></span><span>${x.counted?`<b>ΧΡΕΩΘΗΚΕ</b>`:`<span class="muted">ΔΕΝ ΧΡΕΩΘΗΚΕ</span>`}<br><small>${esc(x.reason)}</small></span></div>`).join("")||"Δεν υπάρχουν."}</div><div class="card"><h3>Πρόγραμμα</h3><p>${d.program?esc(d.program.name):"Δεν έχει ανατεθεί."}</p><select id="programSelect"></select><button onclick="assign(${id})">ΑΝΑΘΕΣΗ ΠΡΟΓΡΑΜΜΑΤΟΣ</button></div><div class="card"><h3>Κωδικός πελάτη</h3><input id="newpass" type="password" placeholder="Νέος κωδικός"><button onclick="setPass(${id})">ΑΛΛΑΓΗ ΚΩΔΙΚΟΥ</button></div>`;fillProgramSelect()}
-async function fillProgramSelect(){const ps=await api("/api/premium/admin/programs");document.getElementById("programSelect").innerHTML=ps.map(p=>`<option value="${p.id}">${esc(p.name)} — ${p.days_per_week} ημέρες</option>`).join("")||"<option>Δεν υπάρχουν προγράμματα</option>"}
-async function renew(id){await api("/api/premium/admin/clients/"+id+"/subscription",{method:"POST",body:JSON.stringify({package_sessions:Number(document.getElementById("ss").value),start_date:document.getElementById("sd").value,end_date:document.getElementById("ed").value})});await refresh();await openClient(id)}
-async function correct(id){await api("/api/premium/admin/clients/"+id+"/correct",{method:"POST",body:JSON.stringify({sessions_used_override:document.getElementById("used").value})});await refresh();await openClient(id)}
-async function setPass(id){const p=document.getElementById("newpass").value;if(!p)return;await api("/api/premium/admin/clients/"+id+"/password",{method:"POST",body:JSON.stringify({password:p})});alert("Ο κωδικός άλλαξε.")}
-async function assign(id){await api("/api/premium/admin/clients/"+id+"/program",{method:"POST",body:JSON.stringify({program_id:Number(document.getElementById("programSelect").value)})});await openClient(id)}
-async function createProgram(){await api("/api/premium/admin/programs",{method:"POST",body:JSON.stringify({name:document.getElementById("pname").value,days_per_week:Number(document.getElementById("pdays").value),description:document.getElementById("pdesc").value})});await loadPrograms()}
-async function loadPrograms(){try{const ps=await api("/api/premium/admin/programs");const el=document.getElementById("programs");if(el)el.innerHTML=ps.map(p=>`<div class="row"><span>${esc(p.name)}</span><span>${p.days_per_week} ημέρες</span></div>`).join("")}catch{}}
-async function sync(){await loadClients();await refresh()}
-function closeModal(){document.getElementById("modal").classList.remove("show")}
-function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-</script></body></html>
+"use strict";
+
+const $ = id => document.getElementById(id);
+let refreshTimer = null;
+
+async function api(url, opts = {}) {
+  const r = await fetch(url, {
+    credentials: "same-origin",
+    ...opts,
+    headers: {"Content-Type":"application/json", ...(opts.headers || {})}
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || ("HTTP " + r.status));
+  return d;
+}
+
+function showError(msg) {
+  const el = $("pageError");
+  el.textContent = msg || "Παρουσιάστηκε σφάλμα.";
+  el.style.display = "block";
+}
+function clearError() {
+  $("pageError").style.display = "none";
+}
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
+async function login() {
+  $("err").style.display = "none";
+  try {
+    const password = $("pw").value.trim();
+    if (!password) throw new Error("Βάλε τον κωδικό διαχειριστή.");
+    await api("/api/premium/admin/login", {
+      method:"POST",
+      body:JSON.stringify({password})
+    });
+    $("login").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    await refresh();
+  } catch(e) {
+    $("err").textContent = e.message;
+    $("err").style.display = "block";
+  }
+}
+
+async function refresh() {
+  clearError();
+  try {
+    const s = await api("/api/premium/admin/dashboard");
+    $("stats").innerHTML = Object.entries({
+      "ΠΕΛΑΤΕΣ":s.totalClients,
+      "ΕΝΕΡΓΟΙ":s.active,
+      "ΑΚΡΙΒΩΣ 2":s.exact2,
+      "2+":s.gt2,
+      "0":s.zero,
+      "ΛΗΓΜΕΝΕΣ":s.expired
+    }).map(([k,v]) =>
+      `<div class="stat"><small>${k}</small><b>${v}</b></div>`
+    ).join("");
+    await loadClients();
+    await loadPrograms();
+  } catch(e) {
+    showError(e.message);
+  }
+}
+
+async function loadClients() {
+  try {
+    const q = $("search").value.trim();
+    const rows = await api("/api/premium/admin/clients?q=" + encodeURIComponent(q));
+    $("clients").innerHTML = rows.map(c => {
+      const s = c.subscription;
+      const rem = s?.remaining ?? 0;
+      return `<div class="client" data-client-id="${c.id}">
+        <b>${esc(c.name)}</b><br>
+        <span class="muted">${esc(c.phone)}</span>
+        <div>${s
+          ? `<span class="tag">${s.package_sessions} ΣΥΝΕΔΡΙΕΣ</span>
+             <span class="tag">ΥΠΟΛΟΙΠΟ ${rem}</span>
+             <span class="tag">${s.start_date} → ${s.end_date}</span>`
+          : `<span class="tag">ΧΩΡΙΣ ΣΥΝΔΡΟΜΗ</span>`}
+        </div>
+      </div>`;
+    }).join("") || `<div class="notice">Δεν βρέθηκαν πελάτες.</div>`;
+  } catch(e) { showError(e.message); }
+}
+
+async function openClient(id) {
+  try {
+    const d = await api("/api/premium/admin/clients/" + id);
+    $("modal").classList.add("show");
+    $("detail").innerHTML = `
+      <h2>${esc(d.client.name)}</h2>
+      <p class="muted">${esc(d.client.phone)} ${esc(d.client.email || "")}</p>
+
+      <div class="card">
+        <h3>Συνδρομή</h3>
+        ${d.subscription ? `
+          <div class="row"><span>Πακέτο</span><b>${d.subscription.package_sessions}</b></div>
+          <div class="row"><span>Έναρξη</span><b>${d.subscription.start_date}</b></div>
+          <div class="row"><span>Λήξη</span><b>${d.subscription.end_date}</b></div>
+          <div class="row"><span>Χρήση από booking</span><b>${d.subscription.used}</b></div>
+          <div class="row"><span>Υπόλοιπο</span><b>${d.subscription.remaining}</b></div>
+        ` : "Δεν υπάρχει ενεργή συνδρομή."}
+      </div>
+
+      <div class="card">
+        <h3>Ανανέωση</h3>
+        <div class="cols">
+          <select id="ss"><option value="8">8 συνεδρίες</option><option value="12">12 συνεδρίες</option></select>
+          <input id="sd" type="date">
+          <input id="ed" type="date">
+          <button type="button" class="primary" id="renewBtn">ΑΝΑΝΕΩΣΗ</button>
+          <input id="used" type="number" min="0" placeholder="Χρησιμοποιημένες συνεδρίες">
+          <button type="button" id="correctBtn">ΔΙΟΡΘΩΣΗ ΧΡΗΣΗΣ</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Booking — διασταύρωση</h3>
+        ${d.booking_history.map(x => `
+          <div class="row">
+            <span>${x.date} ${x.time}<br><small>${esc(x.service)}</small></span>
+            <span>${x.counted ? "<b>ΧΡΕΩΘΗΚΕ</b>" : '<span class="muted">ΔΕΝ ΧΡΕΩΘΗΚΕ</span>'}
+            <br><small>${esc(x.reason)}</small></span>
+          </div>`).join("") || "Δεν υπάρχουν."}
+      </div>
+
+      <div class="card">
+        <h3>Πρόγραμμα</h3>
+        <p>${d.program ? esc(d.program.name) : "Δεν έχει ανατεθεί."}</p>
+        <select id="programSelect"></select>
+        <button type="button" id="assignBtn" style="margin-top:10px">ΑΝΑΘΕΣΗ ΠΡΟΓΡΑΜΜΑΤΟΣ</button>
+      </div>
+
+      <div class="card">
+        <h3>Κωδικός πελάτη</h3>
+        <input id="newpass" type="password" placeholder="Νέος κωδικός">
+        <button type="button" id="passBtn" style="margin-top:10px">ΑΛΛΑΓΗ ΚΩΔΙΚΟΥ</button>
+      </div>`;
+    await fillProgramSelect();
+
+    $("renewBtn").onclick = () => renew(id);
+    $("correctBtn").onclick = () => correct(id);
+    $("assignBtn").onclick = () => assign(id);
+    $("passBtn").onclick = () => setPass(id);
+  } catch(e) { showError(e.message); }
+}
+
+async function fillProgramSelect() {
+  const ps = await api("/api/premium/admin/programs");
+  $("programSelect").innerHTML = ps.map(p =>
+    `<option value="${p.id}">${esc(p.name)} — ${p.days_per_week} ημέρες</option>`
+  ).join("") || "<option value=''>Δεν υπάρχουν προγράμματα</option>";
+}
+
+async function renew(id) {
+  try {
+    const start = $("sd").value, end = $("ed").value;
+    if (!start || !end) throw new Error("Βάλε ημερομηνία έναρξης και λήξης.");
+    await api("/api/premium/admin/clients/" + id + "/subscription", {
+      method:"POST",
+      body:JSON.stringify({
+        package_sessions:Number($("ss").value),
+        start_date:start, end_date:end
+      })
+    });
+    await refresh(); await openClient(id);
+  } catch(e) { showError(e.message); }
+}
+
+async function correct(id) {
+  try {
+    await api("/api/premium/admin/clients/" + id + "/correct", {
+      method:"POST",
+      body:JSON.stringify({sessions_used_override:$("used").value})
+    });
+    await refresh(); await openClient(id);
+  } catch(e) { showError(e.message); }
+}
+
+async function setPass(id) {
+  try {
+    const p = $("newpass").value;
+    if (!p) throw new Error("Βάλε νέο κωδικό.");
+    await api("/api/premium/admin/clients/" + id + "/password", {
+      method:"POST", body:JSON.stringify({password:p})
+    });
+    alert("Ο κωδικός άλλαξε.");
+  } catch(e) { showError(e.message); }
+}
+
+async function assign(id) {
+  try {
+    const programId = Number($("programSelect").value);
+    if (!programId) throw new Error("Δεν υπάρχει πρόγραμμα για ανάθεση.");
+    await api("/api/premium/admin/clients/" + id + "/program", {
+      method:"POST", body:JSON.stringify({program_id:programId})
+    });
+    await openClient(id);
+  } catch(e) { showError(e.message); }
+}
+
+async function createProgram() {
+  try {
+    const name = $("pname").value.trim();
+    if (!name) throw new Error("Βάλε όνομα προγράμματος.");
+    await api("/api/premium/admin/programs", {
+      method:"POST",
+      body:JSON.stringify({
+        name,
+        days_per_week:Number($("pdays").value),
+        description:$("pdesc").value.trim()
+      })
+    });
+    $("pname").value = "";
+    $("pdesc").value = "";
+    await loadPrograms();
+    alert("Το πρόγραμμα δημιουργήθηκε.");
+  } catch(e) { showError(e.message); }
+}
+
+async function loadPrograms() {
+  try {
+    const ps = await api("/api/premium/admin/programs");
+    $("programs").innerHTML = ps.map(p =>
+      `<div class="row"><span>${esc(p.name)}</span><span>${p.days_per_week} ημέρες</span></div>`
+    ).join("") || `<div class="notice">Δεν υπάρχουν προγράμματα.</div>`;
+  } catch(e) { showError(e.message); }
+}
+
+function closeModal(){ $("modal").classList.remove("show"); }
+
+document.addEventListener("DOMContentLoaded", () => {
+  $("loginBtn").addEventListener("click", login);
+  $("pw").addEventListener("keydown", e => { if(e.key === "Enter") login(); });
+  $("bookingAdminBtn").addEventListener("click", () => location.href="/admin.html");
+  $("refreshClientsBtn").addEventListener("click", loadClients);
+  $("programsBtn").addEventListener("click", loadPrograms);
+  $("clientsBtn").addEventListener("click", loadClients);
+  $("createProgramBtn").addEventListener("click", createProgram);
+  $("search").addEventListener("input", () => {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(loadClients, 250);
+  });
+  $("closeModalBtn").addEventListener("click", closeModal);
+  $("modal").addEventListener("click", e => { if(e.target === $("modal")) closeModal(); });
+  $("clients").addEventListener("click", e => {
+    const card = e.target.closest(".client");
+    if(card) openClient(Number(card.dataset.clientId));
+  });
+});
+</script>
+</body>
+</html>
