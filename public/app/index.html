@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="manifest" href="/app/manifest.webmanifest">
+<title>APEX Training App</title>
+<link rel="stylesheet" href="/app/styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">APEX <span>TRAINING LAB</span></div>
+  <span class="premium">PREMIUM</span>
+</header>
+
+<main>
+  <section id="loginView" class="hero">
+    <div class="eyebrow">APEX TRAINING APP</div>
+    <h1>Το πρόγραμμα σου.<br>Οι προπονήσεις σου.</h1>
+    <p>Όλα συγκεντρωμένα σε ένα premium περιβάλλον.</p>
+    <div class="card login">
+      <input id="loginKey" placeholder="Τηλέφωνο ή email">
+      <input id="loginPassword" type="password" placeholder="Κωδικός">
+      <button onclick="login()">ΕΙΣΟΔΟΣ</button>
+      <div id="loginMsg" class="msg"></div>
+    </div>
+  </section>
+
+  <section id="appView" class="hidden">
+    <div class="welcome">
+      <div><div class="eyebrow">MY APEX</div><h2 id="name">—</h2></div>
+      <button class="ghost" onclick="logout()">Έξοδος</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><small>ΠΑΚΕΤΟ</small><b id="package">—</b></div>
+      <div class="stat"><small>ΥΠΟΛΟΙΠΟ</small><b id="remaining">—</b></div>
+      <div class="stat"><small>ΕΝΑΡΞΗ</small><b id="start">—</b></div>
+      <div class="stat"><small>ΛΗΞΗ</small><b id="end">—</b></div>
+    </div>
+
+    <div class="card">
+      <h3>Το πρόγραμμά σου</h3>
+      <div id="program">—</div>
+    </div>
+
+    <div class="card">
+      <h3>Διασταύρωση booking</h3>
+      <p class="muted">Η συνδρομή υπολογίζεται από τα πραγματικά ραντεβού.</p>
+      <div id="bookings"></div>
+    </div>
+
+    <div class="card">
+      <h3>Ιστορικό προπονήσεων</h3>
+      <div id="workouts"></div>
+    </div>
+  </section>
+</main>
+<script src="/app/app.js"></script>
+</body>
+</html>
