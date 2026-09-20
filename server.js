@@ -2218,6 +2218,12 @@ premiumEnsureColumn("premium_clients", "manual_name", "INTEGER NOT NULL DEFAULT 
 
 db.prepare("UPDATE premium_clients SET booking_name=name WHERE booking_name IS NULL OR booking_name='' ").run();
 
+db.exec(`CREATE TABLE IF NOT EXISTS premium_manual_attendance (
+ id INTEGER PRIMARY KEY AUTOINCREMENT, client_id INTEGER NOT NULL REFERENCES premium_clients(id),
+ attendance_date TEXT NOT NULL, attendance_time TEXT, service TEXT NOT NULL, notes TEXT,
+ created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);`);
+
 function premiumCustomerKey(name, phone) {
   return normalizeName(name) + "|" + normalizePhone(phone);
 }
@@ -2383,13 +2389,11 @@ function premiumUsage(clientId) {
   }
 
   const rows = premiumBookingUsage(client, sub);
-  const used = rows.filter(r => r.counted).length;
-  return {
-    used,
-    remaining: Math.max(0, sub.package_sessions - used),
-    rows,
-    overridden: false
-  };
+  const manualRows = db.prepare(`SELECT id, attendance_date AS date, attendance_time AS time, service, notes, created_at FROM premium_manual_attendance WHERE client_id=? AND attendance_date BETWEEN ? AND ? ORDER BY attendance_date DESC, COALESCE(attendance_time,'') DESC, id DESC`).all(clientId, sub.start_date, sub.end_date);
+  const manualUsage = manualRows.map(r => ({source:"MANUAL_ATTENDANCE", manual_attendance_id:r.id, date:r.date, time:r.time||"", service:r.service, notes:r.notes||"", status:"ATTENDED_MANUAL", counted:true, reason:"Παρουσία καταχωρήθηκε χειροκίνητα από τον διαχειριστή."}));
+  const allRows = rows.concat(manualUsage).sort((a,b)=>(`${b.date} ${b.time}`).localeCompare(`${a.date} ${a.time}`));
+  const used = allRows.filter(r => r.counted).length;
+  return {used, remaining:Math.max(0, sub.package_sessions-used), rows:allRows, overridden:false};
 }
 
 function premiumState(clientId) {
@@ -2679,12 +2683,14 @@ app.get("/api/premium/admin/clients/:id", premiumAdmin, (req, res) => {
   `).get(id);
 
   const workouts = db.prepare("SELECT * FROM premium_workouts WHERE client_id=? ORDER BY workout_date DESC").all(id);
+  const manualAttendance = db.prepare("SELECT id,attendance_date AS date,attendance_time AS time,service,notes,created_at FROM premium_manual_attendance WHERE client_id=? ORDER BY attendance_date DESC,COALESCE(attendance_time,'') DESC,id DESC").all(id);
 
   res.json({
     client: {...client, password_hash: undefined},
     subscription: sub ? {...sub, used:usage.used, remaining:usage.remaining} : null,
     subscription_history: history,
     booking_history: usage.rows,
+    manual_attendance: manualAttendance,
     program: program || null,
     workouts
   });
@@ -2809,6 +2815,35 @@ app.post("/api/premium/admin/clients/:id/subscription", premiumAdmin, (req,res) 
     .run("RENEW_SUBSCRIPTION","client",String(id),JSON.stringify({sessions,start,end}));
 
   res.json({ok:true});
+});
+
+app.get("/api/premium/admin/clients/:id/manual-attendance", premiumAdmin, (req,res) => {
+  const id=Number(req.params.id);
+  const client=db.prepare("SELECT id,name FROM premium_clients WHERE id=? AND deleted=0").get(id);
+  if(!client) return res.status(404).json({error:"Πελάτης δεν βρέθηκε."});
+  const rows=db.prepare(`SELECT id,attendance_date AS date,attendance_time AS time,service,notes,created_at FROM premium_manual_attendance WHERE client_id=? ORDER BY attendance_date DESC,COALESCE(attendance_time,'') DESC,id DESC`).all(id);
+  res.json(rows);
+});
+
+app.post("/api/premium/admin/clients/:id/manual-attendance", premiumAdmin, (req,res) => {
+  const id=Number(req.params.id); const date=String(req.body?.date||"").trim(); const time=String(req.body?.time||"").trim(); const service=String(req.body?.service||"").trim(); const notes=String(req.body?.notes||"").trim();
+  if(!Number.isInteger(id)||id<=0) return res.status(400).json({error:"Μη έγκυρος πελάτης."});
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({error:"Η ημερομηνία παρουσίας είναι υποχρεωτική."});
+  if(time&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return res.status(400).json({error:"Λάθος ώρα παρουσίας."});
+  if(!service) return res.status(400).json({error:"Διάλεξε υπηρεσία."});
+  const client=db.prepare("SELECT id,name FROM premium_clients WHERE id=? AND deleted=0").get(id);
+  if(!client) return res.status(404).json({error:"Πελάτης δεν βρέθηκε."});
+  const info=db.prepare("INSERT INTO premium_manual_attendance(client_id,attendance_date,attendance_time,service,notes) VALUES(?,?,?,?,?)").run(id,date,time||null,service,notes||null);
+  db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)").run("ADD_MANUAL_ATTENDANCE","client",String(id),JSON.stringify({date,time,service,notes}));
+  res.json({ok:true,id:info.lastInsertRowid,message:`Η παρουσία της ${client.name} καταχωρήθηκε για ${date}.`});
+});
+
+app.post("/api/premium/admin/manual-attendance/:id/delete", premiumAdmin, (req,res) => {
+  const id=Number(req.params.id); const row=db.prepare("SELECT * FROM premium_manual_attendance WHERE id=?").get(id);
+  if(!row) return res.status(404).json({error:"Η παρουσία δεν βρέθηκε."});
+  db.prepare("DELETE FROM premium_manual_attendance WHERE id=?").run(id);
+  db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)").run("DELETE_MANUAL_ATTENDANCE","manual_attendance",String(id),JSON.stringify(row));
+  res.json({ok:true,message:"Η παρουσία διαγράφηκε."});
 });
 
 app.post("/api/premium/admin/clients/:id/correct", premiumAdmin, (req,res) => {
