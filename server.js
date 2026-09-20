@@ -2389,8 +2389,39 @@ function premiumState(clientId) {
 }
 
 function premiumAdmin(req, res, next) {
-  return admin(req, res, next);
+  const expected = process.env.ADMIN_PASSWORD || "CHANGE_ME";
+  const headerPassword = req.get("x-admin-password");
+
+  // Premium Admin uses a server-side session after login.
+  // Header fallback keeps compatibility with the existing booking admin.
+  if (req.session?.premiumAdmin === true) return next();
+  if (headerPassword && headerPassword === expected) return next();
+
+  return res.status(401).json({
+    error: "Μη έγκυρος κωδικός διαχειριστή."
+  });
 }
+
+app.post("/api/premium/admin/login", (req, res) => {
+  const expected = process.env.ADMIN_PASSWORD || "CHANGE_ME";
+  const supplied = String(req.body?.password || "");
+
+  if (!supplied || supplied !== expected) {
+    return res.status(401).json({
+      error: "Μη έγκυρος κωδικός διαχειριστή."
+    });
+  }
+
+  req.session.premiumAdmin = true;
+  req.session.premiumRole = "admin";
+  res.json({ ok: true });
+});
+
+app.post("/api/premium/admin/logout", (req, res) => {
+  delete req.session.premiumAdmin;
+  delete req.session.premiumRole;
+  res.json({ ok: true });
+});
 
 function premiumClientAuth(req, res, next) {
   if (!req.session?.premiumClientId) {
