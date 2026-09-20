@@ -2,6 +2,9 @@ const express = require("express");
 const Database = require("better-sqlite3");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
+const session = require("express-session");
+const helmet = require("helmet");
 
 const app = express();
 
@@ -17,7 +20,23 @@ const db = new Database(
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
 
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
+
+app.use(helmet({
+  contentSecurityPolicy: false
+}));
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || "CHANGE_THIS_SESSION_SECRET_IN_RAILWAY",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 1000 * 60 * 60 * 8
+  }
+}));
 
 app.use(
   express.static(
@@ -2084,6 +2103,648 @@ app.get(
 
   }
 );
+
+
+
+/* =========================================================
+   APEX PREMIUM TRAINING APP
+   Uses the SAME /data/apex.db Persistent Volume.
+   Existing booking rows are NEVER deleted or modified here.
+========================================================= */
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS premium_clients (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    booking_customer_key TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    email TEXT,
+    password_hash TEXT,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS premium_subscriptions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id INTEGER NOT NULL REFERENCES premium_clients(id),
+    package_sessions INTEGER NOT NULL CHECK(package_sessions IN (8,12)),
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    sessions_used_override INTEGER,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS premium_subscription_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    subscription_id INTEGER NOT NULL REFERENCES premium_subscriptions(id),
+    event_type TEXT NOT NULL,
+    details TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS premium_programs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    days_per_week INTEGER NOT NULL CHECK(days_per_week IN (2,3)),
+    description TEXT,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS premium_program_exercises (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    program_id INTEGER NOT NULL REFERENCES premium_programs(id),
+    day_no INTEGER NOT NULL,
+    position INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    sets TEXT,
+    reps TEXT,
+    target_weight TEXT,
+    rest TEXT,
+    tempo TEXT,
+    notes TEXT,
+    video_url TEXT,
+    image_url TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS premium_client_programs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id INTEGER NOT NULL REFERENCES premium_clients(id),
+    program_id INTEGER NOT NULL REFERENCES premium_programs(id),
+    assigned_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active INTEGER NOT NULL DEFAULT 1
+  );
+
+  CREATE TABLE IF NOT EXISTS premium_workouts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id INTEGER NOT NULL REFERENCES premium_clients(id),
+    program_id INTEGER,
+    day_no INTEGER,
+    workout_date TEXT NOT NULL,
+    booking_source_id INTEGER,
+    completed INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS premium_audit (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    admin_action TEXT NOT NULL,
+    target_type TEXT,
+    target_id TEXT,
+    details TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
+function premiumCustomerKey(name, phone) {
+  return normalizeName(name) + "|" + normalizePhone(phone);
+}
+
+function premiumHashPassword(password) {
+  const salt = crypto.randomBytes(16).toString("hex");
+  const hash = crypto.scryptSync(String(password), salt, 64).toString("hex");
+  return `scrypt$${salt}$${hash}`;
+}
+
+function premiumVerifyPassword(password, stored) {
+  if (!stored || !stored.startsWith("scrypt$")) return false;
+  const parts = stored.split("$");
+  if (parts.length !== 3) return false;
+  const derived = crypto.scryptSync(String(password), parts[1], 64);
+  const expected = Buffer.from(parts[2], "hex");
+  return expected.length === derived.length && crypto.timingSafeEqual(derived, expected);
+}
+
+function premiumAthensLocalToMs(date, time) {
+  const guess = Date.parse(`${date}T${time}:00Z`);
+  const fmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Athens",
+    timeZoneName: "shortOffset",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+  const parts = fmt.formatToParts(new Date(guess));
+  const tz = parts.find(p => p.type === "timeZoneName")?.value || "GMT+2";
+  const m = tz.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
+  const offsetMinutes = m
+    ? (Number(m[2]) * 60 + Number(m[3] || 0)) * (m[1] === "-" ? -1 : 1)
+    : 120;
+  return guess - offsetMinutes * 60000;
+}
+
+function premiumUtcSqlToMs(value) {
+  if (!value) return NaN;
+  const s = String(value);
+  return Date.parse(
+    /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(s)
+      ? s.replace(" ", "T") + "Z"
+      : s
+  );
+}
+
+function premiumNowMs() {
+  return Date.now();
+}
+
+/*
+  Subscription usage rules:
+  1) Active booking in the subscription period counts once its appointment has passed.
+  2) A cancelled booking counts ONLY when cancellation happened less than 24 hours
+     before the appointment.
+  3) Cancellation 24+ hours before does not count.
+  4) The original BOOKED history row is not counted separately from CANCELLED.
+*/
+function premiumBookingUsage(client, subscription) {
+  if (!client || !subscription) return [];
+
+  const key = client.booking_customer_key;
+  const now = premiumNowMs();
+  const start = subscription.start_date;
+  const end = subscription.end_date;
+
+  const active = db.prepare(`
+    SELECT
+      b.id AS booking_id,
+      b.name,
+      b.phone,
+      s.date,
+      s.time,
+      s.service,
+      b.created_at
+    FROM bookings b
+    JOIN slots s ON s.id = b.slot_id
+    WHERE s.date BETWEEN ? AND ?
+      AND lower(trim(b.name)) = lower(trim(?))
+      AND b.phone = ?
+    ORDER BY s.date, s.time
+  `).all(start, end, client.name, client.phone);
+
+  const cancelled = db.prepare(`
+    SELECT
+      booking_id,
+      name,
+      phone,
+      date,
+      time,
+      service,
+      created_at AS cancelled_at
+    FROM booking_history
+    WHERE action = 'CANCELLED'
+      AND date BETWEEN ? AND ?
+      AND lower(trim(name)) = lower(trim(?))
+      AND phone = ?
+    ORDER BY date, time
+  `).all(start, end, client.name, client.phone);
+
+  const result = [];
+
+  for (const b of active) {
+    const appointmentMs = premiumAthensLocalToMs(b.date, b.time);
+    if (appointmentMs <= now) {
+      result.push({
+        source: "BOOKING",
+        booking_id: b.booking_id,
+        date: b.date,
+        time: b.time,
+        service: b.service,
+        status: "COMPLETED_BOOKING",
+        counted: true,
+        reason: "Το ραντεβού πέρασε και δεν ακυρώθηκε."
+      });
+    }
+  }
+
+  for (const c of cancelled) {
+    const appointmentMs = premiumAthensLocalToMs(c.date, c.time);
+    const cancelledMs = premiumUtcSqlToMs(c.cancelled_at);
+    const hoursBefore = (appointmentMs - cancelledMs) / 3600000;
+    const counted = Number.isFinite(hoursBefore) && hoursBefore < 24;
+    result.push({
+      source: "BOOKING_HISTORY",
+      booking_id: c.booking_id,
+      date: c.date,
+      time: c.time,
+      service: c.service,
+      status: "CANCELLED",
+      counted,
+      cancellation_hours_before: Number.isFinite(hoursBefore) ? Number(hoursBefore.toFixed(2)) : null,
+      reason: counted
+        ? "Ακύρωση λιγότερο από 24 ώρες πριν — χρεώνεται."
+        : "Ακύρωση 24+ ώρες πριν — δεν χρεώνεται."
+    });
+  }
+
+  return result.sort((a,b) => (`${b.date} ${b.time}`).localeCompare(`${a.date} ${a.time}`));
+}
+
+function premiumSubscription(clientId) {
+  return db.prepare(`
+    SELECT * FROM premium_subscriptions
+    WHERE client_id = ? AND active = 1
+    ORDER BY id DESC LIMIT 1
+  `).get(clientId);
+}
+
+function premiumUsage(clientId) {
+  const client = db.prepare("SELECT * FROM premium_clients WHERE id=?").get(clientId);
+  const sub = premiumSubscription(clientId);
+  if (!client || !sub) return { used: 0, remaining: 0, rows: [] };
+
+  if (sub.sessions_used_override !== null && sub.sessions_used_override !== undefined) {
+    const used = Math.max(0, Number(sub.sessions_used_override));
+    return {
+      used,
+      remaining: Math.max(0, sub.package_sessions - used),
+      rows: premiumBookingUsage(client, sub),
+      overridden: true
+    };
+  }
+
+  const rows = premiumBookingUsage(client, sub);
+  const used = rows.filter(r => r.counted).length;
+  return {
+    used,
+    remaining: Math.max(0, sub.package_sessions - used),
+    rows,
+    overridden: false
+  };
+}
+
+function premiumState(clientId) {
+  const client = db.prepare("SELECT * FROM premium_clients WHERE id=?").get(clientId);
+  const sub = premiumSubscription(clientId);
+  if (!client || !sub) return { active: false, reason: "NO_SUBSCRIPTION" };
+  const usage = premiumUsage(clientId);
+  const today = getAthensNowParts();
+  const todayString = `${today.year}-${today.month}-${today.day}`;
+
+  if (!client.active) return { active: false, reason: "DISABLED", remaining: usage.remaining, subscription: sub };
+  if (todayString < sub.start_date) return { active: false, reason: "NOT_STARTED", remaining: usage.remaining, subscription: sub };
+  if (todayString > sub.end_date) return { active: false, reason: "EXPIRED", remaining: usage.remaining, subscription: sub };
+  if (usage.remaining <= 0) return { active: false, reason: "SESSIONS_EXHAUSTED", remaining: 0, subscription: sub };
+
+  return { active: true, reason: "ACTIVE", remaining: usage.remaining, subscription: sub };
+}
+
+function premiumAdmin(req, res, next) {
+  return admin(req, res, next);
+}
+
+function premiumClientAuth(req, res, next) {
+  if (!req.session?.premiumClientId) {
+    return res.status(401).json({ error: "Login required" });
+  }
+  const state = premiumState(req.session.premiumClientId);
+  if (!state.active) {
+    return res.status(403).json({ error: "Η συνδρομή δεν είναι ενεργή.", reason: state.reason });
+  }
+  req.premiumState = state;
+  next();
+}
+
+function premiumSyncCustomers() {
+  const rows = db.prepare(`
+    SELECT name, phone FROM booking_history
+    UNION
+    SELECT b.name, b.phone FROM bookings b
+  `).all();
+
+  const insert = db.prepare(`
+    INSERT OR IGNORE INTO premium_clients
+    (booking_customer_key, name, phone)
+    VALUES (?, ?, ?)
+  `);
+
+  const tx = db.transaction(() => {
+    for (const r of rows) {
+      if (!r.name || !r.phone) continue;
+      insert.run(premiumCustomerKey(r.name, r.phone), r.name.trim(), r.phone.trim());
+    }
+  });
+  tx();
+}
+
+premiumSyncCustomers();
+
+/* ----- Premium auth ----- */
+
+app.post("/api/premium/auth/login", (req, res) => {
+  const key = String(req.body?.phone || req.body?.email || "").trim();
+  const password = String(req.body?.password || "");
+  if (!key || !password) return res.status(400).json({ error: "Συμπλήρωσε στοιχεία σύνδεσης." });
+
+  premiumSyncCustomers();
+
+  const client = db.prepare(`
+    SELECT * FROM premium_clients
+    WHERE phone = ? OR lower(email) = lower(?)
+    LIMIT 1
+  `).get(key, key);
+
+  if (!client || !premiumVerifyPassword(password, client.password_hash)) {
+    return res.status(401).json({ error: "Λάθος στοιχεία σύνδεσης." });
+  }
+
+  const state = premiumState(client.id);
+  if (!state.active) {
+    return res.status(403).json({ error: "Η συνδρομή δεν είναι ενεργή.", reason: state.reason });
+  }
+
+  req.session.premiumClientId = client.id;
+  req.session.premiumRole = "client";
+  res.json({
+    ok: true,
+    client: { id: client.id, name: client.name, phone: client.phone, email: client.email },
+    subscription: state
+  });
+});
+
+app.post("/api/premium/auth/logout", (req, res) => {
+  delete req.session.premiumClientId;
+  delete req.session.premiumRole;
+  res.json({ ok: true });
+});
+
+app.get("/api/premium/me", premiumClientAuth, (req, res) => {
+  const client = db.prepare("SELECT id,name,phone,email FROM premium_clients WHERE id=?").get(req.session.premiumClientId);
+  const sub = premiumSubscription(client.id);
+  const usage = premiumUsage(client.id);
+  const assigned = db.prepare(`
+    SELECT p.* FROM premium_client_programs cp
+    JOIN premium_programs p ON p.id = cp.program_id
+    WHERE cp.client_id=? AND cp.active=1
+    ORDER BY cp.id DESC LIMIT 1
+  `).get(client.id);
+
+  const workouts = db.prepare(`
+    SELECT * FROM premium_workouts
+    WHERE client_id=? ORDER BY workout_date DESC LIMIT 50
+  `).all(client.id);
+
+  res.json({ client, subscription: {...sub, used: usage.used, remaining: usage.remaining}, program: assigned || null, workouts });
+});
+
+app.get("/api/premium/my-bookings", premiumClientAuth, (req, res) => {
+  const client = db.prepare("SELECT * FROM premium_clients WHERE id=?").get(req.session.premiumClientId);
+  const sub = premiumSubscription(client.id);
+  res.json(premiumBookingUsage(client, sub));
+});
+
+app.post("/api/premium/workouts/complete", premiumClientAuth, (req, res) => {
+  const { program_id, day_no, workout_date, booking_source_id } = req.body || {};
+  const info = db.prepare(`
+    INSERT INTO premium_workouts
+    (client_id, program_id, day_no, workout_date, booking_source_id)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(req.session.premiumClientId, program_id || null, day_no || null, workout_date || `${getAthensNowParts().year}-${getAthensNowParts().month}-${getAthensNowParts().day}`, booking_source_id || null);
+
+  // IMPORTANT: subscription usage is NOT deducted here.
+  // Booking attendance/cancellation rules are authoritative and prevent double counting.
+  res.json({ ok: true, workout_id: info.lastInsertRowid });
+});
+
+/* ----- Premium admin ----- */
+
+app.get("/api/premium/admin/dashboard", premiumAdmin, (req, res) => {
+  premiumSyncCustomers();
+  const clients = db.prepare("SELECT id FROM premium_clients WHERE active=1").all();
+
+  let exact2 = 0, gt2 = 0, zero = 0, expired = 0, active = 0;
+  for (const c of clients) {
+    const state = premiumState(c.id);
+    const sub = premiumSubscription(c.id);
+    const rem = sub ? premiumUsage(c.id).remaining : 0;
+    if (state.active) active++;
+    if (rem === 2) exact2++;
+    if (rem > 2) gt2++;
+    if (rem === 0) zero++;
+    if (state.reason === "EXPIRED") expired++;
+  }
+
+  res.json({ totalClients: clients.length, active, exact2, gt2, zero, expired });
+});
+
+app.get("/api/premium/admin/clients", premiumAdmin, (req, res) => {
+  premiumSyncCustomers();
+  const q = String(req.query.q || "").trim();
+  const rows = q
+    ? db.prepare(`
+        SELECT * FROM premium_clients
+        WHERE name LIKE ? OR phone LIKE ? OR email LIKE ?
+        ORDER BY name
+      `).all(`%${q}%`, `%${q}%`, `%${q}%`)
+    : db.prepare("SELECT * FROM premium_clients ORDER BY name").all();
+
+  res.json(rows.map(c => {
+    const sub = premiumSubscription(c.id);
+    const usage = sub ? premiumUsage(c.id) : {used:0,remaining:0};
+    const state = premiumState(c.id);
+    return {
+      id:c.id,name:c.name,phone:c.phone,email:c.email,active:c.active,
+      subscription: sub ? {...sub,used:usage.used,remaining:usage.remaining} : null,
+      state
+    };
+  }));
+});
+
+app.get("/api/premium/admin/clients/:id", premiumAdmin, (req, res) => {
+  const id = Number(req.params.id);
+  const client = db.prepare("SELECT * FROM premium_clients WHERE id=?").get(id);
+  if (!client) return res.status(404).json({error:"Πελάτης δεν βρέθηκε."});
+
+  const sub = premiumSubscription(id);
+  const usage = sub ? premiumUsage(id) : {used:0,remaining:0,rows:[]};
+  const history = db.prepare("SELECT * FROM premium_subscriptions WHERE client_id=? ORDER BY id DESC").all(id);
+  const program = db.prepare(`
+    SELECT p.* FROM premium_client_programs cp
+    JOIN premium_programs p ON p.id=cp.program_id
+    WHERE cp.client_id=? AND cp.active=1
+    ORDER BY cp.id DESC LIMIT 1
+  `).get(id);
+
+  const workouts = db.prepare("SELECT * FROM premium_workouts WHERE client_id=? ORDER BY workout_date DESC").all(id);
+
+  res.json({
+    client: {...client, password_hash: undefined},
+    subscription: sub ? {...sub, used:usage.used, remaining:usage.remaining} : null,
+    subscription_history: history,
+    booking_history: usage.rows,
+    program: program || null,
+    workouts
+  });
+});
+
+app.post("/api/premium/admin/clients", premiumAdmin, (req, res) => {
+  const {name, phone, email, password} = req.body || {};
+  if (!name || !phone) return res.status(400).json({error:"Όνομα και τηλέφωνο είναι υποχρεωτικά."});
+
+  const key = premiumCustomerKey(name, phone);
+  const existing = db.prepare("SELECT id FROM premium_clients WHERE booking_customer_key=?").get(key);
+
+  if (existing) {
+    const hash = password ? premiumHashPassword(password) : undefined;
+    if (hash) db.prepare("UPDATE premium_clients SET password_hash=?,email=COALESCE(?,email),active=1,updated_at=CURRENT_TIMESTAMP WHERE id=?").run(hash,email||null,existing.id);
+    return res.json({ok:true,id:existing.id,existing:true});
+  }
+
+  const hash = password ? premiumHashPassword(password) : null;
+  const info = db.prepare(`
+    INSERT INTO premium_clients
+    (booking_customer_key,name,phone,email,password_hash)
+    VALUES (?,?,?,?,?)
+  `).run(key,name.trim(),phone.trim(),email||null,hash);
+
+  db.prepare(`
+    INSERT INTO premium_audit(admin_action,target_type,target_id,details)
+    VALUES (?,?,?,?)
+  `).run("CREATE_CLIENT","client",String(info.lastInsertRowid),JSON.stringify({name,phone}));
+
+  res.json({ok:true,id:info.lastInsertRowid});
+});
+
+app.post("/api/premium/admin/clients/:id/password", premiumAdmin, (req,res) => {
+  const password = String(req.body?.password || "");
+  if (password.length < 6) return res.status(400).json({error:"Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες."});
+  db.prepare("UPDATE premium_clients SET password_hash=?,updated_at=CURRENT_TIMESTAMP WHERE id=?")
+    .run(premiumHashPassword(password), Number(req.params.id));
+  db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)")
+    .run("CHANGE_PASSWORD","client",req.params.id,"Client password changed");
+  res.json({ok:true});
+});
+
+app.post("/api/premium/admin/clients/:id/subscription", premiumAdmin, (req,res) => {
+  const id = Number(req.params.id);
+  const sessions = Number(req.body?.package_sessions);
+  const start = String(req.body?.start_date || "");
+  const end = String(req.body?.end_date || "");
+  if (![8,12].includes(sessions) || !start || !end) return res.status(400).json({error:"Βάλε 8 ή 12 συνεδρίες και ημερομηνίες."});
+
+  db.prepare("UPDATE premium_subscriptions SET active=0 WHERE client_id=?").run(id);
+  const info = db.prepare(`
+    INSERT INTO premium_subscriptions(client_id,package_sessions,start_date,end_date)
+    VALUES(?,?,?,?)
+  `).run(id,sessions,start,end);
+
+  db.prepare("INSERT INTO premium_subscription_events(subscription_id,event_type,details) VALUES(?,?,?)")
+    .run(info.lastInsertRowid,"RENEWAL",JSON.stringify({sessions,start,end}));
+
+  db.prepare("UPDATE premium_clients SET active=1,updated_at=CURRENT_TIMESTAMP WHERE id=?").run(id);
+
+  db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)")
+    .run("RENEW_SUBSCRIPTION","client",String(id),JSON.stringify({sessions,start,end}));
+
+  res.json({ok:true});
+});
+
+app.post("/api/premium/admin/clients/:id/correct", premiumAdmin, (req,res) => {
+  const id = Number(req.params.id);
+  const sub = premiumSubscription(id);
+  if (!sub) return res.status(404).json({error:"Δεν υπάρχει ενεργή συνδρομή."});
+
+  const used = req.body?.sessions_used_override;
+  const start = req.body?.start_date || null;
+  const end = req.body?.end_date || null;
+
+  db.prepare(`
+    UPDATE premium_subscriptions
+    SET sessions_used_override=?, start_date=COALESCE(?,start_date), end_date=COALESCE(?,end_date)
+    WHERE id=?
+  `).run(used === "" || used === null || used === undefined ? null : Number(used), start, end, sub.id);
+
+  db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)")
+    .run("CORRECT_SUBSCRIPTION","subscription",String(sub.id),JSON.stringify(req.body || {}));
+
+  res.json({ok:true});
+});
+
+app.post("/api/premium/admin/clients/:id/disable", premiumAdmin, (req,res) => {
+  db.prepare("UPDATE premium_clients SET active=0,updated_at=CURRENT_TIMESTAMP WHERE id=?").run(Number(req.params.id));
+  db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)")
+    .run("DISABLE_CLIENT","client",req.params.id,"Client disabled");
+  res.json({ok:true});
+});
+
+app.post("/api/premium/admin/clients/:id/enable", premiumAdmin, (req,res) => {
+  db.prepare("UPDATE premium_clients SET active=1,updated_at=CURRENT_TIMESTAMP WHERE id=?").run(Number(req.params.id));
+  db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)")
+    .run("ENABLE_CLIENT","client",req.params.id,"Client enabled");
+  res.json({ok:true});
+});
+
+app.post("/api/premium/admin/clients/:id/reconcile", premiumAdmin, (req,res) => {
+  const id = Number(req.params.id);
+  const sub = premiumSubscription(id);
+  if (!sub) return res.status(404).json({error:"Δεν υπάρχει ενεργή συνδρομή."});
+  db.prepare("UPDATE premium_subscriptions SET sessions_used_override=NULL WHERE id=?").run(sub.id);
+  const usage = premiumUsage(id);
+  db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)")
+    .run("RECONCILE_BOOKING_USAGE","client",String(id),JSON.stringify({used:usage.used,remaining:usage.remaining}));
+  res.json({ok:true,used:usage.used,remaining:usage.remaining});
+});
+
+app.get("/api/premium/admin/audit", premiumAdmin, (req,res) => {
+  res.json(db.prepare("SELECT * FROM premium_audit ORDER BY id DESC LIMIT 300").all());
+});
+
+/* ----- Program builder ----- */
+
+app.get("/api/premium/admin/programs", premiumAdmin, (req,res) => {
+  res.json(db.prepare("SELECT * FROM premium_programs WHERE active=1 ORDER BY name").all());
+});
+
+app.post("/api/premium/admin/programs", premiumAdmin, (req,res) => {
+  const {name,days_per_week,description} = req.body || {};
+  if (!name || ![2,3].includes(Number(days_per_week))) return res.status(400).json({error:"Όνομα και 2/3 ημέρες απαιτούνται."});
+  const info = db.prepare("INSERT INTO premium_programs(name,days_per_week,description) VALUES(?,?,?)").run(name,Number(days_per_week),description||null);
+  res.json({ok:true,id:info.lastInsertRowid});
+});
+
+app.post("/api/premium/admin/programs/:id/exercises", premiumAdmin, (req,res) => {
+  const p = Number(req.params.id);
+  const x = req.body || {};
+  if (!x.name) return res.status(400).json({error:"Βάλε όνομα άσκησης."});
+  const max = db.prepare("SELECT COALESCE(MAX(position),0) n FROM premium_program_exercises WHERE program_id=? AND day_no=?").get(p,Number(x.day_no||1)).n;
+  const info = db.prepare(`
+    INSERT INTO premium_program_exercises
+    (program_id,day_no,position,name,sets,reps,target_weight,rest,tempo,notes,video_url,image_url)
+    VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+  `).run(p,Number(x.day_no||1),max+1,x.name,x.sets||null,x.reps||null,x.target_weight||null,x.rest||null,x.tempo||null,x.notes||null,x.video_url||null,x.image_url||null);
+  res.json({ok:true,id:info.lastInsertRowid});
+});
+
+app.get("/api/premium/admin/programs/:id", premiumAdmin, (req,res) => {
+  const id=Number(req.params.id);
+  const program=db.prepare("SELECT * FROM premium_programs WHERE id=?").get(id);
+  if(!program) return res.status(404).json({error:"Πρόγραμμα δεν βρέθηκε."});
+  const exercises=db.prepare("SELECT * FROM premium_program_exercises WHERE program_id=? ORDER BY day_no,position").all(id);
+  res.json({program,exercises});
+});
+
+app.post("/api/premium/admin/clients/:id/program", premiumAdmin, (req,res) => {
+  const clientId=Number(req.params.id), programId=Number(req.body?.program_id);
+  if(!programId) return res.status(400).json({error:"Διάλεξε πρόγραμμα."});
+  db.prepare("UPDATE premium_client_programs SET active=0 WHERE client_id=?").run(clientId);
+  db.prepare("INSERT INTO premium_client_programs(client_id,program_id) VALUES(?,?)").run(clientId,programId);
+  db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)")
+    .run("ASSIGN_PROGRAM","client",String(clientId),JSON.stringify({programId}));
+  res.json({ok:true});
+});
+
+/* ----- Premium pages ----- */
+
+app.get("/admin-premium.html", (req,res) => {
+  res.sendFile(path.join(__dirname,"public","admin-premium.html"));
+});
+
+app.get("/app", (req,res) => {
+  res.sendFile(path.join(__dirname,"public","app","index.html"));
+});
+
+app.get("/app/", (req,res) => {
+  res.sendFile(path.join(__dirname,"public","app","index.html"));
+});
 
 
 /* =========================================================

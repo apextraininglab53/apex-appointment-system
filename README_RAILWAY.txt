@@ -35,3 +35,26 @@ RAILWAY:
 
 GITHUB:
 Αποσυμπίεσε το ZIP και ανέβασε τα ΠΕΡΙΕΧΟΜΕΝΑ του φακέλου στο repository.
+
+
+APEX PREMIUM INTEGRATION
+- The Premium App now uses the SAME SQLite database: /data/apex.db.
+- Existing bookings, booking_history and customers are preserved.
+- Premium tables are additive (CREATE TABLE IF NOT EXISTS).
+- Client app: /app/
+- Premium admin: /admin-premium.html
+- Existing booking admin: /admin.html
+
+SESSION USAGE RULE
+- Past active booking inside the subscription period = 1 used session.
+- Cancellation 24+ hours before = 0 used sessions.
+- Cancellation less than 24 hours before = 1 used session.
+- A cancellation is evaluated using the cancellation history timestamp.
+- The original booking row/history is never deleted by Premium.
+- Workout completion in the app is a progress log and does not independently deduct a session.
+
+RAILWAY VARIABLES
+- ADMIN_PASSWORD = existing admin password
+- SESSION_SECRET = a long random secret (required for production)
+- NODE_ENV = production
+- DB_DIR = /data (existing Persistent Volume)
