@@ -3,101 +3,208 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#08090b">
+<meta name="theme-color" content="#050608">
 <title>APEX Training Lab — My Account</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#08090b;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-.wrap{max-width:900px;margin:auto;padding:24px}
-.logo{text-align:center;font-weight:900;letter-spacing:3px;font-size:22px;margin:18px 0 30px}
-.logo span{display:block;font-size:10px;color:#6f7884;letter-spacing:2px;margin-top:5px}
-.card{background:#111318;border:1px solid #252a32;border-radius:20px;padding:20px;margin:14px 0}
-h1,h2,h3{margin-top:0}
-input,button{width:100%;min-height:48px;border-radius:11px;border:1px solid #333;background:#090b0e;color:#fff;padding:12px 14px;font-size:15px}
-button{cursor:pointer;font-weight:800}
-.primary{background:#fff;color:#000;border:0}
-.secondary{background:#151920}
-.row{display:flex;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid #252932}
+:root{
+  --bg:#050608;
+  --panel:#0d0f13;
+  --panel2:#111419;
+  --line:#242932;
+  --text:#fff;
+  --muted:#8d96a3;
+  --accent:#dce3ea;
+  --accent2:#8da2b7;
+}
+body{
+  margin:0;background:
+  radial-gradient(circle at 50% -10%,rgba(141,162,183,.12),transparent 35%),
+  var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.wrap{max-width:920px;margin:auto;padding:20px 18px 42px}
+.brand{text-align:center;padding:10px 0 24px}
+.brand-mark{
+  width:54px;height:54px;margin:0 auto 12px;border:2px solid #fff;
+  border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font-weight:950;font-size:18px;letter-spacing:1px;
+  box-shadow:0 0 28px rgba(255,255,255,.08)
+}
+.brand-name{font-weight:950;letter-spacing:4px;font-size:22px}
+.brand-sub{font-size:10px;color:var(--muted);letter-spacing:3px;margin-top:5px}
+.card{
+  background:linear-gradient(145deg,rgba(20,23,29,.98),rgba(10,12,16,.98));
+  border:1px solid var(--line);border-radius:22px;padding:20px;margin:14px 0;
+  box-shadow:0 14px 40px rgba(0,0,0,.22)
+}
+.login-card{max-width:620px;margin:0 auto}
+h1{font-size:30px;margin:0 0 8px;letter-spacing:.5px}
+h2{font-size:18px;margin:0 0 16px;letter-spacing:.5px}
+.muted{color:var(--muted);line-height:1.55}
+input,button{
+  width:100%;min-height:52px;border-radius:13px;border:1px solid #303640;
+  background:#07090c;color:#fff;padding:13px 15px;font-size:16px
+}
+button{cursor:pointer;font-weight:900;letter-spacing:.2px}
+.primary{
+  color:#050608;background:#fff;border-color:#fff;
+  box-shadow:0 8px 22px rgba(255,255,255,.08)
+}
+.secondary{background:#15191f}
+.topbar{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.topbar button{width:auto;min-height:46px;padding:10px 15px}
+.welcome{font-size:25px;font-weight:900;margin-bottom:4px}
+.section-label{font-size:11px;letter-spacing:2px;color:var(--muted);font-weight:900}
+.next{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#151a21,#090b0f);
+  border-color:#3a424d;padding:24px
+}
+.next:after{
+  content:"";position:absolute;width:180px;height:180px;border-radius:50%;
+  right:-70px;top:-75px;border:1px solid rgba(255,255,255,.08)
+}
+.next-date{font-size:25px;font-weight:950;line-height:1.2;margin:8px 0}
+.next-time{font-size:48px;font-weight:950;letter-spacing:-1px}
+.next-service{font-size:14px;color:#c2cad3;margin-top:5px}
+.next-badge{
+  display:inline-flex;padding:7px 11px;border-radius:999px;
+  background:#fff;color:#050608;font-size:11px;font-weight:950;letter-spacing:.7px
+}
+.next-empty{font-size:16px;font-weight:800;margin:8px 0 4px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.row{display:flex;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid var(--line)}
 .row:last-child{border-bottom:0}
-.label{color:#858e99;font-size:12px}
-.value{font-weight:800;text-align:right}
-.balance{font-size:54px;font-weight:900;line-height:1}
-.balance small{font-size:16px;color:#8c949f;font-weight:500}
-.badge{display:inline-block;padding:7px 10px;border-radius:999px;border:1px solid #333;font-size:12px;font-weight:800}
-.active{border-color:#275f35;color:#7ce18f;background:#102015}
-.expired{border-color:#693333;color:#ff8b8b;background:#211010}
-.booking{padding:13px 0;border-bottom:1px solid #252932}
-.booking:last-child{border-bottom:0}
-.muted{color:#8c949f}
-.error{display:none;background:#2a1111;border:1px solid #633;padding:12px;border-radius:10px;margin-top:10px}
-.hidden{display:none!important}
-.topactions{display:flex;gap:10px}
-.topactions button{width:auto;padding:10px 16px}
-@media(max-width:600px){.wrap{padding:16px}.row{align-items:flex-start}.value{max-width:55%}.topactions{flex-direction:column}.topactions button{width:100%}}
-
-:root{--navy:#07152f;--blue:#176cff;--blue2:#38a0ff;--muted:#70809a;--line:#dce5f2;--soft:#f6f9fd}
-body{background:linear-gradient(180deg,#f7faff 0%,#edf4fb 100%);color:var(--navy)}
-body:before{content:"";display:block;height:4px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--blue2))}
-.wrap{max-width:920px;padding:18px 18px 45px}
-.logo{display:flex;justify-content:center;margin:12px 0 24px;padding:10px 0}.logo img{width:min(290px,78vw);height:auto;display:block}.logo span{display:none}
-.card{background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:24px;padding:22px;margin:15px 0;box-shadow:0 18px 45px rgba(7,21,47,.08)}
-h1,h2,h3{color:var(--navy)}
-input,button{border-color:#cfd9e7;background:#fff;color:var(--navy);box-shadow:0 5px 15px rgba(7,21,47,.04)}
-.primary{background:linear-gradient(135deg,var(--navy),#12366f);color:#fff;box-shadow:0 10px 24px rgba(7,21,47,.18)}
-.secondary{background:#edf3fa;color:var(--navy);border:1px solid #d1deed}
-.row{border-bottom-color:var(--line)}.label{color:var(--muted)}.value{color:var(--navy)}
-.balance{color:var(--navy)}.muted{color:var(--muted)}
-.badge{border-color:#cbd8e8;background:#f5f9ff;color:#31577f}.active{border-color:#a8d9b5;color:#18652f;background:#effaf2}.expired{border-color:#efbcbc;color:#8b1e1e;background:#fff1f1}
-.booking{border-bottom-color:var(--line)}.error{background:#fff0f0;border-color:#f0bcbc;color:#8b1e1e}
-.topactions{background:linear-gradient(rgba(247,250,255,.96) 75%,transparent);padding-bottom:10px}
-@media(max-width:600px){.wrap{padding:12px 12px 30px}.card{padding:17px;border-radius:19px}h1{font-size:26px}.balance{font-size:46px}.topactions button{min-height:52px}}
+.label{color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.5px}
+.value{font-weight:900;text-align:right}
+.balance{text-align:center;padding:8px 0 20px}
+.balance-num{font-size:58px;font-weight:950;letter-spacing:-2px}
+.balance-num small{font-size:15px;letter-spacing:0;color:var(--muted);font-weight:700}
+.badge{display:inline-flex;padding:7px 10px;border-radius:999px;border:1px solid #3b424c;font-size:11px;font-weight:900}
+.active{color:#dceee2;background:#102017;border-color:#345a42}
+.inactive{color:#ffb0b0;background:#261314;border-color:#693c3c}
+.neutral{color:#d1d7df;background:#171b21}
+.appointment{padding:15px 0;border-bottom:1px solid var(--line)}
+.appointment:last-child{border-bottom:0}
+.app-date{font-weight:950;font-size:16px}
+.app-time{font-size:22px;font-weight:950;margin-top:3px}
+.app-service{color:var(--muted);font-size:13px;margin-top:3px}
+.history-item{padding:14px 0;border-bottom:1px solid var(--line)}
+.history-item:last-child{border-bottom:0}
+.history-meta{font-size:13px;color:#cdd3da;margin-top:3px}
+.error{display:none;background:#2a1113;border:1px solid #673b3e;color:#ffd7d7;padding:13px;border-radius:13px;margin-top:12px}
+.success{background:#101c15;border:1px solid #31523e;color:#d8f0df;padding:13px;border-radius:13px}
+.rules{display:grid;gap:0}
+.rule{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);line-height:1.5;color:#dfe4ea}
+.rule:last-child{border-bottom:0}
+.rule b{min-width:22px;color:#fff}
+.rule.important{color:#ffd9d9;background:rgba(120,25,25,.12);padding:14px 10px;border-radius:12px;border-bottom:0}
+@media(max-width:600px){
+  .wrap{padding:12px 12px 34px}
+  .brand-name{font-size:19px;letter-spacing:3px}
+  .card{padding:16px;border-radius:18px}
+  h1{font-size:26px}
+  .welcome{font-size:22px}
+  .topbar{align-items:flex-start}
+  .topbar button{min-width:96px}
+  .actions{grid-template-columns:1fr 1fr}
+  .row{display:grid;grid-template-columns:1fr;gap:5px}
+  .value{text-align:left;overflow-wrap:anywhere}
+  .next-date{font-size:21px}
+  .next-time{font-size:43px}
+  .balance-num{font-size:50px}
+}
+@media(max-width:360px){
+  .actions{grid-template-columns:1fr}
+  .topbar{flex-direction:column}
+  .topbar button{width:100%}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<div class="logo">
-<img src="/assets/apex-logo.png" alt="APEX Training Lab">
-</div>
+<header class="brand">
+  <div class="brand-mark">APX</div>
+  <div class="brand-name">APEX TRAINING LAB</div>
+  <div class="brand-sub">MY ACCOUNT</div>
+</header>
 
-<section id="loginCard" class="card">
-<h1>LOG IN</h1>
-<p class="muted">Μπες στον προσωπικό σου λογαριασμό για να δεις τη συνδρομή και τα ραντεβού σου.</p>
+<section id="loginCard" class="card login-card">
+  <h1>LOG IN</h1>
+  <p class="muted">Μπες στον προσωπικό σου λογαριασμό για να δεις τη συνδρομή σου και τα επόμενα ραντεβού σου.</p>
 
-<input id="loginKey" type="text" inputmode="tel" autocomplete="username"
-       placeholder="Τηλέφωνο / Username">
+  <input id="loginKey" type="text" inputmode="tel" autocomplete="username"
+         placeholder="Τηλέφωνο / Username">
 
-<input id="loginPassword" type="password" autocomplete="current-password"
-       placeholder="Κωδικός" style="margin-top:10px">
+  <input id="loginPassword" type="password" autocomplete="current-password"
+         placeholder="Προσωπικός κωδικός" style="margin-top:10px">
 
-<button id="loginBtn" class="primary" style="margin-top:10px">ΣΥΝΔΕΣΗ</button>
-<div id="loginError" class="error"></div>
+  <button id="loginBtn" class="primary" style="margin-top:12px">ΣΥΝΔΕΣΗ</button>
+  <div id="loginError" class="error"></div>
 </section>
 
 <section id="account" class="hidden">
 
-<div class="topactions">
-<button id="bookingBtn" class="primary">ΚΛΕΙΣΕ ΡΑΝΤΕΒΟΥ</button>
-<button id="logoutBtn" class="secondary">ΕΞΟΔΟΣ</button>
-</div>
+  <div class="topbar" style="margin:4px 0 12px">
+    <div>
+      <div class="section-label">APEX MEMBER</div>
+      <div id="welcome" class="welcome">Καλώς ήρθες</div>
+    </div>
+    <button id="logoutBtn" class="secondary">ΕΞΟΔΟΣ</button>
+  </div>
 
-<div class="card">
-<h2 id="welcome">Καλώς ήρθες</h2>
-<div id="profile"></div>
-</div>
+  <section class="card next">
+    <div class="section-label">ΤΟ ΕΠΟΜΕΝΟ ΜΟΥ ΡΑΝΤΕΒΟΥ</div>
+    <div id="nextAppointment"></div>
+    <div class="actions">
+      <button id="bookingBtn" class="primary">ΚΛΕΙΣΕ ΡΑΝΤΕΒΟΥ</button>
+      <button id="refreshBtn" class="secondary">ΑΝΑΝΕΩΣΗ</button>
+    </div>
+  </section>
 
-<div class="card">
-<h2>Η ΣΥΝΔΡΟΜΗ ΜΟΥ</h2>
-<div id="subscription"></div>
-</div>
+  <section class="card">
+    <h2>Η ΣΥΝΔΡΟΜΗ ΜΟΥ</h2>
+    <div id="subscription"></div>
+  </section>
 
-<div class="card">
-<h2>ΡΑΝΤΕΒΟΥ</h2>
-<div id="bookings"></div>
-</div>
+  <section class="card">
+    <h2>ΚΑΝΟΝΕΣ APEX</h2>
+    <div class="rules">
+      <div class="rule"><b>1.</b><span>Οι προπονήσεις πραγματοποιούνται αποκλειστικά με ραντεβού.</span></div>
+      <div class="rule"><b>2.</b><span>Δεν επιτρέπονται παπούτσια σε κανέναν από τους χώρους του APEX.</span></div>
+      <div class="rule"><b>3.</b><span>Η αλλαγή ή ακύρωση ραντεβού επιτρέπεται έως και 24 ώρες πριν από την έναρξη της προπόνησης.</span></div>
+      <div class="rule"><b>4.</b><span>Ακύρωση ή αλλαγή σε λιγότερο από 24 ώρες χρεώνεται ως προπόνηση.</span></div>
+      <div class="rule"><b>5.</b><span>Η έναρξη του πακέτου προπονήσεων ξεκινά από την ημερομηνία πληρωμής.</span></div>
+      <div class="rule important"><b>6.</b><span>Σε περίπτωση μη πληρωμής ή μη ενεργού πακέτου, η προπόνηση και η κράτηση ραντεβού δεν είναι δυνατές.</span></div>
+    </div>
+  </section>
 
-<div id="accountError" class="error"></div>
+  <section class="card">
+    <h2>ΠΛΗΡΩΜΗ & ΕΝΑΡΞΗ ΠΑΚΕΤΟΥ</h2>
+    <div class="success" style="line-height:1.55">
+      Η ημερομηνία έναρξης του πακέτου είναι η <b>ημερομηνία πληρωμής</b>.
+      Χωρίς ενεργή πληρωμή/συνδρομή δεν μπορεί να πραγματοποιηθεί προπόνηση.
+    </div>
+  </section>
 
+  <section class="card">
+    <h2>ΤΑ ΕΠΟΜΕΝΑ ΡΑΝΤΕΒΟΥ ΜΟΥ</h2>
+    <div id="upcomingList"></div>
+  </section>
+
+  <section class="card">
+    <h2>ΙΣΤΟΡΙΚΟ</h2>
+    <div id="history"></div>
+  </section>
+
+  <section class="card">
+    <h2>ΠΡΟΦΙΛ</h2>
+    <div id="profile"></div>
+  </section>
+
+  <div id="accountError" class="error"></div>
 </section>
 </div>
 
@@ -106,7 +213,7 @@ input,button{border-color:#cfd9e7;background:#fff;color:var(--navy);box-shadow:0
 
 const $ = id => document.getElementById(id);
 
-async function api(url, options={}) {
+async function api(url, options={}){
   const r = await fetch(url,{
     credentials:"same-origin",
     cache:"no-store",
@@ -127,111 +234,175 @@ function esc(s){
   }[m]));
 }
 
+function prettyDate(date){
+  if(!date) return "";
+  const d=new Date(date+"T12:00:00");
+  return new Intl.DateTimeFormat("el-GR",{
+    weekday:"long",day:"numeric",month:"long",year:"numeric"
+  }).format(d);
+}
+
+function shortDate(date){
+  if(!date) return "";
+  const d=new Date(date+"T12:00:00");
+  return new Intl.DateTimeFormat("el-GR",{
+    day:"numeric",month:"long",year:"numeric"
+  }).format(d);
+}
+
+function statusLabel(state){
+  const map={
+    ACTIVE:"ΕΝΕΡΓΗ",
+    EXPIRED:"ΛΗΞΗ ΣΥΝΔΡΟΜΗΣ",
+    SESSIONS_EXHAUSTED:"ΕΞΑΝΤΛΗΘΗΚΑΝ ΟΙ ΣΥΝΕΔΡΙΕΣ",
+    NOT_STARTED:"ΔΕΝ ΕΧΕΙ ΞΕΚΙΝΗΣΕΙ",
+    DISABLED:"ΑΝΕΝΕΡΓΟΣ ΛΟΓΑΡΙΑΣΜΟΣ",
+    NO_SUBSCRIPTION:"ΧΩΡΙΣ ΣΥΝΔΡΟΜΗ",
+    NO_CLIENT:"ΜΗ ΔΙΑΘΕΣΙΜΟΣ ΛΟΓΑΡΙΑΣΜΟΣ"
+  };
+  return map[state?.reason] || "ΚΑΤΑΣΤΑΣΗ ΛΟΓΑΡΙΑΣΜΟΥ";
+}
+
+function renderNext(rows){
+  const box=$("nextAppointment");
+  if(!rows.length){
+    box.innerHTML=`
+      <div class="next-empty">Δεν υπάρχει επόμενο ραντεβού.</div>
+      <div class="muted">Κλείσε το επόμενο ραντεβού σου από το κουμπί παρακάτω.</div>`;
+    return;
+  }
+  const b=rows[0];
+  box.innerHTML=`
+    <div style="margin-top:12px"><span class="next-badge">ΕΠΟΜΕΝΟ ΡΑΝΤΕΒΟΥ</span></div>
+    <div class="next-date">${esc(prettyDate(b.date))}</div>
+    <div class="next-time">${esc(b.time)}</div>
+    <div class="next-service">${esc(b.service)}</div>`;
+}
+
+function renderUpcoming(rows){
+  const box=$("upcomingList");
+  if(!rows.length){
+    box.innerHTML=`<p class="muted">Δεν υπάρχουν προγραμματισμένα επόμενα ραντεβού.</p>`;
+    return;
+  }
+  box.innerHTML=rows.map(b=>`
+    <div class="appointment">
+      <div class="app-date">${esc(prettyDate(b.date))}</div>
+      <div class="app-time">${esc(b.time)}</div>
+      <div class="app-service">${esc(b.service)}</div>
+    </div>
+  `).join("");
+}
+
+function renderSubscription(d){
+  const box=$("subscription");
+  const s=d.subscription;
+  const state=d.state || {};
+  const bookingBtn=$("bookingBtn");
+  const active=state.reason==="ACTIVE";
+  if(bookingBtn){
+    bookingBtn.disabled=!active;
+    bookingBtn.style.opacity=active?"1":".5";
+    bookingBtn.textContent=active?"ΚΛΕΙΣΕ ΡΑΝΤΕΒΟΥ":"ΑΠΑΙΤΕΙΤΑΙ ΕΝΕΡΓΗ ΠΛΗΡΩΜΗ";
+  }
+
+  if(!s){
+    box.innerHTML=`
+      <div class="badge inactive">${esc(statusLabel(state))}</div>
+      <p class="muted">Δεν υπάρχει ενεργή συνδρομή αυτή τη στιγμή.</p>`;
+    return;
+  }
+
+  const isActive=state.reason==="ACTIVE";
+  const badgeClass=isActive?"active":"inactive";
+
+  box.innerHTML=`
+    <div class="balance">
+      <div class="balance-num">${Number(s.remaining)||0}<small> συνεδρίες υπόλοιπο</small></div>
+      <div style="margin-top:12px">
+        <span class="badge ${badgeClass}">${esc(statusLabel(state))}</span>
+      </div>
+    </div>
+    <div class="row"><span class="label">ΠΑΚΕΤΟ</span><span class="value">${esc(s.package_sessions)} ΣΥΝΕΔΡΙΕΣ</span></div>
+    <div class="row"><span class="label">ΧΡΗΣΙΜΟΠΟΙΗΘΗΚΑΝ</span><span class="value">${esc(s.used)}</span></div>
+    <div class="row"><span class="label">ΥΠΟΛΟΙΠΟ</span><span class="value">${esc(s.remaining)}</span></div>
+    <div class="row"><span class="label">ΕΝΑΡΞΗ</span><span class="value">${esc(s.start_date)}</span></div>
+    <div class="row"><span class="label">ΛΗΞΗ</span><span class="value">${esc(s.end_date)}</span></div>`;
+}
+
+function renderProfile(client){
+  $("welcome").textContent="Καλώς ήρθες, "+client.name;
+  $("profile").innerHTML=`
+    <div class="row"><span class="label">ΟΝΟΜΑ</span><span class="value">${esc(client.name)}</span></div>
+    <div class="row"><span class="label">ΤΗΛΕΦΩΝΟ</span><span class="value">${esc(client.phone)}</span></div>
+    ${client.email?`<div class="row"><span class="label">EMAIL</span><span class="value">${esc(client.email)}</span></div>`:""}`;
+}
+
+function renderHistory(rows){
+  const box=$("history");
+  if(!rows.length){
+    box.innerHTML=`<p class="muted">Δεν υπάρχει ιστορικό ακόμα.</p>`;
+    return;
+  }
+  box.innerHTML=rows.slice(0,50).map(r=>{
+    const manual=r.source==="MANUAL_ATTENDANCE";
+    const cancelled=r.status==="CANCELLED";
+    let title=manual?"ΧΕΙΡΟΚΙΝΗΤΗ ΠΑΡΟΥΣΙΑ":cancelled?"ΑΚΥΡΩΘΗΚΕ":"ΡΑΝΤΕΒΟΥ";
+    let badge=manual?"ΠΑΡΟΥΣΙΑ":cancelled?(r.counted?"ΧΡΕΩΘΗΚΕ":"ΔΕΝ ΧΡΕΩΘΗΚΕ"):"ΟΛΟΚΛΗΡΩΘΗΚΕ";
+    return `<div class="history-item">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+        <b>${esc(title)}</b>
+        <span class="badge ${manual||!cancelled?"active":"neutral"}">${esc(badge)}</span>
+      </div>
+      <div class="history-meta">${esc(shortDate(r.date))}${r.time?" • "+esc(r.time):""} • ${esc(r.service||"")}</div>
+      ${r.notes?`<div class="history-meta">${esc(r.notes)}</div>`:""}
+    </div>`;
+  }).join("");
+}
+
+async function loadAccount(){
+  const [d,upcoming]=await Promise.all([
+    api("/api/premium/me"),
+    api("/api/premium/my-upcoming")
+  ]);
+
+  renderProfile(d.client);
+  renderSubscription(d);
+  renderUpcoming(upcoming);
+  renderNext(upcoming);
+  renderHistory(d.booking_history || []);
+}
+
 async function login(){
   $("loginError").style.display="none";
-
-  const key=$("loginKey").value.trim();
+  const phone=$("loginKey").value.trim();
   const password=$("loginPassword").value;
 
-  if(!key || !password){
+  if(!phone || !password){
     $("loginError").textContent="Συμπλήρωσε το τηλέφωνό σου και τον κωδικό σου.";
     $("loginError").style.display="block";
     return;
   }
 
+  const btn=$("loginBtn");
+  btn.disabled=true;
+  btn.textContent="ΣΥΝΔΕΣΗ...";
+
   try{
     await api("/api/premium/auth/login",{
       method:"POST",
-      body:JSON.stringify({
-        phone:key,
-        password
-      })
+      body:JSON.stringify({phone,password})
     });
-
     await loadAccount();
-
     $("loginCard").classList.add("hidden");
     $("account").classList.remove("hidden");
-
   }catch(e){
     $("loginError").textContent=e.message;
     $("loginError").style.display="block";
+  }finally{
+    btn.disabled=false;
+    btn.textContent="ΣΥΝΔΕΣΗ";
   }
-}
-
-async function loadAccount(){
-  const d=await api("/api/premium/me");
-
-  $("welcome").textContent="Καλώς ήρθες, "+d.client.name;
-
-  $("profile").innerHTML=`
-    <div class="row">
-      <span class="label">ΟΝΟΜΑ</span>
-      <span class="value">${esc(d.client.name)}</span>
-    </div>
-    <div class="row">
-      <span class="label">ΤΗΛΕΦΩΝΟ</span>
-      <span class="value">${esc(d.client.phone)}</span>
-    </div>
-    ${d.client.email?`
-    <div class="row">
-      <span class="label">EMAIL</span>
-      <span class="value">${esc(d.client.email)}</span>
-    </div>`:""}
-  `;
-
-  const s=d.subscription;
-
-  if(!s){
-    $("subscription").innerHTML=
-      `<p class="muted">Δεν υπάρχει ενεργή συνδρομή.</p>`;
-  }else{
-    $("subscription").innerHTML=`
-      <div style="text-align:center;padding:12px 0 22px">
-        <div class="balance">${s.remaining}<small> συνεδρίες υπόλοιπο</small></div>
-        <div style="margin-top:14px">
-          <span class="badge active">ΕΝΕΡΓΗ</span>
-        </div>
-      </div>
-
-      <div class="row">
-        <span class="label">ΠΑΚΕΤΟ</span>
-        <span class="value">${s.package_sessions} ΣΥΝΕΔΡΙΕΣ</span>
-      </div>
-      <div class="row">
-        <span class="label">ΧΡΗΣΙΜΟΠΟΙΗΘΗΚΑΝ</span>
-        <span class="value">${s.used}</span>
-      </div>
-      <div class="row">
-        <span class="label">ΥΠΟΛΟΙΠΟ</span>
-        <span class="value">${s.remaining}</span>
-      </div>
-      <div class="row">
-        <span class="label">ΕΝΑΡΞΗ</span>
-        <span class="value">${s.start_date}</span>
-      </div>
-      <div class="row">
-        <span class="label">ΛΗΞΗ</span>
-        <span class="value">${s.end_date}</span>
-      </div>
-    `;
-  }
-
-  const rows=d.booking_history || [];
-
-  $("bookings").innerHTML=rows.length
-    ? rows.map(b=>`
-      <div class="booking">
-        <b>${esc(b.date)} — ${esc(b.time)}</b>
-        <div class="muted">${esc(b.service)}</div>
-        <div style="margin-top:6px">
-          <span class="badge ${b.counted?"active":""}">
-            ${b.counted?"ΧΡΕΩΘΗΚΕ":"ΔΕΝ ΧΡΕΩΘΗΚΕ"}
-          </span>
-        </div>
-      </div>
-    `).join("")
-    : `<p class="muted">Δεν υπάρχουν ραντεβού στο ιστορικό.</p>`;
 }
 
 async function logout(){
@@ -239,24 +410,32 @@ async function logout(){
   location.reload();
 }
 
+async function refresh(){
+  $("accountError").style.display="none";
+  try{await loadAccount();}
+  catch(e){
+    $("accountError").textContent=e.message;
+    $("accountError").style.display="block";
+  }
+}
+
 $("loginBtn").onclick=login;
-$("loginPassword").addEventListener("keydown",e=>{
-  if(e.key==="Enter") login();
-});
-$("loginKey").addEventListener("keydown",e=>{
-  if(e.key==="Enter") login();
-});
+$("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
+$("loginKey").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
 $("logoutBtn").onclick=logout;
-$("bookingBtn").onclick=()=>location.href="/#booking";
+$("refreshBtn").onclick=refresh;
+$("bookingBtn").onclick=()=>{
+  const disabled=$("bookingBtn").disabled;
+  if(disabled) return;
+  location.href="/#booking";
+};
 
 (async()=>{
   try{
     await loadAccount();
     $("loginCard").classList.add("hidden");
     $("account").classList.remove("hidden");
-  }catch(e){
-    // Δεν υπάρχει ενεργή σύνδεση — μένουμε στη σελίδα login.
-  }
+  }catch(e){}
 })();
 </script>
 </body>
