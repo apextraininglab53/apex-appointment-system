@@ -39,6 +39,7 @@ body{
   box-shadow:0 14px 40px rgba(0,0,0,.22)
 }
 .login-card{max-width:620px;margin:0 auto}
+.login-rules{max-width:620px;margin:0 auto 14px}
 h1{font-size:30px;margin:0 0 8px;letter-spacing:.5px}
 h2{font-size:18px;margin:0 0 16px;letter-spacing:.5px}
 .muted{color:var(--muted);line-height:1.55}
@@ -93,6 +94,7 @@ button{cursor:pointer;font-weight:900;letter-spacing:.2px}
 .history-item{padding:14px 0;border-bottom:1px solid var(--line)}
 .history-item:last-child{border-bottom:0}
 .history-meta{font-size:13px;color:#cdd3da;margin-top:3px}
+.hidden{display:none!important}
 .error{display:none;background:#2a1113;border:1px solid #673b3e;color:#ffd7d7;padding:13px;border-radius:13px;margin-top:12px}
 .success{background:#101c15;border:1px solid #31523e;color:#d8f0df;padding:13px;border-radius:13px}
 .rules{display:grid;gap:0}
@@ -130,6 +132,18 @@ button{cursor:pointer;font-weight:900;letter-spacing:.2px}
   <div class="brand-name">APEX TRAINING LAB</div>
   <div class="brand-sub">MY ACCOUNT</div>
 </header>
+
+<section class="card login-rules">
+  <h2>ΚΑΝΟΝΕΣ APEX</h2>
+  <div class="rules">
+    <div class="rule"><b>1.</b><span>Οι προπονήσεις πραγματοποιούνται αποκλειστικά με ραντεβού.</span></div>
+    <div class="rule"><b>2.</b><span>Δεν επιτρέπονται παπούτσια σε κανέναν από τους χώρους του APEX.</span></div>
+    <div class="rule"><b>3.</b><span>Η αλλαγή ή ακύρωση ραντεβού επιτρέπεται έως και 24 ώρες πριν από την έναρξη της προπόνησης.</span></div>
+    <div class="rule"><b>4.</b><span>Ακύρωση ή αλλαγή σε λιγότερο από 24 ώρες χρεώνεται ως προπόνηση.</span></div>
+    <div class="rule"><b>5.</b><span>Η έναρξη του πακέτου προπονήσεων ξεκινά από την ημερομηνία πληρωμής.</span></div>
+    <div class="rule important"><b>6.</b><span>Σε περίπτωση μη πληρωμής ή μη ενεργού πακέτου, η προπόνηση και η κράτηση ραντεβού δεν είναι δυνατές.</span></div>
+  </div>
+</section>
 
 <section id="loginCard" class="card login-card">
   <h1>LOG IN</h1>
