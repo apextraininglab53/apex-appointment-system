@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>APEX PREMIUM ADMIN</title>
 <style>
-:root{--navy:#07152f;--blue:#176cff;--blue2:#38a0ff;--ink:#07152f;--muted:#70809a;--line:#dce5f2;--soft:#f5f8fc;--white:#fff;--shadow:0 18px 50px rgba(7,21,47,.10)}
 *{box-sizing:border-box}
-body{margin:0;background:linear-gradient(180deg,#f7faff 0%,#eef4fb 100%);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{margin:0;background:#090909;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 header{padding:18px 22px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#090909f5;backdrop-filter:blur(14px);z-index:50}
 .brand{font-weight:900;letter-spacing:2px}.brand small{display:block;color:#888;font-size:10px;margin-top:5px}
 .wrap{max-width:1200px;margin:auto;padding:22px}
@@ -47,41 +46,26 @@ button:active{transform:scale(.98)}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .login{max-width:420px;margin:12vh auto}
 .hidden{display:none!important}
+.contact-btn{background:#fff;color:#000;font-weight:800;border:0;min-height:40px;padding:8px 12px}
+.contact-btn.disabled,.contact-btn:disabled{background:#555;color:#aaa;border-color:#555;cursor:not-allowed;opacity:.7}
+.next-appointment{background:#f8fafc;color:#111;border-radius:16px;padding:16px;margin:12px 0;border:1px solid #e5e7eb}
+.next-appointment .label{font-size:11px;font-weight:900;letter-spacing:.8px;color:#555}
+.next-appointment .date{font-size:24px;font-weight:900;margin-top:5px}
+.next-appointment .service{font-size:13px;color:#555;margin-top:4px}
 .error{display:none;background:#2a1111;border:1px solid #633;padding:12px;border-radius:10px;margin:10px 0}
 .notice{background:#151515;border:1px solid #333;padding:12px;border-radius:10px;margin:10px 0}
 .ok{background:#102410;border:1px solid #285728;padding:12px;border-radius:10px;margin:10px 0}
 .sectionBtn{width:100%;text-align:left;background:#111;border:1px solid #292929;font-size:18px;font-weight:800}
 #status{font-size:12px;color:#888;margin-top:10px}
 @media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.clients,.cols{grid-template-columns:1fr}.wrap{padding:12px}.card{padding:14px;border-radius:16px}.sheet{padding:14px;max-height:95vh}.sheet .card{margin:10px 0}.row{gap:10px;align-items:flex-start}.row>span:last-child,.row>b{text-align:right}.toolbar{flex-direction:column}.toolbar button{width:100%}header{padding:12px 14px}.brand{font-size:14px}header button{width:auto;font-size:12px;padding:8px 10px}}
-
-body:before{content:"";display:block;height:4px;background:linear-gradient(90deg,var(--navy),var(--blue),var(--blue2))}
-header{padding:14px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:rgba(255,255,255,.94);backdrop-filter:blur(16px);z-index:50;box-shadow:0 8px 30px rgba(7,21,47,.06)}
-.brand{display:flex;align-items:center;gap:14px;font-weight:900;letter-spacing:1.5px;color:var(--navy)}
-.brand img{width:145px;height:auto;display:block}
-.brand small{display:block;color:var(--muted);font-size:10px;margin-top:4px;letter-spacing:2px}
-.wrap{max-width:1200px;margin:auto;padding:26px 22px 50px}
-.card{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:22px;padding:20px;margin:16px 0;box-shadow:var(--shadow)}
-.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
-.stat{padding:17px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#fff,#f7faff);box-shadow:0 8px 24px rgba(7,21,47,.05)}
-.stat small{color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.7px}.stat b{display:block;font-size:27px;margin-top:7px;color:var(--navy)}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap}
-input,select,button{min-height:48px;border-radius:13px;border:1px solid #cfd9e7;background:#fff;color:var(--navy);padding:11px 14px;font-size:15px;box-shadow:0 4px 12px rgba(7,21,47,.04)}
-input,select{width:100%}button{cursor:pointer;font-weight:800;touch-action:manipulation}button:active{transform:scale(.98)}
-.primary{background:linear-gradient(135deg,var(--navy),#12366f);color:#fff;border:0;box-shadow:0 8px 20px rgba(7,21,47,.18)}
-.clients{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.customer-folder{border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden;box-shadow:0 8px 24px rgba(7,21,47,.05)}
-.customer-folder-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px;cursor:pointer;background:linear-gradient(135deg,#fff,#f7faff)}
-.customer-folder-head:active{background:#eef5ff}.folder-left{display:flex;align-items:center;gap:12px;min-width:0}.folder-icon{font-size:25px;line-height:1}.folder-title{font-weight:900;color:var(--navy);letter-spacing:.4px}.folder-phone{color:var(--muted);font-size:13px;margin-top:3px}.folder-count{font-size:11px;color:#28558f;border:1px solid #c8d9ef;border-radius:999px;padding:5px 9px;white-space:nowrap;background:#f1f7ff}.customer-folder-body{display:none;border-top:1px solid var(--line);padding:9px;background:#f8fbff}.customer-folder.open .customer-folder-body{display:block}.folder-customer{padding:13px;border:1px solid var(--line);border-radius:13px;margin:6px 0;cursor:pointer;background:#fff}.folder-customer:active{border-color:var(--blue)}.folder-customer-name{font-weight:850;color:var(--navy)}.folder-customer-meta{color:var(--muted);font-size:12px;margin-top:4px}
-.muted{color:var(--muted)}.tag{display:inline-block;padding:5px 8px;border:1px solid #cbd8e8;border-radius:999px;font-size:10px;margin:3px;background:#f7faff;color:#31577f}.modal{position:fixed;inset:0;background:rgba(7,21,47,.48);display:none;align-items:flex-end;justify-content:center;z-index:100;backdrop-filter:blur(5px)}.modal.show{display:flex}.sheet{width:min(900px,100%);max-height:92vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:26px 26px 0 0;padding:22px;box-shadow:0 -20px 60px rgba(7,21,47,.25)}.row{display:flex;justify-content:space-between;gap:15px;padding:12px 0;border-bottom:1px solid var(--line)}.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.login{max-width:430px;margin:10vh auto}.hidden{display:none!important}.error{display:none;background:#fff0f0;border:1px solid #f0bcbc;color:#8b1e1e;padding:12px;border-radius:12px;margin:10px 0}.notice{background:#f2f7ff;border:1px solid #c9daf0;padding:12px;border-radius:12px;margin:10px 0}.ok{background:#edf9f1;border:1px solid #b9dfc4;color:#185c2d;padding:12px;border-radius:12px;margin:10px 0}.sectionBtn{width:100%;text-align:left;background:linear-gradient(135deg,#fff,#f5f9ff);border:1px solid var(--line);font-size:18px;font-weight:900;color:var(--navy)}#status{font-size:12px;color:var(--muted);margin-top:10px}
-@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}.clients,.cols{grid-template-columns:1fr}.wrap{padding:14px 12px 35px}.card{padding:15px;border-radius:18px}.sheet{padding:15px;max-height:95vh}.row{gap:10px;align-items:flex-start}.row>span:last-child,.row>b{text-align:right}.toolbar{flex-direction:column}.toolbar button{width:100%}header{padding:10px 12px}.brand img{width:122px}header button{width:auto;font-size:12px;padding:8px 10px}}
 </style>
 </head>
 <body>
 
 <header>
   <div class="brand">
-    <img src="/assets/apex-logo.png" alt="APEX Training Lab">
-    <div><small>PREMIUM ADMIN</small></div>
+    APEX TRAINING LAB
+    <small>PREMIUM ADMIN</small>
   </div>
   <button type="button" id="bookingAdminBtn">BOOKING ADMIN</button>
 </header>
@@ -334,12 +318,20 @@ async function openClient(id) {
     $("detail").innerHTML = `
       <h2>${esc(d.client.name)}</h2>
       <p class="muted">${esc(d.client.phone)} ${esc(d.client.email || "")}</p>
+      ${renderNextAppointment(d.booking_history || [])}
 
       <div class="card">
         <h3>ΣΤΟΙΧΕΙΑ ΠΕΛΑΤΗ</h3>
         <label class="muted">Ονοματεπώνυμο</label>
         <input id="clientNameEdit" type="text" value="${esc(d.client.name)}" autocomplete="name">
         <button type="button" class="primary" id="renameBtn" style="margin-top:10px">ΑΠΟΘΗΚΕΥΣΗ ΟΝΟΜΑΤΟΣ</button>
+        <button type="button" id="deleteClientBtn" style="margin-top:10px;background:#7f1d1d;color:#fff;border-color:#991b1b">ΔΙΑΓΡΑΦΗ ΠΕΛΑΤΗ</button>
+        <p class="muted" style="margin-top:8px">Η διαγραφή αφαιρεί το όνομα από τον Premium Admin χωρίς να διαγράφει τα παλιά ραντεβού/ιστορικό.</p>
+        <div style="margin-top:12px;padding:12px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc">
+          <b>ΔΙΑΓΡΑΦΗ ΜΟΝΟ ΜΕ ΕΠΙΚΟΙΝΩΝΙΑ</b><br>
+          <span class="muted">Για αίτημα διαγραφής επικοινωνήστε στο:</span><br>
+          <a href="tel:6943820715" style="display:inline-block;margin-top:6px;font-weight:800;font-size:18px;color:inherit;text-decoration:none">📞 6943820715</a>
+        </div>
       </div>
 
       <div class="card">
@@ -360,13 +352,19 @@ async function openClient(id) {
       </div>
 
       <div class="card">
-        <h3>Συνδρομή</h3>
+        <h3>ΣΥΝΔΡΟΜΗ — ΠΡΟΟΔΟΣ ΠΑΚΕΤΟΥ</h3>
         ${d.subscription ? `
-          <div class="row"><span>Πακέτο</span><b>${d.subscription.package_sessions}</b></div>
+          <div class="row"><span>Πακέτο</span><b>${d.subscription.package_sessions} ΠΡΟΠΟΝΗΣΕΙΣ</b></div>
           <div class="row"><span>Έναρξη</span><b>${d.subscription.start_date}</b></div>
           <div class="row"><span>Λήξη</span><b>${d.subscription.end_date}</b></div>
-          <div class="row"><span>Χρήση από booking</span><b>${d.subscription.used}</b></div>
-          <div class="row"><span>Υπόλοιπο</span><b>${d.subscription.remaining}</b></div>
+          <div class="package-progress-wrap" style="margin:14px 0">
+            <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:8px"><span>Χρησιμοποιημένες</span><b>${d.subscription.used} / ${d.subscription.package_sessions}</b></div>
+            <div style="height:12px;border-radius:999px;background:#e5e7eb;overflow:hidden">
+              <div style="height:100%;width:${Math.min(100, Math.max(0, (Number(d.subscription.used)||0)/Number(d.subscription.package_sessions)*100))}%;background:#111827;border-radius:999px"></div>
+            </div>
+          </div>
+          <div class="row"><span>Υπόλοιπο</span><b>${d.subscription.remaining} / ${d.subscription.package_sessions}</b></div>
+          <div class="row"><span>Κατάσταση</span><b>${esc(d.state?.reason || "")}</b></div>
         ` : "Δεν υπάρχει ενεργή συνδρομή."}
       </div>
 
@@ -383,13 +381,8 @@ async function openClient(id) {
       </div>
 
       <div class="card">
-        <h3>Booking — διασταύρωση</h3>
-        ${d.booking_history.map(x => `
-          <div class="row">
-            <span>${x.date} ${x.time}<br><small>${esc(x.service)}</small></span>
-            <span>${x.counted ? "<b>ΧΡΕΩΘΗΚΕ</b>" : '<span class="muted">ΔΕΝ ΧΡΕΩΘΗΚΕ</span>'}<br><small>${esc(x.reason)}</small></span>
-          </div>
-        `).join("") || "Δεν υπάρχουν."}
+        <h3>ΡΑΝΤΕΒΟΥ — ΟΜΑΔΟΠΟΙΗΣΗ ΠΑΚΕΤΟΥ</h3>
+        ${renderPackageBookings(d.booking_history || [], d.subscription)}
       </div>
 
       <div class="card">
@@ -408,6 +401,7 @@ async function openClient(id) {
     await fillProgramSelect();
     $("attendanceDate").value = localToday();
     $("renameBtn").onclick = () => renameClient(id);
+    $("deleteClientBtn").onclick = () => deleteClient(id);
     $("addAttendanceBtn").onclick = () => addManualAttendance(id);
     $("renewBtn").onclick = () => renew(id);
     $("correctBtn").onclick = () => correct(id);
@@ -441,6 +435,85 @@ async function renameClient(id) {
     await refresh();
     await openClient(id);
   } catch(e) { showDetailError(e.message); }
+}
+
+function appointmentMs(x) {
+  const [y,m,d] = String(x.date || "").split("-").map(Number);
+  const [hh,mm] = String(x.time || "00:00").split(":").map(Number);
+  return new Date(y, (m||1)-1, d||1, hh||0, mm||0, 0, 0).getTime();
+}
+
+function hoursUntilAppointment(x) {
+  return (appointmentMs(x) - Date.now()) / 3600000;
+}
+
+function renderNextAppointment(rows) {
+  const upcoming = rows.filter(r => r.status === "UPCOMING")
+    .sort((a,b) => appointmentMs(a) - appointmentMs(b));
+  if (!upcoming.length) return `<div class="next-appointment"><div class="label">ΕΠΟΜΕΝΟ ΡΑΝΤΕΒΟΥ</div><div class="date">Δεν υπάρχει προγραμματισμένο</div></div>`;
+  const x = upcoming[0];
+  return `<div class="next-appointment">
+    <div class="label">ΕΠΟΜΕΝΟ ΡΑΝΤΕΒΟΥ</div>
+    <div class="date">${esc(x.date)} • ${esc(x.time)}</div>
+    <div class="service">${esc(x.service || "Προπόνηση")}</div>
+  </div>`;
+}
+
+function contactAppointment(date, time) {
+  window.location.href = "tel:6943820715";
+}
+
+function renderPackageBookings(rows, sub) {
+  if (!sub) return `<div class="notice">Δεν υπάρχει ενεργό πακέτο.</div>`;
+  const total = Number(sub.package_sessions) || 0;
+  const counted = rows.filter(r => r.counted).sort((a,b) => (`${a.date} ${a.time}`).localeCompare(`${b.date} ${b.time}`));
+  const upcoming = rows.filter(r => !r.counted && r.status === "UPCOMING").sort((a,b) => (`${a.date} ${a.time}`).localeCompare(`${b.date} ${b.time}`));
+  const other = rows.filter(r => !r.counted && r.status !== "UPCOMING").sort((a,b) => (`${b.date} ${b.time}`).localeCompare(`${a.date} ${a.time}`));
+
+  const numbered = counted.map((x,i) => `
+    <div class="row">
+      <span><b>ΠΡΟΠΟΝΗΣΗ ${i+1} / ${total}</b><br>${x.date} ${x.time}<br><small>${esc(x.service)}</small></span>
+      <span><b>${esc(x.status === "CANCELLED" ? "ΧΡΕΩΘΗΚΕ" : "ΟΛΟΚΛΗΡΩΘΗΚΕ")}</b><br><small>${esc(x.reason)}</small></span>
+    </div>`).join("");
+
+  const upcomingHtml = upcoming.length ? `
+    <div style="margin-top:16px"><h4 style="margin:0 0 8px">ΕΠΟΜΕΝΑ ΡΑΝΤΕΒΟΥ</h4>${upcoming.map(x => {
+      const h = hoursUntilAppointment(x);
+      const locked = h < 3;
+      return `<div class="row">
+        <span><b>${x.date} ${x.time}</b><br><small>${esc(x.service)}</small><br><small class="muted">${locked ? "Έχει φτάσει το όριο των 3 ωρών." : "Ακύρωση/επικοινωνία έως 3 ώρες πριν."}</small></span>
+        <span style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span class="muted">ΔΕΝ ΕΧΕΙ ΧΡΕΩΘΕΙ ΑΚΟΜΑ</span>
+          <button type="button" class="contact-btn ${locked ? "disabled" : ""}" ${locked ? "disabled" : ""} onclick="contactAppointment('${esc(x.date)}','${esc(x.time)}')">ΕΠΙΚΟΙΝΩΝΙΑ</button>
+        </span>
+      </div>`;
+    }).join("")}</div>` : "";
+
+  const otherHtml = other.length ? `
+    <div style="margin-top:16px"><h4 style="margin:0 0 8px">ΜΗ ΧΡΕΩΘΕΝΤΑ ΡΑΝΤΕΒΟΥ</h4>${other.map(x => `
+      <div class="row"><span>${x.date} ${x.time}<br><small>${esc(x.service)}</small></span><span class="muted">ΔΕΝ ΧΡΕΩΘΗΚΕ<br><small>${esc(x.reason)}</small></span></div>
+    `).join("")}</div>` : "";
+
+  const remaining = Math.max(0, total - counted.length);
+  return `
+    <div style="padding:12px 14px;border-radius:14px;background:#f3f4f6;margin-bottom:12px">
+      <div style="font-size:18px;font-weight:800">ΠΑΚΕΤΟ ${total}</div>
+      <div style="margin-top:4px">${counted.length} χρησιμοποιημένες • ${remaining} υπόλοιπο</div>
+    </div>
+    ${numbered || `<div class="notice">Δεν έχει χρεωθεί ακόμη προπόνηση από αυτό το πακέτο.</div>`}
+    ${upcomingHtml}
+    ${otherHtml}`;
+}
+
+async function deleteClient(id) {
+  const name = $("clientNameEdit")?.value?.trim() || "τον πελάτη";
+  if (!confirm(`Να διαγραφεί ο πελάτης «${name}» από τον Premium Admin;\n\nΤα παλιά ραντεβού και το ιστορικό θα παραμείνουν στη βάση.`)) return;
+  try {
+    const result = await api("/api/premium/admin/clients/" + id + "/delete", {method:"POST"});
+    closeModal();
+    showOk(result.message || "Ο πελάτης διαγράφηκε.");
+    await refresh();
+  } catch(e) { showError(e.message); }
 }
 
 function localToday() {
