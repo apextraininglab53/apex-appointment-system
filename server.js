@@ -2388,7 +2388,34 @@ function premiumUsage(clientId) {
 
   const rows = premiumBookingUsage(client, sub);
   const manualRows = db.prepare(`SELECT id, attendance_date AS date, attendance_time AS time, service, notes, created_at FROM premium_manual_attendance WHERE client_id=? AND attendance_date BETWEEN ? AND ? ORDER BY attendance_date DESC, COALESCE(attendance_time,'') DESC, id DESC`).all(clientId, sub.start_date, sub.end_date);
-  const manualUsage = manualRows.map(r => ({source:"MANUAL_ATTENDANCE", manual_attendance_id:r.id, date:r.date, time:r.time||"", service:r.service, notes:r.notes||"", status:"ATTENDED_MANUAL", counted:true, reason:"Παρουσία καταχωρήθηκε χειροκίνητα από τον διαχειριστή."}));
+
+  // Manual attendance counts as one session, but it must NOT double-count
+  // a booking that has already been counted for the same date/time/service.
+  // If there is no matching counted booking (for example a walk-in), the
+  // manual attendance is counted normally.
+  const manualUsage = manualRows.map(r => {
+    const duplicate = rows.some(x =>
+      x.counted === true &&
+      x.date === r.date &&
+      x.time === (r.time || "") &&
+      x.service === r.service
+    );
+
+    return {
+      source:"MANUAL_ATTENDANCE",
+      manual_attendance_id:r.id,
+      date:r.date,
+      time:r.time||"",
+      service:r.service,
+      notes:r.notes||"",
+      status:"ATTENDED_MANUAL",
+      counted:!duplicate,
+      reason: duplicate
+        ? "Δεν χρεώνεται δεύτερη φορά — υπάρχει ήδη καταχωρημένο ραντεβού για την ίδια προπόνηση."
+        : "Παρουσία καταχωρήθηκε χειροκίνητα από τον διαχειριστή — χρεώνεται 1 προπόνηση."
+    };
+  });
+
   const allRows = rows.concat(manualUsage).sort((a,b)=>(`${b.date} ${b.time}`).localeCompare(`${a.date} ${a.time}`));
   const used = allRows.filter(r => r.counted).length;
   return {used, remaining:Math.max(0, sub.package_sessions-used), rows:allRows, overridden:false};
