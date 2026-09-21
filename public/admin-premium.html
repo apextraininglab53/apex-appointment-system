@@ -48,13 +48,6 @@ button:active{transform:scale(.98)}
 .hidden{display:none!important}
 .error{display:none;background:#2a1111;border:1px solid #633;padding:12px;border-radius:10px;margin:10px 0}
 .notice{background:#151515;border:1px solid #333;padding:12px;border-radius:10px;margin:10px 0}
-.next-appointment{background:#f5f5f5;color:#111;border:1px solid #d8d8d8;border-radius:16px;padding:16px;margin:0 0 14px}
-.next-appointment .label{font-size:11px;font-weight:900;letter-spacing:1px;color:#666}
-.next-appointment .date{font-size:22px;font-weight:900;margin-top:6px}
-.next-appointment .service{font-size:14px;margin-top:4px;color:#555}
-.contact-action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border-radius:10px;background:#111;color:#fff;text-decoration:none;font-weight:800}
-.contact-action.disabled{background:#3a3a3a;color:#aaa;pointer-events:none}
-
 .ok{background:#102410;border:1px solid #285728;padding:12px;border-radius:10px;margin:10px 0}
 .sectionBtn{width:100%;text-align:left;background:#111;border:1px solid #292929;font-size:18px;font-weight:800}
 #status{font-size:12px;color:#888;margin-top:10px}
@@ -311,76 +304,12 @@ async function loadPrograms() {
   }
 }
 
-
-function bookingMs(date, time) {
-  const parts = String(date || "").split("-").map(Number);
-  const tp = String(time || "00:00").split(":").map(Number);
-  if (parts.length !== 3 || parts.some(Number.isNaN)) return NaN;
-  return new Date(
-    parts[0],
-    parts[1] - 1,
-    parts[2],
-    tp[0] || 0,
-    tp[1] || 0,
-    0
-  ).getTime();
-}
-
-function renderNextAppointment(rows) {
-  const next = (rows || [])
-    .slice()
-    .sort((a, b) => bookingMs(a.date, a.time) - bookingMs(b.date, b.time))[0];
-
-  if (!next) {
-    return `
-      <div class="next-appointment">
-        <div class="label">ΕΠΟΜΕΝΟ ΡΑΝΤΕΒΟΥ</div>
-        <div class="date">Δεν υπάρχει προγραμματισμένο ραντεβού</div>
-      </div>
-    `;
-  }
-
-  const diff = bookingMs(next.date, next.time) - Date.now();
-  const contactDisabled = diff <= 24 * 60 * 60 * 1000;
-
-  return `
-    <div class="next-appointment">
-      <div class="label">ΕΠΟΜΕΝΟ ΡΑΝΤΕΒΟΥ</div>
-      <div class="date">${esc(next.date)} — ${esc(next.time)}</div>
-      <div class="service">${esc(next.service)}</div>
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        ${
-          contactDisabled
-            ? `<span class="contact-action disabled">ΕΠΙΚΟΙΝΩΝΙΑ ΚΛΕΙΔΩΜΕΝΗ — &lt;24 ΩΡΕΣ</span>`
-            : `<a class="contact-action" href="tel:6943820715">📞 ΕΠΙΚΟΙΝΩΝΙΑ APEX</a>`
-        }
-      </div>
-    </div>
-  `;
-}
-
-function renderRules() {
-  return `
-    <div class="notice">
-      <b>ΚΑΝΟΝΕΣ APEX</b><br>
-      • Τα ραντεβού πραγματοποιούνται μόνο με κράτηση.<br>
-      • Ακύρωση ή αλλαγή έως <b>24 ώρες πριν</b>.<br>
-      • Κάτω από 24 ώρες η προπόνηση <b>χρεώνεται κανονικά</b>.<br>
-      • Μη εμφάνιση στο ραντεβού <b>χρεώνεται κανονικά</b>.<br>
-      • Η κράτηση είναι προσωπική και δεν μεταβιβάζεται.<br>
-      • Για αλλαγές μετά το όριο απαιτείται επικοινωνία με το APEX.
-    </div>
-  `;
-}
-
 async function openClient(id) {
   try {
     const d = await api("/api/premium/admin/clients/" + id);
     $("modal").classList.add("show");
 
     $("detail").innerHTML = `
-      ${renderNextAppointment(d.upcoming_bookings || [])}
-      ${renderRules()}
       <h2>${esc(d.client.name)}</h2>
       <p class="muted">${esc(d.client.phone)} ${esc(d.client.email || "")}</p>
 
@@ -446,7 +375,7 @@ async function openClient(id) {
 
       <div class="card">
         <h3>ΡΑΝΤΕΒΟΥ — ΟΜΑΔΟΠΟΙΗΣΗ ΠΑΚΕΤΟΥ</h3>
-        ${renderPackageBookings(d.booking_history || [], d.subscription, d.upcoming_bookings || [])}
+        ${renderPackageBookings(d.booking_history || [], d.subscription)}
       </div>
 
       <div class="card">
@@ -501,94 +430,41 @@ async function renameClient(id) {
   } catch(e) { showDetailError(e.message); }
 }
 
-function renderPackageBookings(rows, sub, upcomingBookings = []) {
+function renderPackageBookings(rows, sub) {
   if (!sub) return `<div class="notice">Δεν υπάρχει ενεργό πακέτο.</div>`;
-
   const total = Number(sub.package_sessions) || 0;
+  const counted = rows.filter(r => r.counted).sort((a,b) => (`${a.date} ${a.time}`).localeCompare(`${b.date} ${b.time}`));
+  const upcoming = rows.filter(r => !r.counted && r.status === "UPCOMING").sort((a,b) => (`${a.date} ${a.time}`).localeCompare(`${b.date} ${b.time}`));
+  const other = rows.filter(r => !r.counted && r.status !== "UPCOMING").sort((a,b) => (`${b.date} ${b.time}`).localeCompare(`${a.date} ${a.time}`));
 
-  const counted = rows
-    .filter(r => r.counted)
-    .sort((a,b) =>
-      (`${a.date} ${a.time}`).localeCompare(`${b.date} ${b.time}`)
-    );
-
-  const upcoming = (upcomingBookings || [])
-    .slice()
-    .sort((a,b) =>
-      (`${a.date} ${a.time}`).localeCompare(`${b.date} ${b.time}`)
-    );
-
-  const other = rows
-    .filter(r => !r.counted && r.status !== "UPCOMING")
-    .sort((a,b) =>
-      (`${b.date} ${b.time}`).localeCompare(`${a.date} ${a.time}`)
-    );
-
-  const numbered = counted.map((x,i) => `
+  const numbered = counted.map((x,i) => {
+    const label = x.source === "MANUAL_ATTENDANCE" ? "ΧΕΙΡΟΚΙΝΗΤΗ ΠΑΡΟΥΣΙΑ" : (x.status === "CANCELLED" ? "ΧΡΕΩΘΗΚΕ" : "ΟΛΟΚΛΗΡΩΘΗΚΕ");
+    return `
     <div class="row">
-      <span>
-        <b>ΠΡΟΠΟΝΗΣΗ ${i+1} / ${total}</b><br>
-        ${x.date} ${x.time}<br>
-        <small>${esc(x.service)}</small>
-      </span>
-      <span>
-        <b>${esc(x.status === "CANCELLED" ? "ΧΡΕΩΘΗΚΕ" : "ΟΛΟΚΛΗΡΩΘΗΚΕ")}</b><br>
-        <small>${esc(x.reason || "")}</small>
-      </span>
-    </div>
-  `).join("");
+      <span><b>ΠΡΟΠΟΝΗΣΗ ${i+1}/${total}</b><br>${x.date}${x.time ? ` ${x.time}` : ""}<br><small>${esc(x.service)}${x.source === "MANUAL_ATTENDANCE" ? " • ΧΕΙΡΟΚΙΝΗΤΗ" : ""}</small></span>
+      <span><b>${esc(label)}</b><br><small>${esc(x.reason || "")}</small></span>
+    </div>`;
+  }).join("");
 
   const upcomingHtml = upcoming.length ? `
-    <div style="margin-top:16px">
-      <h4 style="margin:0 0 8px">ΕΠΟΜΕΝΑ ΡΑΝΤΕΒΟΥ</h4>
-      ${upcoming.map(x => `
-        <div class="row">
-          <span>
-            <b>${esc(x.date)} — ${esc(x.time)}</b><br>
-            <small>${esc(x.service)}</small>
-          </span>
-          <span>
-            <a class="contact-action" href="tel:6943820715">📞 ΕΠΙΚΟΙΝΩΝΙΑ</a>
-          </span>
-        </div>
-      `).join("")}
-    </div>
-  ` : "";
+    <div style="margin-top:16px"><h4 style="margin:0 0 8px">ΕΠΟΜΕΝΑ ΡΑΝΤΕΒΟΥ</h4>${upcoming.map(x => `
+      <div class="row"><span>${x.date} ${x.time}<br><small>${esc(x.service)}</small></span><span class="muted">ΔΕΝ ΕΧΕΙ ΧΡΕΩΘΕΙ ΑΚΟΜΑ</span></div>
+    `).join("")}</div>` : "";
 
   const otherHtml = other.length ? `
-    <div style="margin-top:16px">
-      <h4 style="margin:0 0 8px">ΜΗ ΧΡΕΩΘΕΝΤΑ ΡΑΝΤΕΒΟΥ</h4>
-      ${other.map(x => `
-        <div class="row">
-          <span>
-            ${x.date} ${x.time}<br>
-            <small>${esc(x.service)}</small>
-          </span>
-          <span class="muted">
-            ΔΕΝ ΧΡΕΩΘΗΚΕ<br>
-            <small>${esc(x.reason || "")}</small>
-          </span>
-        </div>
-      `).join("")}
-    </div>
-  ` : "";
+    <div style="margin-top:16px"><h4 style="margin:0 0 8px">ΜΗ ΧΡΕΩΘΕΝΤΑ ΡΑΝΤΕΒΟΥ</h4>${other.map(x => `
+      <div class="row"><span>${x.date} ${x.time}<br><small>${esc(x.service)}</small></span><span class="muted">ΔΕΝ ΧΡΕΩΘΗΚΕ<br><small>${esc(x.reason)}</small></span></div>
+    `).join("")}</div>` : "";
 
   const remaining = Math.max(0, total - counted.length);
-
   return `
     <div style="padding:12px 14px;border-radius:14px;background:#f3f4f6;margin-bottom:12px">
       <div style="font-size:18px;font-weight:800">ΠΑΚΕΤΟ ${total}</div>
-      <div style="margin-top:4px">
-        ${counted.length} χρησιμοποιημένες • ${remaining} υπόλοιπο
-      </div>
+      <div style="margin-top:4px">${counted.length} χρησιμοποιημένες • ${remaining} υπόλοιπο</div>
     </div>
-
     ${numbered || `<div class="notice">Δεν έχει χρεωθεί ακόμη προπόνηση από αυτό το πακέτο.</div>`}
-
     ${upcomingHtml}
-
-    ${otherHtml}
-  `;
+    ${otherHtml}`;
 }
 
 async function deleteClient(id) {
