@@ -1081,6 +1081,45 @@ app.post(
 
     }
 
+    /*
+      APEX PREMIUM:
+      Κράτηση επιτρέπεται μόνο σε πελάτη με ενεργό πακέτο.
+      Η έναρξη του πακέτου θεωρείται η ημερομηνία πληρωμής
+      που έχει καταχωρηθεί από τον διαχειριστή.
+    */
+    premiumSyncCustomers();
+
+    const paidClient = db.prepare(`
+      SELECT *
+      FROM premium_clients
+      WHERE deleted=0
+        AND phone=?
+      LIMIT 1
+    `).get(phone);
+
+    if (!paidClient) {
+      return res.status(403).json({
+        error: "Δεν υπάρχει ενεργό πακέτο. Για κράτηση προπόνησης απαιτείται ενεργή πληρωμή."
+      });
+    }
+
+    const paidState = premiumState(paidClient.id);
+
+    if (!paidState.active) {
+      const paymentMessages = {
+        NO_SUBSCRIPTION: "Δεν υπάρχει ενεργό πακέτο. Για κράτηση προπόνησης απαιτείται ενεργή πληρωμή.",
+        NOT_STARTED: "Το πακέτο δεν έχει ξεκινήσει ακόμη. Η έναρξη γίνεται από την ημερομηνία πληρωμής.",
+        EXPIRED: "Το πακέτο έχει λήξει. Απαιτείται νέα πληρωμή για κράτηση προπόνησης.",
+        SESSIONS_EXHAUSTED: "Έχουν εξαντληθεί οι προπονήσεις του πακέτου. Απαιτείται νέα πληρωμή.",
+        DISABLED: "Ο λογαριασμός είναι ανενεργός. Απαιτείται ενεργή συνδρομή.",
+      };
+
+      return res.status(403).json({
+        error: paymentMessages[paidState.reason] || "Η προπόνηση δεν είναι διαθέσιμη χωρίς ενεργή πληρωμή.",
+        reason: paidState.reason
+      });
+    }
+
 
     try {
 
