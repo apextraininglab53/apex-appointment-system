@@ -1043,6 +1043,58 @@ app.get(
 
 
 /* =========================================================
+   TRIAL BOOKING RULES
+   1) Client without ACTIVE subscription gets one trial
+      booking per phone number.
+   2) Maximum 4 trial bookings are allowed per calendar day.
+   3) A trial is consumed even if the booking is later cancelled.
+   4) Active subscription clients are not counted as trials.
+========================================================= */
+
+function trialBookingAlreadyUsed(phone) {
+  const normalizedPhone = String(phone || "").trim();
+
+  if (!normalizedPhone) {
+    return false;
+  }
+
+  const row = db.prepare(`
+    SELECT 1
+    FROM booking_history
+    WHERE action = 'BOOKED'
+      AND phone = ?
+    LIMIT 1
+  `).get(normalizedPhone);
+
+  return !!row;
+}
+
+function trialBookingsTodayCount() {
+  const now = getAthensNowParts();
+  const today = `${now.year}-${now.month}-${now.day}`;
+
+  const row = db.prepare(`
+    SELECT COUNT(*) AS count
+    FROM bookings b
+    JOIN slots s
+      ON s.id = b.slot_id
+    WHERE s.date = ?
+      AND NOT EXISTS (
+        SELECT 1
+        FROM premium_clients pc
+        JOIN premium_subscriptions ps
+          ON ps.client_id = pc.id
+         AND ps.active = 1
+        WHERE pc.deleted = 0
+          AND pc.phone = b.phone
+      )
+  `).get(today);
+
+  return Number(row?.count || 0);
+}
+
+
+/* =========================================================
    CREATE BOOKING
 ========================================================= */
 
@@ -1082,46 +1134,72 @@ app.post(
     }
 
 
-    /*
-      Κάθε online κράτηση απαιτεί ενεργό πακέτο 8 ή 12 συνεδριών.
-      Ο πελάτης μπορεί να προκρατήσει όλες τις υπόλοιπες συνεδρίες του
-      μέχρι και την ημερομηνία λήξης του πακέτου.
-    */
-    premiumSyncCustomers();
-
-    const paidClient = db.prepare(`
-      SELECT *
-      FROM premium_clients
-      WHERE deleted=0 AND phone=?
-      ORDER BY id ASC
-      LIMIT 1
-    `).get(phone);
-
-    if (!paidClient) {
-      return res.status(403).json({
-        error: "Δεν υπάρχει ενεργό πακέτο. Για κράτηση προπόνησης απαιτείται ενεργή πληρωμή."
-      });
-    }
-
-    const paidState = premiumState(paidClient.id);
-
-    if (!paidState.active) {
-      const paymentMessages = {
-        NO_SUBSCRIPTION: "Δεν υπάρχει ενεργό πακέτο. Για κράτηση προπόνησης απαιτείται ενεργή πληρωμή.",
-        NOT_STARTED: "Το πακέτο δεν έχει ξεκινήσει ακόμη. Η έναρξη γίνεται από την ημερομηνία πληρωμής.",
-        EXPIRED: "Το πακέτο έχει λήξει. Απαιτείται νέα πληρωμή για κράτηση προπόνησης.",
-        SESSIONS_EXHAUSTED: "Έχουν εξαντληθεί οι προπονήσεις του πακέτου. Απαιτείται νέα πληρωμή.",
-        DISABLED: "Ο λογαριασμός είναι ανενεργός. Απαιτείται ενεργή συνδρομή.",
-        DELETED: "Ο λογαριασμός δεν είναι διαθέσιμος."
-      };
-
-      return res.status(403).json({
-        error: paymentMessages[paidState.reason] || "Η προπόνηση δεν είναι διαθέσιμη χωρίς ενεργή πληρωμή.",
-        reason: paidState.reason
-      });
-    }
-
     try {
+
+      /*
+        Ελέγχουμε αν το τηλέφωνο ανήκει σε πελάτη
+        με ΕΝΕΡΓΗ συνδρομή.
+
+        Αν δεν υπάρχει ενεργή συνδρομή:
+        - 1 δοκιμαστική ανά τηλέφωνο
+        - μέχρι 4 δοκιμαστικές συνολικά την ημέρα
+      */
+
+      premiumSyncCustomers();
+
+      const trialClient =
+        db
+          .prepare(`
+            SELECT *
+            FROM premium_clients
+            WHERE deleted = 0
+              AND phone = ?
+            LIMIT 1
+          `)
+          .get(phone);
+
+      const hasActiveSubscription =
+        !!trialClient &&
+        premiumState(trialClient.id).active;
+
+
+      /*
+        ΔΟΚΙΜΑΣΤΙΚΗ ΚΡΑΤΗΣΗ
+      */
+
+      if (!hasActiveSubscription) {
+
+        if (
+          trialBookingAlreadyUsed(
+            phone
+          )
+        ) {
+
+          return res
+            .status(403)
+            .json({
+              error:
+                "Έχεις ήδη πραγματοποιήσει τη δοκιμαστική σου προπόνηση. Για νέα κράτηση απαιτείται ενεργή συνδρομή."
+            });
+
+        }
+
+
+        if (
+          trialBookingsTodayCount() >= 4
+        ) {
+
+          return res
+            .status(403)
+            .json({
+              error:
+                "Οι 4 διαθέσιμες δοκιμαστικές προπονήσεις για σήμερα έχουν ήδη συμπληρωθεί. Για νέα κράτηση απαιτείται ενεργή συνδρομή."
+            });
+
+        }
+
+      }
+
 
       const transaction =
         db.transaction(() => {
@@ -1166,74 +1244,21 @@ app.post(
 
 
           /*
-            Το ραντεβού πρέπει να βρίσκεται μέσα στη διάρκεια
-            της ενεργής συνδρομής — από την ημερομηνία πληρωμής
-            μέχρι και την ημερομηνία λήξης.
+            Ο ίδιος πελάτης δεν μπορεί
+            να έχει δεύτερο ενεργό ραντεβού.
           */
 
           if (
-            slot.date < paidState.subscription.start_date ||
-            slot.date > paidState.subscription.end_date
+            hasExistingCustomerBooking(
+              name,
+              phone
+            )
           ) {
 
             throw new Error(
-              `Η συγκεκριμένη ημερομηνία δεν ανήκει στη διάρκεια της συνδρομής. Η συνδρομή ισχύει έως ${paidState.subscription.end_date}.`
+              "Υπάρχει ήδη ενεργό ραντεβού με τα ίδια στοιχεία ονοματεπωνύμου και τηλεφώνου."
             );
 
-          }
-
-
-          /*
-            ΚΑΝΟΝΑΣ: ΕΝΑ ΡΑΝΤΕΒΟΥ ΑΝΑ ΠΕΛΑΤΗ / ΗΜΕΡΑ
-
-            Ο ίδιος πελάτης μπορεί να κλείσει:     ΝΑΙ
-            - διαφορετική ημέρα, ίδια ώρα
-            - διαφορετική ημέρα, διαφορετική ώρα
-
-            Ο ίδιος πελάτης ΔΕΝ μπορεί να κλείσει: ΟΧΙ
-            - ίδια ημέρα, ίδια ώρα
-            - ίδια ημέρα, διαφορετική ώρα
-
-            Η ταυτοποίηση γίνεται με ΟΝΟΜΑ + ΤΗΛΕΦΩΝΟ.
-          */
-
-          const sameDayBooking = db.prepare(`
-            SELECT
-              b.id,
-              b.name,
-              b.phone,
-              s.date,
-              s.time
-            FROM bookings b
-            JOIN slots s
-              ON s.id = b.slot_id
-            WHERE s.date = ?
-              AND b.phone = ?
-            LIMIT 1
-          `).get(slot.date, phone);
-
-          if (sameDayBooking &&
-              normalizeName(sameDayBooking.name) === normalizeName(name) &&
-              normalizePhone(sameDayBooking.phone) === normalizePhone(phone)) {
-            throw new Error(
-              `Υπάρχει ήδη ραντεβού για ${name} στις ${slot.date}. Επιτρέπεται μόνο ένα ραντεβού ανά ημέρα.`
-            );
-          }
-
-
-          /*
-            Όριο πακέτου: 8 ή 12 συνολικά.
-            Οι ήδη πραγματοποιημένες/χρεωμένες προπονήσεις
-            + τα μελλοντικά ενεργά ραντεβού δεν μπορούν να
-            ξεπεράσουν το πακέτο.
-          */
-
-          const capacity = premiumBookingCapacity(paidClient.id);
-
-          if (capacity.bookable_remaining <= 0) {
-            throw new Error(
-              `Έχεις ήδη προγραμματίσει όλες τις διαθέσιμες προπονήσεις του πακέτου σου (${capacity.package_sessions}). Δεν υπάρχουν άλλες διαθέσιμες για κράτηση.`
-            );
           }
 
 
@@ -1298,6 +1323,40 @@ app.post(
           }
 
 
+          /*
+            Δεύτερος έλεγχος μέσα στο transaction,
+            ώστε το όριο των δοκιμαστικών να εφαρμόζεται
+            και στο τελικό INSERT.
+          */
+
+          if (!hasActiveSubscription) {
+
+            if (
+              trialBookingAlreadyUsed(
+                phone
+              )
+            ) {
+
+              throw new Error(
+                "Έχεις ήδη πραγματοποιήσει τη δοκιμαστική σου προπόνηση. Για νέα κράτηση απαιτείται ενεργή συνδρομή."
+              );
+
+            }
+
+
+            if (
+              trialBookingsTodayCount() >= 4
+            ) {
+
+              throw new Error(
+                "Οι 4 διαθέσιμες δοκιμαστικές προπονήσεις για σήμερα έχουν ήδη συμπληρωθεί. Για νέα κράτηση απαιτείται ενεργή συνδρομή."
+              );
+
+            }
+
+          }
+
+
           const result =
             db
               .prepare(`
@@ -1318,8 +1377,9 @@ app.post(
 
 
           /*
-            Αποθήκευση μόνιμου ιστορικού
-            κράτησης.
+            Αποθήκευση μόνιμου ιστορικού κράτησης.
+            Το BOOKED παραμένει στο ιστορικό ακόμη
+            και αν αργότερα γίνει ακύρωση.
           */
 
           db
@@ -2513,92 +2573,21 @@ function premiumUsage(clientId) {
   return {used, remaining:Math.max(0, sub.package_sessions-used), rows:allRows, overridden:false};
 }
 
-function premiumFutureReservations(client, subscription) {
-  if (!client || !subscription) return [];
-
-  const now = getAthensNowParts();
-  const today = `${now.year}-${now.month}-${now.day}`;
-  const currentTime = `${now.hour}:${now.minute}`;
-
-  return db.prepare(`
-    SELECT
-      b.id AS booking_id,
-      s.date,
-      s.time,
-      s.service
-    FROM bookings b
-    JOIN slots s ON s.id = b.slot_id
-    WHERE b.phone = ?
-      AND s.date BETWEEN ? AND ?
-      AND (
-        s.date > ?
-        OR (s.date = ? AND s.time > ?)
-      )
-    ORDER BY s.date, s.time, b.id
-  `).all(
-    client.phone,
-    subscription.start_date,
-    subscription.end_date,
-    today,
-    today,
-    currentTime
-  );
-}
-
-function premiumBookingCapacity(clientId) {
-  const client = db.prepare("SELECT * FROM premium_clients WHERE id=? AND deleted=0").get(clientId);
-  const subscription = premiumSubscription(clientId);
-
-  if (!client || !subscription) {
-    return {
-      package_sessions: 0,
-      used: 0,
-      reserved: 0,
-      bookable_remaining: 0,
-      reservations: []
-    };
-  }
-
-  const usage = premiumUsage(clientId);
-  const reservations = premiumFutureReservations(client, subscription);
-  const reserved = reservations.length;
-  const bookableRemaining = Math.max(
-    0,
-    Number(subscription.package_sessions) - Number(usage.used) - reserved
-  );
-
-  return {
-    package_sessions: Number(subscription.package_sessions),
-    used: Number(usage.used),
-    reserved,
-    bookable_remaining: bookableRemaining,
-    reservations
-  };
-}
-
 function premiumState(clientId) {
   const client = db.prepare("SELECT * FROM premium_clients WHERE id=?").get(clientId);
   const sub = premiumSubscription(clientId);
   if (!client || client.deleted) return { active: false, reason: client?.deleted ? "DELETED" : "NO_CLIENT" };
   if (!sub) return { active: false, reason: "NO_SUBSCRIPTION" };
   const usage = premiumUsage(clientId);
-  const capacity = premiumBookingCapacity(clientId);
   const today = getAthensNowParts();
   const todayString = `${today.year}-${today.month}-${today.day}`;
 
-  if (!client.active) return { active: false, reason: "DISABLED", remaining: usage.remaining, bookable_remaining: capacity.bookable_remaining, reserved: capacity.reserved, subscription: sub };
-  if (todayString < sub.start_date) return { active: false, reason: "NOT_STARTED", remaining: usage.remaining, bookable_remaining: capacity.bookable_remaining, reserved: capacity.reserved, subscription: sub };
-  if (todayString > sub.end_date) return { active: false, reason: "EXPIRED", remaining: usage.remaining, bookable_remaining: capacity.bookable_remaining, reserved: capacity.reserved, subscription: sub };
-  if (usage.remaining <= 0) return { active: false, reason: "SESSIONS_EXHAUSTED", remaining: 0, bookable_remaining: 0, reserved: capacity.reserved, subscription: sub };
+  if (!client.active) return { active: false, reason: "DISABLED", remaining: usage.remaining, subscription: sub };
+  if (todayString < sub.start_date) return { active: false, reason: "NOT_STARTED", remaining: usage.remaining, subscription: sub };
+  if (todayString > sub.end_date) return { active: false, reason: "EXPIRED", remaining: usage.remaining, subscription: sub };
+  if (usage.remaining <= 0) return { active: false, reason: "SESSIONS_EXHAUSTED", remaining: 0, subscription: sub };
 
-  return {
-    active: true,
-    reason: "ACTIVE",
-    remaining: usage.remaining,
-    reserved: capacity.reserved,
-    bookable_remaining: capacity.bookable_remaining,
-    subscription: sub
-  };
+  return { active: true, reason: "ACTIVE", remaining: usage.remaining, subscription: sub };
 }
 
 function premiumAdmin(req, res, next) {
@@ -2779,13 +2768,7 @@ app.get("/api/premium/me", premiumClientAuth, (req, res) => {
   res.json({
     client,
     state,
-    subscription: sub ? {
-      ...sub,
-      used:usage.used,
-      remaining:usage.remaining,
-      reserved: premiumBookingCapacity(client.id).reserved,
-      bookable_remaining: premiumBookingCapacity(client.id).bookable_remaining
-    } : null,
+    subscription: sub ? {...sub, used:usage.used, remaining:usage.remaining} : null,
     program: assigned || null,
     workouts
   });
@@ -2885,13 +2868,7 @@ app.get("/api/premium/admin/clients", premiumAdmin, (req, res) => {
     return {
       id:c.id,name:c.name,phone:c.phone,email:c.email,active:c.active,
       duplicate: (duplicateCounts.get(normalizeName(c.name) + "|" + normalizePhone(c.phone)) || 0) > 1,
-      subscription: sub ? {
-        ...sub,
-        used:usage.used,
-        remaining:usage.remaining,
-        reserved: premiumBookingCapacity(c.id).reserved,
-        bookable_remaining: premiumBookingCapacity(c.id).bookable_remaining
-      } : null,
+      subscription: sub ? {...sub,used:usage.used,remaining:usage.remaining} : null,
       state
     };
   }));
