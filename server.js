@@ -60,7 +60,7 @@ const SERVICES = [
 ];
 
 const START_HOUR = 10;
-const END_HOUR = 21;
+const END_HOUR = 22;
 
 const DAYS_TO_GENERATE = 90;
 
@@ -1043,58 +1043,6 @@ app.get(
 
 
 /* =========================================================
-   TRIAL BOOKING RULES
-   1) Client without ACTIVE subscription gets one trial
-      booking per phone number.
-   2) Maximum 4 trial bookings are allowed per calendar day.
-   3) A trial is consumed even if the booking is later cancelled.
-   4) Active subscription clients are not counted as trials.
-========================================================= */
-
-function trialBookingAlreadyUsed(phone) {
-  const normalizedPhone = String(phone || "").trim();
-
-  if (!normalizedPhone) {
-    return false;
-  }
-
-  const row = db.prepare(`
-    SELECT 1
-    FROM booking_history
-    WHERE action = 'BOOKED'
-      AND phone = ?
-    LIMIT 1
-  `).get(normalizedPhone);
-
-  return !!row;
-}
-
-function trialBookingsTodayCount() {
-  const now = getAthensNowParts();
-  const today = `${now.year}-${now.month}-${now.day}`;
-
-  const row = db.prepare(`
-    SELECT COUNT(*) AS count
-    FROM bookings b
-    JOIN slots s
-      ON s.id = b.slot_id
-    WHERE s.date = ?
-      AND NOT EXISTS (
-        SELECT 1
-        FROM premium_clients pc
-        JOIN premium_subscriptions ps
-          ON ps.client_id = pc.id
-         AND ps.active = 1
-        WHERE pc.deleted = 0
-          AND pc.phone = b.phone
-      )
-  `).get(today);
-
-  return Number(row?.count || 0);
-}
-
-
-/* =========================================================
    CREATE BOOKING
 ========================================================= */
 
@@ -1136,71 +1084,6 @@ app.post(
 
     try {
 
-      /*
-        Ελέγχουμε αν το τηλέφωνο ανήκει σε πελάτη
-        με ΕΝΕΡΓΗ συνδρομή.
-
-        Αν δεν υπάρχει ενεργή συνδρομή:
-        - 1 δοκιμαστική ανά τηλέφωνο
-        - μέχρι 4 δοκιμαστικές συνολικά την ημέρα
-      */
-
-      premiumSyncCustomers();
-
-      const trialClient =
-        db
-          .prepare(`
-            SELECT *
-            FROM premium_clients
-            WHERE deleted = 0
-              AND phone = ?
-            LIMIT 1
-          `)
-          .get(phone);
-
-      const hasActiveSubscription =
-        !!trialClient &&
-        premiumState(trialClient.id).active;
-
-
-      /*
-        ΔΟΚΙΜΑΣΤΙΚΗ ΚΡΑΤΗΣΗ
-      */
-
-      if (!hasActiveSubscription) {
-
-        if (
-          trialBookingAlreadyUsed(
-            phone
-          )
-        ) {
-
-          return res
-            .status(403)
-            .json({
-              error:
-                "Έχεις ήδη πραγματοποιήσει τη δοκιμαστική σου προπόνηση. Για νέα κράτηση απαιτείται ενεργή συνδρομή."
-            });
-
-        }
-
-
-        if (
-          trialBookingsTodayCount() >= 4
-        ) {
-
-          return res
-            .status(403)
-            .json({
-              error:
-                "Οι 4 διαθέσιμες δοκιμαστικές προπονήσεις για σήμερα έχουν ήδη συμπληρωθεί. Για νέα κράτηση απαιτείται ενεργή συνδρομή."
-            });
-
-        }
-
-      }
-
-
       const transaction =
         db.transaction(() => {
 
@@ -1238,25 +1121,6 @@ app.post(
 
             throw new Error(
               "Η συγκεκριμένη ώρα έχει ήδη περάσει."
-            );
-
-          }
-
-
-          /*
-            Ο ίδιος πελάτης δεν μπορεί
-            να έχει δεύτερο ενεργό ραντεβού.
-          */
-
-          if (
-            hasExistingCustomerBooking(
-              name,
-              phone
-            )
-          ) {
-
-            throw new Error(
-              "Υπάρχει ήδη ενεργό ραντεβού με τα ίδια στοιχεία ονοματεπωνύμου και τηλεφώνου."
             );
 
           }
@@ -1323,40 +1187,6 @@ app.post(
           }
 
 
-          /*
-            Δεύτερος έλεγχος μέσα στο transaction,
-            ώστε το όριο των δοκιμαστικών να εφαρμόζεται
-            και στο τελικό INSERT.
-          */
-
-          if (!hasActiveSubscription) {
-
-            if (
-              trialBookingAlreadyUsed(
-                phone
-              )
-            ) {
-
-              throw new Error(
-                "Έχεις ήδη πραγματοποιήσει τη δοκιμαστική σου προπόνηση. Για νέα κράτηση απαιτείται ενεργή συνδρομή."
-              );
-
-            }
-
-
-            if (
-              trialBookingsTodayCount() >= 4
-            ) {
-
-              throw new Error(
-                "Οι 4 διαθέσιμες δοκιμαστικές προπονήσεις για σήμερα έχουν ήδη συμπληρωθεί. Για νέα κράτηση απαιτείται ενεργή συνδρομή."
-              );
-
-            }
-
-          }
-
-
           const result =
             db
               .prepare(`
@@ -1377,9 +1207,8 @@ app.post(
 
 
           /*
-            Αποθήκευση μόνιμου ιστορικού κράτησης.
-            Το BOOKED παραμένει στο ιστορικό ακόμη
-            και αν αργότερα γίνει ακύρωση.
+            Αποθήκευση μόνιμου ιστορικού
+            κράτησης.
           */
 
           db
@@ -2370,12 +2199,6 @@ premiumEnsureColumn("premium_clients", "manual_name", "INTEGER NOT NULL DEFAULT 
 
 db.prepare("UPDATE premium_clients SET booking_name=name WHERE booking_name IS NULL OR booking_name='' ").run();
 
-db.exec(`CREATE TABLE IF NOT EXISTS premium_manual_attendance (
- id INTEGER PRIMARY KEY AUTOINCREMENT, client_id INTEGER NOT NULL REFERENCES premium_clients(id),
- attendance_date TEXT NOT NULL, attendance_time TEXT, service TEXT NOT NULL, notes TEXT,
- created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);`);
-
 function premiumCustomerKey(name, phone) {
   return normalizeName(name) + "|" + normalizePhone(phone);
 }
@@ -2437,12 +2260,16 @@ function premiumNowMs() {
 function premiumBookingUsage(client, subscription) {
   if (!client || !subscription) return [];
 
-  const key = client.booking_customer_key;
   const now = premiumNowMs();
   const start = subscription.start_date;
   const end = subscription.end_date;
+  const bookingName = client.booking_name || client.name;
 
-  const active = db.prepare(`
+  // We cross-check the client record against the booking system using the
+  // phone as the primary key and the client/booking name as a secondary check.
+  // This also survives a manual rename in the client list because booking_name
+  // keeps the original booking name.
+  const activeCandidates = db.prepare(`
     SELECT
       b.id AS booking_id,
       b.name,
@@ -2454,11 +2281,18 @@ function premiumBookingUsage(client, subscription) {
     FROM bookings b
     JOIN slots s ON s.id = b.slot_id
     WHERE s.date BETWEEN ? AND ?
-      AND b.phone = ?
     ORDER BY s.date, s.time
-  `).all(start, end, client.phone);
+  `).all(start, end);
 
-  const cancelled = db.prepare(`
+  const active = activeCandidates.filter(b =>
+    normalizePhone(b.phone) === normalizePhone(client.phone) &&
+    (
+      normalizeName(b.name) === normalizeName(client.name) ||
+      normalizeName(b.name) === normalizeName(bookingName)
+    )
+  );
+
+  const cancelledCandidates = db.prepare(`
     SELECT
       booking_id,
       name,
@@ -2470,9 +2304,16 @@ function premiumBookingUsage(client, subscription) {
     FROM booking_history
     WHERE action = 'CANCELLED'
       AND date BETWEEN ? AND ?
-      AND phone = ?
     ORDER BY date, time
-  `).all(start, end, client.phone);
+  `).all(start, end);
+
+  const cancelled = cancelledCandidates.filter(c =>
+    normalizePhone(c.phone) === normalizePhone(client.phone) &&
+    (
+      normalizeName(c.name) === normalizeName(client.name) ||
+      normalizeName(c.name) === normalizeName(bookingName)
+    )
+  );
 
   const result = [];
 
@@ -2488,6 +2329,17 @@ function premiumBookingUsage(client, subscription) {
         status: "COMPLETED_BOOKING",
         counted: true,
         reason: "Το ραντεβού πέρασε και δεν ακυρώθηκε."
+      });
+    } else {
+      result.push({
+        source: "BOOKING",
+        booking_id: b.booking_id,
+        date: b.date,
+        time: b.time,
+        service: b.service,
+        status: "UPCOMING",
+        counted: false,
+        reason: "Προσεχές ραντεβού."
       });
     }
   }
@@ -2515,6 +2367,43 @@ function premiumBookingUsage(client, subscription) {
   return result.sort((a,b) => (`${b.date} ${b.time}`).localeCompare(`${a.date} ${a.time}`));
 }
 
+function premiumUpcomingBookings(client) {
+  if (!client) return [];
+
+  const now = premiumNowMs();
+  const bookingName = client.booking_name || client.name;
+
+  const rows = db.prepare(`
+    SELECT
+      b.id AS booking_id,
+      b.name,
+      b.phone,
+      s.date,
+      s.time,
+      s.service
+    FROM bookings b
+    JOIN slots s ON s.id = b.slot_id
+    ORDER BY s.date, s.time
+  `).all();
+
+  return rows
+    .filter(b =>
+      normalizePhone(b.phone) === normalizePhone(client.phone) &&
+      (
+        normalizeName(b.name) === normalizeName(client.name) ||
+        normalizeName(b.name) === normalizeName(bookingName)
+      )
+    )
+    .filter(b => premiumAthensLocalToMs(b.date, b.time) > now)
+    .map(b => ({
+      booking_id: b.booking_id,
+      date: b.date,
+      time: b.time,
+      service: b.service,
+      status: "UPCOMING"
+    }));
+}
+
 function premiumSubscription(clientId) {
   return db.prepare(`
     SELECT * FROM premium_subscriptions
@@ -2539,38 +2428,13 @@ function premiumUsage(clientId) {
   }
 
   const rows = premiumBookingUsage(client, sub);
-  const manualRows = db.prepare(`SELECT id, attendance_date AS date, attendance_time AS time, service, notes, created_at FROM premium_manual_attendance WHERE client_id=? AND attendance_date BETWEEN ? AND ? ORDER BY attendance_date DESC, COALESCE(attendance_time,'') DESC, id DESC`).all(clientId, sub.start_date, sub.end_date);
-
-  // Manual attendance counts as one session, but it must NOT double-count
-  // a booking that has already been counted for the same date/time/service.
-  // If there is no matching counted booking (for example a walk-in), the
-  // manual attendance is counted normally.
-  const manualUsage = manualRows.map(r => {
-    const duplicate = rows.some(x =>
-      x.counted === true &&
-      x.date === r.date &&
-      x.time === (r.time || "") &&
-      x.service === r.service
-    );
-
-    return {
-      source:"MANUAL_ATTENDANCE",
-      manual_attendance_id:r.id,
-      date:r.date,
-      time:r.time||"",
-      service:r.service,
-      notes:r.notes||"",
-      status:"ATTENDED_MANUAL",
-      counted:!duplicate,
-      reason: duplicate
-        ? "Δεν χρεώνεται δεύτερη φορά — υπάρχει ήδη καταχωρημένο ραντεβού για την ίδια προπόνηση."
-        : "Παρουσία καταχωρήθηκε χειροκίνητα από τον διαχειριστή — χρεώνεται 1 προπόνηση."
-    };
-  });
-
-  const allRows = rows.concat(manualUsage).sort((a,b)=>(`${b.date} ${b.time}`).localeCompare(`${a.date} ${a.time}`));
-  const used = allRows.filter(r => r.counted).length;
-  return {used, remaining:Math.max(0, sub.package_sessions-used), rows:allRows, overridden:false};
+  const used = rows.filter(r => r.counted).length;
+  return {
+    used,
+    remaining: Math.max(0, sub.package_sessions - used),
+    rows,
+    overridden: false
+  };
 }
 
 function premiumState(clientId) {
@@ -2749,6 +2613,7 @@ app.get("/api/premium/me", premiumClientAuth, (req, res) => {
 
   const sub = premiumSubscription(client.id);
   const usage = sub ? premiumUsage(client.id) : { used:0, remaining:0, rows:[] };
+  const upcomingBookings = premiumUpcomingBookings(client);
   const state = premiumState(client.id);
 
   // Programs/workouts remain in the database for compatibility, but the
@@ -2769,39 +2634,11 @@ app.get("/api/premium/me", premiumClientAuth, (req, res) => {
     client,
     state,
     subscription: sub ? {...sub, used:usage.used, remaining:usage.remaining} : null,
+    upcoming_bookings: upcomingBookings,
+    booking_history: usage.rows,
     program: assigned || null,
     workouts
   });
-});
-
-app.get("/api/premium/my-upcoming", premiumClientAuth, (req, res) => {
-  const client = db.prepare(
-    "SELECT id,name,phone FROM premium_clients WHERE id=? AND deleted=0"
-  ).get(req.premiumClient.id);
-
-  if (!client) return res.status(404).json({ error: "Πελάτης δεν βρέθηκε." });
-
-  const now = getAthensNowParts();
-  const today = `${now.year}-${now.month}-${now.day}`;
-  const currentTime = `${now.hour}:${now.minute}`;
-
-  const rows = db.prepare(`
-    SELECT
-      b.id AS booking_id,
-      s.date,
-      s.time,
-      s.service
-    FROM bookings b
-    JOIN slots s ON s.id=b.slot_id
-    WHERE b.phone=?
-      AND (
-        s.date > ?
-        OR (s.date = ? AND s.time > ?)
-      )
-    ORDER BY s.date, s.time
-  `).all(client.phone, today, today, currentTime);
-
-  res.json(rows);
 });
 
 app.get("/api/premium/my-bookings", premiumClientAuth, (req, res) => {
@@ -2890,14 +2727,12 @@ app.get("/api/premium/admin/clients/:id", premiumAdmin, (req, res) => {
   `).get(id);
 
   const workouts = db.prepare("SELECT * FROM premium_workouts WHERE client_id=? ORDER BY workout_date DESC").all(id);
-  const manualAttendance = db.prepare("SELECT id,attendance_date AS date,attendance_time AS time,service,notes,created_at FROM premium_manual_attendance WHERE client_id=? ORDER BY attendance_date DESC,COALESCE(attendance_time,'') DESC,id DESC").all(id);
 
   res.json({
     client: {...client, password_hash: undefined},
     subscription: sub ? {...sub, used:usage.used, remaining:usage.remaining} : null,
     subscription_history: history,
     booking_history: usage.rows,
-    manual_attendance: manualAttendance,
     program: program || null,
     workouts
   });
@@ -3022,35 +2857,6 @@ app.post("/api/premium/admin/clients/:id/subscription", premiumAdmin, (req,res) 
     .run("RENEW_SUBSCRIPTION","client",String(id),JSON.stringify({sessions,start,end}));
 
   res.json({ok:true});
-});
-
-app.get("/api/premium/admin/clients/:id/manual-attendance", premiumAdmin, (req,res) => {
-  const id=Number(req.params.id);
-  const client=db.prepare("SELECT id,name FROM premium_clients WHERE id=? AND deleted=0").get(id);
-  if(!client) return res.status(404).json({error:"Πελάτης δεν βρέθηκε."});
-  const rows=db.prepare(`SELECT id,attendance_date AS date,attendance_time AS time,service,notes,created_at FROM premium_manual_attendance WHERE client_id=? ORDER BY attendance_date DESC,COALESCE(attendance_time,'') DESC,id DESC`).all(id);
-  res.json(rows);
-});
-
-app.post("/api/premium/admin/clients/:id/manual-attendance", premiumAdmin, (req,res) => {
-  const id=Number(req.params.id); const date=String(req.body?.date||"").trim(); const time=String(req.body?.time||"").trim(); const service=String(req.body?.service||"").trim(); const notes=String(req.body?.notes||"").trim();
-  if(!Number.isInteger(id)||id<=0) return res.status(400).json({error:"Μη έγκυρος πελάτης."});
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({error:"Η ημερομηνία παρουσίας είναι υποχρεωτική."});
-  if(time&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return res.status(400).json({error:"Λάθος ώρα παρουσίας."});
-  if(!service) return res.status(400).json({error:"Διάλεξε υπηρεσία."});
-  const client=db.prepare("SELECT id,name FROM premium_clients WHERE id=? AND deleted=0").get(id);
-  if(!client) return res.status(404).json({error:"Πελάτης δεν βρέθηκε."});
-  const info=db.prepare("INSERT INTO premium_manual_attendance(client_id,attendance_date,attendance_time,service,notes) VALUES(?,?,?,?,?)").run(id,date,time||null,service,notes||null);
-  db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)").run("ADD_MANUAL_ATTENDANCE","client",String(id),JSON.stringify({date,time,service,notes}));
-  res.json({ok:true,id:info.lastInsertRowid,message:`Η παρουσία της ${client.name} καταχωρήθηκε για ${date}.`});
-});
-
-app.post("/api/premium/admin/manual-attendance/:id/delete", premiumAdmin, (req,res) => {
-  const id=Number(req.params.id); const row=db.prepare("SELECT * FROM premium_manual_attendance WHERE id=?").get(id);
-  if(!row) return res.status(404).json({error:"Η παρουσία δεν βρέθηκε."});
-  db.prepare("DELETE FROM premium_manual_attendance WHERE id=?").run(id);
-  db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)").run("DELETE_MANUAL_ATTENDANCE","manual_attendance",String(id),JSON.stringify(row));
-  res.json({ok:true,message:"Η παρουσία διαγράφηκε."});
 });
 
 app.post("/api/premium/admin/clients/:id/correct", premiumAdmin, (req,res) => {
