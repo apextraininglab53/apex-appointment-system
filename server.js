@@ -2395,13 +2395,19 @@ function premiumUpcomingBookings(client) {
       )
     )
     .filter(b => premiumAthensLocalToMs(b.date, b.time) > now)
-    .map(b => ({
-      booking_id: b.booking_id,
-      date: b.date,
-      time: b.time,
-      service: b.service,
-      status: "UPCOMING"
-    }));
+    .map(b => {
+      const appointmentMs = premiumAthensLocalToMs(b.date, b.time);
+      const hoursBefore = (appointmentMs - now) / 3600000;
+      return {
+        booking_id: b.booking_id,
+        date: b.date,
+        time: b.time,
+        service: b.service,
+        status: "UPCOMING",
+        hours_before: Number(hoursBefore.toFixed(2)),
+        can_cancel: hoursBefore > 3
+      };
+    });
 }
 
 
@@ -2763,7 +2769,7 @@ app.get("/api/premium/my-bookings", premiumClientAuth, (req, res) => {
 
 /* ----- Client booking inside the logged-in app ----- */
 
-app.get("/api/premium/booking/slots", premiumClientAuth, (req, res) => {
+app.get("/api/premium/booking/slots", premiumActiveClientAuth, (req, res) => {
   const date = String(req.query?.date || "").trim();
   const service = String(req.query?.service || "Mini Group").trim();
 
@@ -2826,7 +2832,7 @@ app.get("/api/premium/booking/calendar", premiumClientAuth, (req, res) => {
   res.json(result);
 });
 
-app.post("/api/premium/booking/book", premiumClientAuth, (req, res) => {
+app.post("/api/premium/booking/book", premiumActiveClientAuth, (req, res) => {
   const client = req.premiumClient;
   const slotId = Number(req.body?.slot_id);
 
@@ -2925,6 +2931,95 @@ app.post("/api/premium/booking/book", premiumClientAuth, (req, res) => {
     });
   } catch (error) {
     res.status(409).json({error:error.message || "Δεν ήταν δυνατή η κράτηση."});
+  }
+});
+
+/* =========================================================
+   CLIENT - CANCEL OWN BOOKING
+   Επιτρέπεται μόνο μέχρι 3 ώρες πριν την προπόνηση.
+   Από 3 ώρες και κάτω η ακύρωση κλειδώνει.
+========================================================= */
+
+app.post("/api/premium/booking/cancel", premiumClientAuth, (req, res) => {
+  const client = req.premiumClient;
+  const bookingId = Number(req.body?.booking_id);
+
+  if (!bookingId) {
+    return res.status(400).json({ error: "Δεν επιλέχθηκε ραντεβού." });
+  }
+
+  try {
+    const transaction = db.transaction(() => {
+      const booking = db.prepare(`
+        SELECT
+          b.id AS booking_id,
+          b.name,
+          b.phone,
+          s.date,
+          s.time,
+          s.service
+        FROM bookings b
+        JOIN slots s ON s.id = b.slot_id
+        WHERE b.id=?
+        LIMIT 1
+      `).get(bookingId);
+
+      if (!booking) {
+        throw new Error("Το ραντεβού δεν βρέθηκε ή έχει ήδη ακυρωθεί.");
+      }
+
+      const sameClient =
+        normalizePhone(booking.phone) === normalizePhone(client.phone) &&
+        (
+          normalizeName(booking.name) === normalizeName(client.name) ||
+          normalizeName(booking.name) === normalizeName(client.booking_name || client.name)
+        );
+
+      if (!sameClient) {
+        throw new Error("Δεν μπορείς να ακυρώσεις ραντεβού άλλου πελάτη.");
+      }
+
+      const appointmentMs = premiumAthensLocalToMs(booking.date, booking.time);
+      const hoursBefore = (appointmentMs - Date.now()) / 3600000;
+
+      if (!Number.isFinite(hoursBefore) || hoursBefore <= 3) {
+        throw new Error("Η ακύρωση επιτρέπεται μόνο μέχρι 3 ώρες πριν από την προπόνηση. Για αλλαγή μετά το όριο, επικοινώνησε με το APEX.");
+      }
+
+      db.prepare(`
+        INSERT INTO booking_history
+        (booking_id,name,phone,date,time,service,action)
+        VALUES(?,?,?,?,?,?,'CANCELLED')
+      `).run(
+        booking.booking_id,
+        booking.name,
+        booking.phone,
+        booking.date,
+        booking.time,
+        booking.service
+      );
+
+      db.prepare("DELETE FROM bookings WHERE id=?").run(booking.booking_id);
+
+      return {
+        booking_id: booking.booking_id,
+        date: booking.date,
+        time: booking.time,
+        service: booking.service,
+        hours_before: Number(hoursBefore.toFixed(2))
+      };
+    });
+
+    const result = transaction();
+    return res.json({
+      ok: true,
+      message: "Το ραντεβού ακυρώθηκε επιτυχώς.",
+      ...result
+    });
+  } catch (error) {
+    return res.status(409).json({
+      error: error.message || "Δεν ήταν δυνατή η ακύρωση."
+    });
   }
 });
 
