@@ -320,7 +320,7 @@ async function openClient(id) {
       </div>
 
       <div class="card">
-        <h3>ΠΡΟΣΘΗΚΗ ΠΑΡΟΥΣΙΑΣ</h3>
+        <h3>ΠΡΟΣΘΗΚΗ ΕΠΙΣΚΕΨΗΣ ΧΩΡΙΣ BOOKING</h3>
         <p class="muted">Για όταν ο πελάτης ήρθε χωρίς ραντεβού. Η ημερομηνία είναι υποχρεωτική και η παρουσία μετράει ως χρησιμοποιημένη συνεδρία.</p>
         <div class="cols">
           <input id="attendanceDate" type="date" required>
@@ -331,7 +331,7 @@ async function openClient(id) {
           </select>
           <input id="attendanceNotes" placeholder="Σημείωση (προαιρετικά)">
         </div>
-        <button type="button" class="primary" id="addAttendanceBtn" style="margin-top:10px">ΠΡΟΣΘΗΚΗ ΠΑΡΟΥΣΙΑΣ</button>
+        <button type="button" class="primary" id="addAttendanceBtn" style="margin-top:10px">ΠΡΟΣΘΗΚΗ ΕΠΙΣΚΕΨΗΣ</button>
         <div id="attendanceMessage" class="hidden"></div>
         <div id="manualAttendanceList" style="margin-top:10px"></div>
       </div>
@@ -372,7 +372,15 @@ async function openClient(id) {
               <span style="text-align:right">
                 ${x.counted ? "<b>ΧΡΕΩΘΗΚΕ</b>" : '<span class="muted">ΔΕΝ ΧΡΕΩΘΗΚΕ</span>'}
                 <br><small>${esc(x.reason || "")}</small>
-                ${!x.counted ? `
+                ${x.source === "BOOKING" && x.counted ? `
+                  <br>
+                  <button type="button" class="removeBookingCharge" data-booking-id="${Number(x.booking_id)}" style="width:auto;margin-top:7px">❌ ΑΦΑΙΡΕΣΗ ΧΡΕΩΣΗΣ</button>
+                ` : ""}
+                ${x.source === "BOOKING" && x.charge_removed ? `
+                  <br>
+                  <button type="button" class="restoreBookingCharge" data-booking-id="${Number(x.booking_id)}" style="width:auto;margin-top:7px">↩ ΕΠΑΝΑΦΟΡΑ ΧΡΕΩΣΗΣ</button>
+                ` : ""}
+                ${!x.counted && x.source === "BOOKING" && !x.charge_removed ? `
                   <br>
                   <button type="button" class="addVisitFromBooking" data-date="${esc(x.date)}" data-time="${esc(x.time || "")}" data-service="${esc(x.service || "")}" style="width:auto;margin-top:7px">ΠΡΟΣΘΗΚΗ ΕΠΙΣΚΕΨΗΣ</button>
                 ` : ""}
@@ -405,13 +413,56 @@ async function openClient(id) {
     $("passBtn").onclick = () => setPass(id);
     await loadManualAttendance(id);
 
+    document.querySelectorAll(".removeBookingCharge").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const bookingId = Number(btn.dataset.bookingId);
+        if (!bookingId) return;
+        if (!confirm("Να αφαιρεθεί η χρέωση αυτής της προπόνησης; Το ραντεβού και το ιστορικό θα παραμείνουν.")) return;
+        try {
+          btn.disabled = true;
+          btn.textContent = "ΑΦΑΙΡΕΣΗ...";
+          const result = await api("/api/premium/admin/clients/" + id + "/booking-charge/" + bookingId + "/remove", {
+            method:"POST",
+            body:JSON.stringify({reason:"Λανθασμένη χρέωση — διορθώθηκε από Admin."})
+          });
+          showDetailOk(result.message || "Η χρέωση αφαιρέθηκε.");
+          await refresh();
+          await openClient(id);
+        } catch(e) {
+          showDetailError(e.message);
+          btn.disabled = false;
+          btn.textContent = "❌ ΑΦΑΙΡΕΣΗ ΧΡΕΩΣΗΣ";
+        }
+      });
+    });
+
+    document.querySelectorAll(".restoreBookingCharge").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const bookingId = Number(btn.dataset.bookingId);
+        if (!bookingId) return;
+        if (!confirm("Να επανέλθει η χρέωση αυτής της προπόνησης;")) return;
+        try {
+          btn.disabled = true;
+          btn.textContent = "ΕΠΑΝΑΦΟΡΑ...";
+          const result = await api("/api/premium/admin/clients/" + id + "/booking-charge/" + bookingId + "/restore", {method:"POST"});
+          showDetailOk(result.message || "Η χρέωση επανήλθε.");
+          await refresh();
+          await openClient(id);
+        } catch(e) {
+          showDetailError(e.message);
+          btn.disabled = false;
+          btn.textContent = "↩ ΕΠΑΝΑΦΟΡΑ ΧΡΕΩΣΗΣ";
+        }
+      });
+    });
+
     document.querySelectorAll(".addVisitFromBooking").forEach(btn => {
       btn.addEventListener("click", async () => {
         try {
           const date = btn.dataset.date || "";
           const time = btn.dataset.time || "";
           const rawService = btn.dataset.service || "";
-          const service = rawService.toLowerCase().includes("mini") ? "Mini Group" : "Personal";
+          const service = rawService.toLowerCase().includes("mini") ? "Mini Group" : "Personal Training";
           if (!date) throw new Error("Δεν βρέθηκε η ημερομηνία της επίσκεψης.");
           btn.disabled = true; btn.textContent = "ΑΠΟΘΗΚΕΥΣΗ...";
           const result = await api("/api/premium/admin/clients/" + id + "/manual-attendance", {
@@ -490,7 +541,7 @@ async function addManualAttendance(id) {
   } catch(e) {
     showDetailError(e.message);
   } finally {
-    if ($("addAttendanceBtn")) { $("addAttendanceBtn").disabled = false; $("addAttendanceBtn").textContent = "ΠΡΟΣΘΗΚΗ ΠΑΡΟΥΣΙΑΣ"; }
+    if ($("addAttendanceBtn")) { $("addAttendanceBtn").disabled = false; $("addAttendanceBtn").textContent = "ΠΡΟΣΘΗΚΗ ΕΠΙΣΚΕΨΗΣ"; }
   }
 }
 
