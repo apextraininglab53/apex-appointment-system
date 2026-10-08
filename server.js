@@ -2197,6 +2197,31 @@ premiumEnsureColumn("premium_clients", "booking_name", "TEXT");
 premiumEnsureColumn("premium_clients", "deleted", "INTEGER NOT NULL DEFAULT 0");
 premiumEnsureColumn("premium_clients", "manual_name", "INTEGER NOT NULL DEFAULT 0");
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS premium_manual_attendance (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id INTEGER NOT NULL REFERENCES premium_clients(id),
+    attendance_date TEXT NOT NULL,
+    attendance_time TEXT,
+    service TEXT NOT NULL,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
+// Admin corrections: keep the original booking/history, but exclude a
+// wrongly charged completed booking from package usage.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS premium_booking_charge_exclusions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id INTEGER NOT NULL REFERENCES premium_clients(id),
+    booking_id INTEGER NOT NULL,
+    reason TEXT,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
 db.prepare("UPDATE premium_clients SET booking_name=name WHERE booking_name IS NULL OR booking_name='' ").run();
 
 function premiumCustomerKey(name, phone) {
@@ -2315,20 +2340,32 @@ function premiumBookingUsage(client, subscription) {
     )
   );
 
+  const excludedBookingIds = new Set(
+    db.prepare(`
+      SELECT booking_id
+      FROM premium_booking_charge_exclusions
+      WHERE client_id=? AND active=1
+    `).all(client.id).map(r => Number(r.booking_id))
+  );
+
   const result = [];
 
   for (const b of active) {
     const appointmentMs = premiumAthensLocalToMs(b.date, b.time);
     if (appointmentMs <= now) {
+      const excluded = excludedBookingIds.has(Number(b.booking_id));
       result.push({
         source: "BOOKING",
         booking_id: b.booking_id,
         date: b.date,
         time: b.time,
         service: b.service,
-        status: "COMPLETED_BOOKING",
-        counted: true,
-        reason: "Το ραντεβού πέρασε και δεν ακυρώθηκε."
+        status: excluded ? "COMPLETED_BOOKING_CORRECTED" : "COMPLETED_BOOKING",
+        counted: !excluded,
+        charge_removed: excluded,
+        reason: excluded
+          ? "Η χρέωση αφαιρέθηκε από τον Admin ως λανθασμένη καταχώρηση."
+          : "Το ραντεβού πέρασε και δεν ακυρώθηκε."
       });
     } else {
       result.push({
@@ -2348,7 +2385,7 @@ function premiumBookingUsage(client, subscription) {
     const appointmentMs = premiumAthensLocalToMs(c.date, c.time);
     const cancelledMs = premiumUtcSqlToMs(c.cancelled_at);
     const hoursBefore = (appointmentMs - cancelledMs) / 3600000;
-    const counted = Number.isFinite(hoursBefore) && hoursBefore < 24;
+
     result.push({
       source: "BOOKING_HISTORY",
       booking_id: c.booking_id,
@@ -2356,11 +2393,9 @@ function premiumBookingUsage(client, subscription) {
       time: c.time,
       service: c.service,
       status: "CANCELLED",
-      counted,
+      counted: false,
       cancellation_hours_before: Number.isFinite(hoursBefore) ? Number(hoursBefore.toFixed(2)) : null,
-      reason: counted
-        ? "Ακύρωση λιγότερο από 24 ώρες πριν — χρεώνεται."
-        : "Ακύρωση 24+ ώρες πριν — δεν χρεώνεται."
+      reason: "Το ραντεβού ακυρώθηκε — δεν χρεώνεται."
     });
   }
 
@@ -3293,6 +3328,184 @@ app.post("/api/premium/admin/clients/:id/reconcile", premiumAdmin, (req,res) => 
 
 app.get("/api/premium/admin/audit", premiumAdmin, (req,res) => {
   res.json(db.prepare("SELECT * FROM premium_audit ORDER BY id DESC LIMIT 300").all());
+});
+
+
+/* ----- Premium admin: manual visit / training entry ----- */
+
+app.get("/api/premium/admin/clients/:id/manual-attendance", premiumAdmin, (req,res) => {
+  const id = Number(req.params.id);
+  const client = db.prepare(
+    "SELECT id,name FROM premium_clients WHERE id=? AND deleted=0"
+  ).get(id);
+
+  if (!client) return res.status(404).json({error:"Πελάτης δεν βρέθηκε."});
+
+  const rows = db.prepare(`
+    SELECT
+      id,
+      attendance_date AS date,
+      attendance_time AS time,
+      service,
+      notes,
+      created_at
+    FROM premium_manual_attendance
+    WHERE client_id=?
+    ORDER BY attendance_date DESC, COALESCE(attendance_time,'') DESC, id DESC
+  `).all(id);
+
+  res.json(rows);
+});
+
+app.post("/api/premium/admin/clients/:id/manual-attendance", premiumAdmin, (req,res) => {
+  const id = Number(req.params.id);
+  const date = String(req.body?.date || "").trim();
+  const time = String(req.body?.time || "").trim();
+  const rawService = String(req.body?.service || "").trim();
+  const notes = String(req.body?.notes || "").trim();
+
+  if (!Number.isInteger(id) || id <= 0)
+    return res.status(400).json({error:"Μη έγκυρος πελάτης."});
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date))
+    return res.status(400).json({error:"Η ημερομηνία είναι υποχρεωτική."});
+
+  if (time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time))
+    return res.status(400).json({error:"Λάθος ώρα."});
+
+  const serviceMap = {
+    "Personal":"Personal Training",
+    "Personal Training":"Personal Training",
+    "Mini":"Mini Group",
+    "Mini Group":"Mini Group"
+  };
+  const service = serviceMap[rawService] || rawService;
+
+  if (!["Personal Training","Mini Group"].includes(service))
+    return res.status(400).json({error:"Διάλεξε Personal Training ή Mini Group."});
+
+  const client = db.prepare(
+    "SELECT id,name FROM premium_clients WHERE id=? AND deleted=0"
+  ).get(id);
+
+  if (!client) return res.status(404).json({error:"Πελάτης δεν βρέθηκε."});
+
+  const duplicate = db.prepare(`
+    SELECT id
+    FROM premium_manual_attendance
+    WHERE client_id=?
+      AND attendance_date=?
+      AND COALESCE(attendance_time,'')=?
+      AND service=?
+    LIMIT 1
+  `).get(id,date,time,service);
+
+  if (duplicate)
+    return res.status(409).json({error:"Αυτή η προπόνηση έχει ήδη περαστεί."});
+
+  const info = db.prepare(`
+    INSERT INTO premium_manual_attendance
+    (client_id,attendance_date,attendance_time,service,notes)
+    VALUES(?,?,?,?,?)
+  `).run(id,date,time || null,service,notes || null);
+
+  db.prepare(`
+    INSERT INTO premium_audit(admin_action,target_type,target_id,details)
+    VALUES(?,?,?,?)
+  `).run(
+    "ADD_MANUAL_ATTENDANCE",
+    "client",
+    String(id),
+    JSON.stringify({date,time,service,notes})
+  );
+
+  const usage = premiumUsage(id);
+
+  res.json({
+    ok:true,
+    id:Number(info.lastInsertRowid),
+    used:usage.used,
+    remaining:usage.remaining,
+    message:`Η προπόνηση της ${client.name} καταχωρήθηκε.`
+  });
+});
+
+app.post("/api/premium/admin/manual-attendance/:id/delete", premiumAdmin, (req,res) => {
+  const id = Number(req.params.id);
+  const row = db.prepare("SELECT * FROM premium_manual_attendance WHERE id=?").get(id);
+
+  if (!row) return res.status(404).json({error:"Η επίσκεψη δεν βρέθηκε."});
+
+  db.prepare("DELETE FROM premium_manual_attendance WHERE id=?").run(id);
+
+  db.prepare(`
+    INSERT INTO premium_audit(admin_action,target_type,target_id,details)
+    VALUES(?,?,?,?)
+  `).run(
+    "DELETE_MANUAL_ATTENDANCE",
+    "manual_attendance",
+    String(id),
+    JSON.stringify(row)
+  );
+
+  res.json({ok:true,message:"Η επίσκεψη διαγράφηκε."});
+});
+
+/* ----- Admin correction of booking charges ----- */
+
+app.post("/api/premium/admin/clients/:id/booking-charge/:bookingId/remove", premiumAdmin, (req,res) => {
+  const clientId = Number(req.params.id);
+  const bookingId = Number(req.params.bookingId);
+  const reason = String(req.body?.reason || "Λανθασμένη χρέωση από Admin").trim();
+
+  const client = db.prepare("SELECT id,name FROM premium_clients WHERE id=? AND deleted=0").get(clientId);
+  if (!client) return res.status(404).json({error:"Πελάτης δεν βρέθηκε."});
+
+  const usage = premiumUsage(clientId);
+  const row = usage.rows.find(x => x.source === "BOOKING" && Number(x.booking_id) === bookingId);
+  if (!row) return res.status(404).json({error:"Το ραντεβού δεν βρέθηκε στην καρτέλα του πελάτη."});
+  if (!row.counted) return res.status(409).json({error:"Αυτή η προπόνηση δεν είναι αυτή τη στιγμή χρεωμένη."});
+
+  const existing = db.prepare(`SELECT id FROM premium_booking_charge_exclusions WHERE client_id=? AND booking_id=? AND active=1 LIMIT 1`).get(clientId, bookingId);
+  if (existing) return res.status(409).json({error:"Η χρέωση έχει ήδη αφαιρεθεί."});
+
+  db.prepare(`
+    INSERT INTO premium_booking_charge_exclusions(client_id,booking_id,reason,active)
+    VALUES(?,?,?,1)
+  `).run(clientId, bookingId, reason);
+
+  const sub = premiumSubscription(clientId);
+  if (sub && sub.sessions_used_override !== null && sub.sessions_used_override !== undefined) {
+    const nextUsed = Math.max(0, Number(sub.sessions_used_override) - 1);
+    db.prepare("UPDATE premium_subscriptions SET sessions_used_override=? WHERE id=?").run(nextUsed, sub.id);
+  }
+
+  db.prepare(`INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)`)
+    .run("REMOVE_BOOKING_CHARGE","booking",String(bookingId),JSON.stringify({clientId,reason}));
+
+  const after = premiumUsage(clientId);
+  res.json({ok:true,used:after.used,remaining:after.remaining,message:"Η χρέωση αφαιρέθηκε χωρίς να διαγραφεί το ιστορικό."});
+});
+
+app.post("/api/premium/admin/clients/:id/booking-charge/:bookingId/restore", premiumAdmin, (req,res) => {
+  const clientId = Number(req.params.id);
+  const bookingId = Number(req.params.bookingId);
+  const row = db.prepare(`SELECT * FROM premium_booking_charge_exclusions WHERE client_id=? AND booking_id=? AND active=1 ORDER BY id DESC LIMIT 1`).get(clientId,bookingId);
+  if (!row) return res.status(404).json({error:"Δεν υπάρχει αφαιρεμένη χρέωση για αυτό το ραντεβού."});
+
+  db.prepare("UPDATE premium_booking_charge_exclusions SET active=0 WHERE id=?").run(row.id);
+
+  const sub = premiumSubscription(clientId);
+  if (sub && sub.sessions_used_override !== null && sub.sessions_used_override !== undefined) {
+    const nextUsed = Math.min(Number(sub.package_sessions || 0), Number(sub.sessions_used_override) + 1);
+    db.prepare("UPDATE premium_subscriptions SET sessions_used_override=? WHERE id=?").run(nextUsed, sub.id);
+  }
+
+  db.prepare(`INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)`)
+    .run("RESTORE_BOOKING_CHARGE","booking",String(bookingId),JSON.stringify({clientId,exclusionId:row.id}));
+
+  const after = premiumUsage(clientId);
+  res.json({ok:true,used:after.used,remaining:after.remaining,message:"Η χρέωση επανήλθε."});
 });
 
 /* ----- Program builder ----- */
