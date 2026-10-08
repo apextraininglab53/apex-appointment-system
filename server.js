@@ -60,7 +60,7 @@ const SERVICES = [
 ];
 
 const START_HOUR = 10;
-const END_HOUR = 22;
+const END_HOUR = 21;
 
 const DAYS_TO_GENERATE = 90;
 
@@ -2404,6 +2404,79 @@ function premiumUpcomingBookings(client) {
     }));
 }
 
+
+function premiumFindClientByPhoneAndPassword(phone, password) {
+  const wanted = normalizePhone(phone);
+  if (!wanted || !password) return null;
+
+  const rows = db.prepare(`
+    SELECT * FROM premium_clients
+    WHERE deleted=0
+  `).all();
+
+  for (const client of rows) {
+    if (normalizePhone(client.phone) !== wanted) continue;
+    if (premiumVerifyPassword(password, client.password_hash)) return client;
+  }
+  return null;
+}
+
+function premiumTodayString() {
+  const now = getAthensNowParts();
+  return `${now.year}-${now.month}-${now.day}`;
+}
+
+function premiumTrialBookingsToday(phone) {
+  const wanted = normalizePhone(phone);
+  const rows = db.prepare(`
+    SELECT h.booking_id, h.phone
+    FROM booking_history h
+    WHERE h.action='BOOKED' AND h.date=?
+  `).all(premiumTodayString());
+
+  return rows.filter(r => normalizePhone(r.phone) === wanted).length;
+}
+
+function premiumHasAnyBooking(phone) {
+  const wanted = normalizePhone(phone);
+  const row = db.prepare(`
+    SELECT phone FROM booking_history
+    WHERE action='BOOKED'
+  `).all().find(r => normalizePhone(r.phone) === wanted);
+  return !!row;
+}
+
+function premiumUpcomingBookingCount(client) {
+  if (!client) return 0;
+  const now = premiumNowMs();
+  const rows = db.prepare(`
+    SELECT b.id, b.phone, b.name, s.date, s.time
+    FROM bookings b
+    JOIN slots s ON s.id=b.slot_id
+    WHERE s.date >= ?
+  `).all(premiumTodayString());
+
+  return rows.filter(b =>
+    normalizePhone(b.phone) === normalizePhone(client.phone) &&
+    premiumAthensLocalToMs(b.date, b.time) > now
+  ).length;
+}
+
+function premiumBookingCapacity(clientId) {
+  const client = db.prepare("SELECT * FROM premium_clients WHERE id=? AND deleted=0").get(clientId);
+  const sub = premiumSubscription(clientId);
+  if (!client || !sub) return {limit:0, used:0, reserved:0, bookable_remaining:0};
+
+  const usage = premiumUsage(clientId);
+  const reserved = premiumUpcomingBookingCount(client);
+  const limit = Number(sub.package_sessions || 0);
+  return {
+    limit,
+    used: usage.used,
+    reserved,
+    bookable_remaining: Math.max(0, limit - usage.used - reserved)
+  };
+}
 function premiumSubscription(clientId) {
   return db.prepare(`
     SELECT * FROM premium_subscriptions
@@ -2569,32 +2642,30 @@ premiumSyncCustomers();
 /* ----- Premium auth ----- */
 
 app.post("/api/premium/auth/login", (req, res) => {
-  const key = String(req.body?.phone || "").trim();
+  const phone = String(req.body?.phone || "").trim();
   const password = String(req.body?.password || "");
-  if (!key || !password) return res.status(400).json({ error: "Συμπλήρωσε τηλέφωνο και κωδικό." });
+  if (!phone || !password) {
+    return res.status(400).json({ error: "Συμπλήρωσε τηλέφωνο και κωδικό." });
+  }
 
   premiumSyncCustomers();
 
-  const client = db.prepare(`
-    SELECT * FROM premium_clients
-    WHERE deleted=0 AND phone = ?
-    LIMIT 1
-  `).get(key);
+  const client = premiumFindClientByPhoneAndPassword(phone, password);
 
-  if (!client || !premiumVerifyPassword(password, client.password_hash)) {
-    return res.status(401).json({ error: "Λάθος στοιχεία σύνδεσης." });
+  if (!client) {
+    return res.status(401).json({ error: "Λάθος τηλέφωνο ή κωδικός." });
   }
 
   const state = premiumState(client.id);
 
-  // Login is allowed even when the subscription is expired, exhausted,
-  // not started, disabled, or missing. The client must be able to see
-  // their own account and the exact reason the subscription is inactive.
+  // Ο πελάτης μπορεί να συνδεθεί ακόμη και χωρίς ενεργή συνδρομή,
+  // ώστε να βλέπει τον λογαριασμό του και την κατάστασή του.
   req.session.premiumClientId = client.id;
   req.session.premiumRole = "client";
+
   res.json({
     ok: true,
-    client: { id: client.id, name: client.name, phone: client.phone, email: client.email },
+    client: premiumPublicClient(client),
     subscription: state
   });
 });
@@ -2633,7 +2704,7 @@ app.get("/api/premium/me", premiumClientAuth, (req, res) => {
   res.json({
     client,
     state,
-    subscription: sub ? {...sub, used:usage.used, remaining:usage.remaining} : null,
+    subscription: sub ? {...sub, used:usage.used, remaining:usage.remaining, ...premiumBookingCapacity(client.id)} : null,
     upcoming_bookings: upcomingBookings,
     booking_history: usage.rows,
     program: assigned || null,
@@ -2645,6 +2716,178 @@ app.get("/api/premium/my-bookings", premiumClientAuth, (req, res) => {
   const client = db.prepare("SELECT * FROM premium_clients WHERE id=?").get(req.session.premiumClientId);
   const sub = premiumSubscription(client.id);
   res.json(premiumBookingUsage(client, sub));
+});
+
+
+/* ----- Client booking inside the logged-in app ----- */
+
+app.get("/api/premium/booking/slots", premiumClientAuth, (req, res) => {
+  const date = String(req.query?.date || "").trim();
+  const service = String(req.query?.service || "Mini Group").trim();
+
+  if (!date || !SERVICES.includes(service)) {
+    return res.status(400).json({ error: "Μη έγκυρη ημερομηνία ή υπηρεσία." });
+  }
+
+  const rows = db.prepare(`
+    SELECT s.id, s.date, s.time, s.service
+    FROM slots s
+    WHERE s.date=? AND s.service=?
+    ORDER BY s.time
+  `).all(date, service);
+
+  const result = [];
+
+  for (const row of rows) {
+    if (isSlotInPast(row.date, row.time)) continue;
+
+    const count = sameTimeCount(row.date, row.time);
+
+    if (service === "Personal Training") {
+      if (count === 0) {
+        result.push({...row, remaining:1});
+      }
+      continue;
+    }
+
+    if (service === "Mini Group") {
+      if (!hasPersonalTraining(row.date, row.time) && count < 6) {
+        result.push({...row, remaining:6-count});
+      }
+    }
+  }
+
+  res.json(result);
+});
+
+app.get("/api/premium/booking/calendar", premiumClientAuth, (req, res) => {
+  const from = String(req.query?.from || premiumTodayString()).trim();
+  const days = Math.min(Math.max(Number(req.query?.days || 30), 1), 90);
+
+  const start = new Date(`${from}T00:00:00`);
+  if (Number.isNaN(start.getTime())) {
+    return res.status(400).json({error:"Μη έγκυρη ημερομηνία."});
+  }
+
+  const result = [];
+  for (let i=0; i<days; i++) {
+    const d = new Date(start);
+    d.setDate(d.getDate()+i);
+    const date = formatDate(d);
+    const daySlots = db.prepare(`
+      SELECT DISTINCT service FROM slots WHERE date=? ORDER BY service
+    `).all(date).map(x=>x.service);
+
+    if (daySlots.length) result.push({date, services:daySlots});
+  }
+
+  res.json(result);
+});
+
+app.post("/api/premium/booking/book", premiumClientAuth, (req, res) => {
+  const client = req.premiumClient;
+  const slotId = Number(req.body?.slot_id);
+
+  if (!slotId) {
+    return res.status(400).json({error:"Διάλεξε ημέρα και ώρα."});
+  }
+
+  try {
+    const transaction = db.transaction(() => {
+      const slot = db.prepare(`
+        SELECT id,date,time,service
+        FROM slots
+        WHERE id=?
+      `).get(slotId);
+
+      if (!slot) throw new Error("Η ώρα δεν υπάρχει.");
+      if (isSlotInPast(slot.date, slot.time)) throw new Error("Η συγκεκριμένη ώρα έχει ήδη περάσει.");
+
+      const state = premiumState(client.id);
+      const sub = premiumSubscription(client.id);
+
+      if (state.active && sub) {
+        const capacity = premiumBookingCapacity(client.id);
+        if (capacity.bookable_remaining <= 0) {
+          throw new Error("Δεν υπάρχουν άλλες διαθέσιμες προπονήσεις στο πακέτο σου.");
+        }
+      } else {
+        const todayTrials = premiumTrialBookingsToday(client.phone);
+        if (premiumHasAnyBooking(client.phone)) {
+          throw new Error("Έχεις ήδη χρησιμοποιήσει τη δοκιμαστική σου προπόνηση. Για νέα κράτηση απαιτείται ενεργή συνδρομή.");
+        }
+        if (todayTrials >= 4) {
+          throw new Error("Οι 4 διαθέσιμες δοκιμαστικές προπονήσεις για σήμερα έχουν ήδη συμπληρωθεί.");
+        }
+      }
+
+      const existingCustomerBooking = db.prepare(`
+        SELECT b.id, b.name, b.phone, s.date, s.time
+        FROM bookings b
+        JOIN slots s ON s.id=b.slot_id
+        WHERE s.date=? AND s.time=?
+      `).all(slot.date, slot.time).some(b =>
+        normalizePhone(b.phone) === normalizePhone(client.phone)
+      );
+
+      if (existingCustomerBooking) {
+        throw new Error("Έχεις ήδη κράτηση στην ίδια ώρα.");
+      }
+
+      const count = sameTimeCount(slot.date, slot.time);
+
+      if (slot.service === "Personal Training" && count > 0) {
+        throw new Error("Η συγκεκριμένη ώρα έχει ήδη κλειστεί.");
+      }
+
+      if (slot.service === "Mini Group") {
+        if (hasPersonalTraining(slot.date, slot.time)) {
+          throw new Error("Η συγκεκριμένη ώρα έχει κλειστεί για Personal Training.");
+        }
+        if (count >= 6) {
+          throw new Error("Το Mini Group έχει συμπληρώσει 6 άτομα.");
+        }
+      }
+
+      const result = db.prepare(`
+        INSERT INTO bookings(slot_id,name,phone)
+        VALUES(?,?,?)
+      `).run(slotId, client.name, client.phone);
+
+      db.prepare(`
+        INSERT INTO booking_history
+        (booking_id,name,phone,date,time,service,action)
+        VALUES(?,?,?,?,?,?,'BOOKED')
+      `).run(
+        result.lastInsertRowid,
+        client.name,
+        client.phone,
+        slot.date,
+        slot.time,
+        slot.service
+      );
+
+      return {
+        booking_id: result.lastInsertRowid,
+        date: slot.date,
+        time: slot.time,
+        service: slot.service
+      };
+    });
+
+    const result = transaction();
+    res.json({
+      ok:true,
+      message:"Το ραντεβού καταχωρήθηκε επιτυχώς.",
+      ...result
+    });
+  } catch (error) {
+    res.status(409).json({error:error.message || "Δεν ήταν δυνατή η κράτηση."});
+  }
+});
+
+app.get("/api/premium/booking/upcoming", premiumClientAuth, (req,res) => {
+  res.json(premiumUpcomingBookings(req.premiumClient));
 });
 
 app.post("/api/premium/workouts/complete", premiumActiveClientAuth, (req, res) => {
@@ -2730,7 +2973,7 @@ app.get("/api/premium/admin/clients/:id", premiumAdmin, (req, res) => {
 
   res.json({
     client: {...client, password_hash: undefined},
-    subscription: sub ? {...sub, used:usage.used, remaining:usage.remaining} : null,
+    subscription: sub ? {...sub, used:usage.used, remaining:usage.remaining, ...premiumBookingCapacity(client.id)} : null,
     subscription_history: history,
     booking_history: usage.rows,
     program: program || null,
