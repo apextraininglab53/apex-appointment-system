@@ -2563,18 +2563,34 @@ app.post("/api/premium/admin/logout", (req, res) => {
 });
 
 function premiumClientAuth(req, res, next) {
-  if (!req.session?.premiumClientId) {
+  if (!req.session?.premiumClientId && !req.session?.premiumClientPhone) {
     return res.status(401).json({ error: "Login required" });
   }
 
-  const client = db.prepare(
-    "SELECT * FROM premium_clients WHERE id=? AND deleted=0"
-  ).get(Number(req.session.premiumClientId));
+  let client = null;
+
+  if (req.session.premiumClientId) {
+    client = db.prepare(
+      "SELECT * FROM premium_clients WHERE id=? AND deleted=0"
+    ).get(Number(req.session.premiumClientId));
+  }
+
+  // Extra safety: if the numeric client ID is no longer available after a
+  // deploy/session mismatch, recover the same account from its phone.
+  if (!client && req.session.premiumClientPhone) {
+    const wanted = normalizePhone(req.session.premiumClientPhone);
+    const rows = db.prepare(
+      "SELECT * FROM premium_clients WHERE deleted=0"
+    ).all();
+    client = rows.find(r => normalizePhone(r.phone) === wanted) || null;
+    if (client) req.session.premiumClientId = client.id;
+  }
 
   if (!client) {
     delete req.session.premiumClientId;
+    delete req.session.premiumClientPhone;
     delete req.session.premiumRole;
-    return res.status(401).json({ error: "Ο λογαριασμός δεν είναι διαθέσιμος." });
+    return res.status(401).json({ error: "Ο λογαριασμός δεν βρέθηκε. Κάνε ξανά σύνδεση." });
   }
 
   req.premiumClient = client;
@@ -2661,6 +2677,7 @@ app.post("/api/premium/auth/login", (req, res) => {
   // Ο πελάτης μπορεί να συνδεθεί ακόμη και χωρίς ενεργή συνδρομή,
   // ώστε να βλέπει τον λογαριασμό του και την κατάστασή του.
   req.session.premiumClientId = client.id;
+  req.session.premiumClientPhone = client.phone;
   req.session.premiumRole = "client";
 
   res.json({
@@ -2672,6 +2689,7 @@ app.post("/api/premium/auth/login", (req, res) => {
 
 app.post("/api/premium/auth/logout", (req, res) => {
   delete req.session.premiumClientId;
+  delete req.session.premiumClientPhone;
   delete req.session.premiumRole;
   res.json({ ok: true });
 });
