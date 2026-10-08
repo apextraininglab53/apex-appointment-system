@@ -2680,10 +2680,17 @@ app.post("/api/premium/auth/login", (req, res) => {
   req.session.premiumClientPhone = client.phone;
   req.session.premiumRole = "client";
 
-  res.json({
-    ok: true,
-    client: premiumPublicClient(client),
-    subscription: state
+  req.session.save(err => {
+    if (err) {
+      console.error("APEX client session save error:", err);
+      return res.status(500).json({ error: "Δεν ήταν δυνατή η δημιουργία της σύνδεσης." });
+    }
+
+    res.json({
+      ok: true,
+      client: premiumPublicClient(client),
+      subscription: state
+    });
   });
 });
 
@@ -2728,6 +2735,23 @@ app.get("/api/premium/me", premiumClientAuth, (req, res) => {
     program: assigned || null,
     workouts
   });
+});
+
+app.get("/api/premium/my-upcoming", premiumClientAuth, (req, res) => {
+  try {
+    const client = db.prepare(
+      "SELECT * FROM premium_clients WHERE id=? AND deleted=0"
+    ).get(req.premiumClient.id);
+
+    if (!client) {
+      return res.status(404).json({ error: "Πελάτης δεν βρέθηκε." });
+    }
+
+    return res.json(premiumUpcomingBookings(client));
+  } catch (error) {
+    console.error("APEX my-upcoming error:", error);
+    return res.status(500).json({ error: "Δεν ήταν δυνατή η φόρτωση των ραντεβού." });
+  }
 });
 
 app.get("/api/premium/my-bookings", premiumClientAuth, (req, res) => {
