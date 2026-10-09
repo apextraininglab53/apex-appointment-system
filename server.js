@@ -2222,6 +2222,18 @@ db.exec(`
   );
 `);
 
+// Manual-visit charge corrections keep the visit record and its audit trail.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS premium_manual_charge_exclusions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id INTEGER NOT NULL REFERENCES premium_clients(id),
+    attendance_id INTEGER NOT NULL,
+    reason TEXT,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
 db.prepare("UPDATE premium_clients SET booking_name=name WHERE booking_name IS NULL OR booking_name='' ").run();
 
 function premiumCustomerKey(name, phone) {
@@ -2529,25 +2541,63 @@ function premiumSubscription(clientId) {
 function premiumUsage(clientId) {
   const client = db.prepare("SELECT * FROM premium_clients WHERE id=?").get(clientId);
   const sub = premiumSubscription(clientId);
-  if (!client || !sub) return { used: 0, remaining: 0, rows: [] };
+  if (!client || !sub) return { used: 0, remaining: 0, rows: [], overridden: false };
 
-  if (sub.sessions_used_override !== null && sub.sessions_used_override !== undefined) {
-    const used = Math.max(0, Number(sub.sessions_used_override));
+  const bookingRows = premiumBookingUsage(client, sub);
+  const manualRowsRaw = db.prepare(`
+    SELECT id, attendance_date AS date, attendance_time AS time, service, notes, created_at
+    FROM premium_manual_attendance
+    WHERE client_id=? AND attendance_date BETWEEN ? AND ?
+    ORDER BY attendance_date DESC, COALESCE(attendance_time,'') DESC, id DESC
+  `).all(clientId, sub.start_date, sub.end_date);
+  const excludedManualIds = new Set(db.prepare(`
+    SELECT attendance_id FROM premium_manual_charge_exclusions
+    WHERE client_id=? AND active=1
+  `).all(clientId).map(r => Number(r.attendance_id)));
+
+  const manualRows = manualRowsRaw.map(r => {
+    const excluded = excludedManualIds.has(Number(r.id));
+    // Manual entries represent an actual visit and are charged immediately,
+    // even when entered after the client has already left.
     return {
-      used,
-      remaining: Math.max(0, sub.package_sessions - used),
-      rows: premiumBookingUsage(client, sub),
-      overridden: true
+      source: "MANUAL_ATTENDANCE",
+      manual_attendance_id: Number(r.id),
+      date: r.date,
+      time: r.time || "",
+      service: r.service,
+      notes: r.notes || "",
+      status: excluded ? "MANUAL_ATTENDANCE_CORRECTED" : "ATTENDED_MANUAL",
+      counted: !excluded,
+      charge_removed: excluded,
+      reason: excluded
+        ? "Η χρέωση της χειροκίνητης επίσκεψης αφαιρέθηκε από τον Admin."
+        : "Χειροκίνητη επίσκεψη — χρεώνεται αμέσως κατά την καταχώριση."
     };
-  }
+  });
 
-  const rows = premiumBookingUsage(client, sub);
-  const used = rows.filter(r => r.counted).length;
+  // If the same actual visit exists as both a booking and a manual entry,
+  // count only one. Prefer the manual attendance entry as the charge record.
+  const mergedBookings = bookingRows.map(b => {
+    if (b.source !== "BOOKING" || !b.counted) return b;
+    const match = manualRows.find(m => m.counted && m.date === b.date && m.time === (b.time || "") && m.service === b.service);
+    if (!match) return b;
+    return {
+      ...b,
+      counted: false,
+      duplicate_of_manual_attendance_id: match.manual_attendance_id,
+      reason: "Δεν χρεώνεται δεύτερη φορά — η ίδια επίσκεψη έχει καταχωρηθεί χειροκίνητα."
+    };
+  });
+
+  const rows = mergedBookings.concat(manualRows).sort((a,b) => (`${b.date} ${b.time || ""}`).localeCompare(`${a.date} ${a.time || ""}`));
+  const computedUsed = rows.filter(r => r.counted).length;
+  const overridden = sub.sessions_used_override !== null && sub.sessions_used_override !== undefined;
+  const used = overridden ? Math.max(0, Number(sub.sessions_used_override)) : computedUsed;
   return {
     used,
-    remaining: Math.max(0, sub.package_sessions - used),
+    remaining: Math.max(0, Number(sub.package_sessions || 0) - used),
     rows,
-    overridden: false
+    overridden
   };
 }
 
@@ -3341,19 +3391,15 @@ app.get("/api/premium/admin/clients/:id/manual-attendance", premiumAdmin, (req,r
 
   if (!client) return res.status(404).json({error:"Πελάτης δεν βρέθηκε."});
 
-  const rows = db.prepare(`
-    SELECT
-      id,
-      attendance_date AS date,
-      attendance_time AS time,
-      service,
-      notes,
-      created_at
+  const rawRows = db.prepare(`
+    SELECT id, attendance_date AS date, attendance_time AS time, service, notes, created_at
     FROM premium_manual_attendance
     WHERE client_id=?
     ORDER BY attendance_date DESC, COALESCE(attendance_time,'') DESC, id DESC
   `).all(id);
-
+  const usageRows = premiumUsage(id).rows.filter(r => r.source === "MANUAL_ATTENDANCE");
+  const byId = new Map(usageRows.map(r => [Number(r.manual_attendance_id), r]));
+  const rows = rawRows.map(r => ({...r, ...(byId.get(Number(r.id)) || {})}));
   res.json(rows);
 });
 
@@ -3403,11 +3449,26 @@ app.post("/api/premium/admin/clients/:id/manual-attendance", premiumAdmin, (req,
   if (duplicate)
     return res.status(409).json({error:"Αυτή η προπόνηση έχει ήδη περαστεί."});
 
+  const beforeUsage = premiumUsage(id);
+  const matchingChargedBooking = beforeUsage.rows.some(r =>
+    r.source === "BOOKING" && r.counted && r.date === date &&
+    (r.time || "") === time && r.service === service
+  );
+
   const info = db.prepare(`
     INSERT INTO premium_manual_attendance
     (client_id,attendance_date,attendance_time,service,notes)
     VALUES(?,?,?,?,?)
   `).run(id,date,time || null,service,notes || null);
+
+  // If an admin has set a manual usage override, keep it in sync too.
+  // A matching already-charged booking is not charged a second time.
+  const currentSub = premiumSubscription(id);
+  if (currentSub && currentSub.sessions_used_override !== null && currentSub.sessions_used_override !== undefined && !matchingChargedBooking) {
+    db.prepare("UPDATE premium_subscriptions SET sessions_used_override=? WHERE id=?").run(
+      Math.max(0, Number(currentSub.sessions_used_override) + 1), currentSub.id
+    );
+  }
 
   db.prepare(`
     INSERT INTO premium_audit(admin_action,target_type,target_id,details)
@@ -3428,6 +3489,43 @@ app.post("/api/premium/admin/clients/:id/manual-attendance", premiumAdmin, (req,
     remaining:usage.remaining,
     message:`Η προπόνηση της ${client.name} καταχωρήθηκε.`
   });
+});
+
+app.post("/api/premium/admin/clients/:id/manual-attendance/:attendanceId/charge/remove", premiumAdmin, (req,res) => {
+  const clientId = Number(req.params.id);
+  const attendanceId = Number(req.params.attendanceId);
+  const reason = String(req.body?.reason || "Λανθασμένη χρέωση χειροκίνητης επίσκεψης").trim();
+  const visit = db.prepare("SELECT * FROM premium_manual_attendance WHERE id=? AND client_id=?").get(attendanceId, clientId);
+  if (!visit) return res.status(404).json({error:"Η χειροκίνητη επίσκεψη δεν βρέθηκε."});
+  const current = premiumUsage(clientId).rows.find(r => r.source === "MANUAL_ATTENDANCE" && Number(r.manual_attendance_id) === attendanceId);
+  if (!current || !current.counted) return res.status(409).json({error:"Η χειροκίνητη επίσκεψη δεν χρεώνεται αυτή τη στιγμή."});
+  db.prepare(`INSERT INTO premium_manual_charge_exclusions(client_id,attendance_id,reason,active) VALUES(?,?,?,1)`).run(clientId, attendanceId, reason);
+  const sub = premiumSubscription(clientId);
+  if (sub && sub.sessions_used_override !== null && sub.sessions_used_override !== undefined) {
+    db.prepare("UPDATE premium_subscriptions SET sessions_used_override=? WHERE id=?").run(Math.max(0, Number(sub.sessions_used_override)-1), sub.id);
+  }
+  db.prepare(`INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)`).run(
+    "REMOVE_MANUAL_ATTENDANCE_CHARGE", "manual_attendance", String(attendanceId), JSON.stringify({clientId,reason})
+  );
+  const after = premiumUsage(clientId);
+  res.json({ok:true,used:after.used,remaining:after.remaining,message:"Η χρέωση αφαιρέθηκε. Η χειροκίνητη επίσκεψη και το ιστορικό διατηρήθηκαν."});
+});
+
+app.post("/api/premium/admin/clients/:id/manual-attendance/:attendanceId/charge/restore", premiumAdmin, (req,res) => {
+  const clientId = Number(req.params.id);
+  const attendanceId = Number(req.params.attendanceId);
+  const exclusion = db.prepare(`SELECT * FROM premium_manual_charge_exclusions WHERE client_id=? AND attendance_id=? AND active=1 ORDER BY id DESC LIMIT 1`).get(clientId, attendanceId);
+  if (!exclusion) return res.status(404).json({error:"Δεν υπάρχει αφαιρεμένη χρέωση για αυτή την επίσκεψη."});
+  db.prepare("UPDATE premium_manual_charge_exclusions SET active=0 WHERE id=?").run(exclusion.id);
+  const sub = premiumSubscription(clientId);
+  if (sub && sub.sessions_used_override !== null && sub.sessions_used_override !== undefined) {
+    db.prepare("UPDATE premium_subscriptions SET sessions_used_override=? WHERE id=?").run(Math.min(Number(sub.package_sessions||0), Number(sub.sessions_used_override)+1), sub.id);
+  }
+  db.prepare(`INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)`).run(
+    "RESTORE_MANUAL_ATTENDANCE_CHARGE", "manual_attendance", String(attendanceId), JSON.stringify({clientId,exclusionId:exclusion.id})
+  );
+  const after = premiumUsage(clientId);
+  res.json({ok:true,used:after.used,remaining:after.remaining,message:"Η χρέωση της χειροκίνητης επίσκεψης επανήλθε."});
 });
 
 app.post("/api/premium/admin/manual-attendance/:id/delete", premiumAdmin, (req,res) => {
