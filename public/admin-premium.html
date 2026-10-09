@@ -262,6 +262,15 @@ async function loadClients() {
     $("clients").innerHTML = sortedGroups.map(group => {
       const phone = group[0]?.phone || "Χωρίς τηλέφωνο";
       const folderId = "folder-" + phoneKey(phone) + "-" + group[0].id;
+      // The name explicitly saved by Admin is the canonical name for new bookings.
+      // Keep all profiles visible in the folder; only the designated name controls bookings.
+      const designated = group.find(c => c.manual_name);
+      const folderTitle = designated
+        ? String(designated.name || "Χωρίς όνομα").trim()
+        : group.map(c => String(c.name || "Χωρίς όνομα").trim()).filter(Boolean).join(" • ");
+      const folderSubtitle = designated
+        ? `<div class="folder-phone">${esc(phone)} • Όνομα κρατήσεων: ${esc(designated.name)}</div>`
+        : `<div class="folder-phone">${esc(phone)}</div>`;
       const names = group.map(c => {
         const s = c.subscription;
         const rem = s?.remaining ?? 0;
@@ -278,8 +287,8 @@ async function loadClients() {
           <div class="folder-left">
             <span class="folder-icon">📁</span>
             <div>
-              <div class="folder-title">ΠΕΛΑΤΗΣ</div>
-              <div class="folder-phone">${esc(phone)}</div>
+              <div class="folder-title">${esc(folderTitle || "Χωρίς όνομα")}</div>
+              ${folderSubtitle}
             </div>
           </div>
           <span class="folder-count">${group.length} ${group.length === 1 ? "όνομα" : "ονόματα"}</span>
