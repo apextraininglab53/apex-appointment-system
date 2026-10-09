@@ -1055,7 +1055,7 @@ app.post(
         req.body?.slot_id
       );
 
-    const name =
+    const submittedName =
       String(
         req.body?.name || ""
       ).trim();
@@ -1064,6 +1064,12 @@ app.post(
       String(
         req.body?.phone || ""
       ).trim();
+
+    // If the Admin has explicitly renamed a profile in the phone folder,
+    // every new booking for that phone must use that selected folder name.
+    // The customer can still enter their details on the public booking page;
+    // the Admin-selected name is the canonical booking name.
+    const name = premiumCanonicalBookingName(phone, submittedName);
 
 
     if (
@@ -2240,6 +2246,22 @@ function premiumCustomerKey(name, phone) {
   return normalizeName(name) + "|" + normalizePhone(phone);
 }
 
+// Returns the Admin-designated name for a phone number, if one exists.
+// manual_name=1 is set only when the Admin explicitly saves a name.
+function premiumCanonicalBookingName(phone, submittedName) {
+  const wantedPhone = normalizePhone(phone);
+  if (!wantedPhone) return String(submittedName || "").trim();
+
+  const designated = db.prepare(`
+    SELECT name, phone
+    FROM premium_clients
+    WHERE deleted=0 AND manual_name=1
+    ORDER BY updated_at DESC, id DESC
+  `).all().find(row => normalizePhone(row.phone) === wantedPhone);
+
+  return designated?.name || String(submittedName || "").trim();
+}
+
 function premiumHashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
   const hash = crypto.scryptSync(String(password), salt, 64).toString("hex");
@@ -2711,6 +2733,10 @@ function premiumSyncCustomers() {
   const findExact = db.prepare(`
     SELECT id FROM premium_clients WHERE booking_customer_key=? LIMIT 1
   `);
+  const manuallyNamedClients = db.prepare(`
+    SELECT id, name, phone FROM premium_clients
+    WHERE deleted=0 AND manual_name=1
+  `);
 
   const insert = db.prepare(`
     INSERT OR IGNORE INTO premium_clients
@@ -2725,9 +2751,15 @@ function premiumSyncCustomers() {
       const phone = r.phone.trim();
       const key = premiumCustomerKey(name, phone);
 
-      // A manually renamed client keeps the original booking_customer_key,
-      // so this does not create a second client on every sync.
+      // A manually renamed client keeps the original booking_customer_key.
+      // If a new booking now uses the Admin-designated name for this phone,
+      // attach it to that existing profile rather than creating a duplicate.
       if (findExact.get(key)) continue;
+      const designatedMatch = manuallyNamedClients.all().some(c =>
+        normalizePhone(c.phone) === normalizePhone(phone) &&
+        normalizeName(c.name) === normalizeName(name)
+      );
+      if (designatedMatch) continue;
 
       insert.run(key, name, name, phone);
     }
@@ -3168,7 +3200,7 @@ app.get("/api/premium/admin/clients", premiumAdmin, (req, res) => {
     const usage = sub ? premiumUsage(c.id) : {used:0,remaining:0};
     const state = premiumState(c.id);
     return {
-      id:c.id,name:c.name,phone:c.phone,email:c.email,active:c.active,
+      id:c.id,name:c.name,phone:c.phone,email:c.email,active:c.active,manual_name:Boolean(c.manual_name),
       duplicate: (duplicateCounts.get(normalizeName(c.name) + "|" + normalizePhone(c.phone)) || 0) > 1,
       subscription: sub ? {...sub,used:usage.used,remaining:usage.remaining} : null,
       state
@@ -3271,8 +3303,8 @@ app.post("/api/premium/admin/clients/:id/rename", premiumAdmin, (req,res) => {
     });
   }
 
-  db.prepare("UPDATE premium_clients SET name=?,manual_name=1,updated_at=CURRENT_TIMESTAMP WHERE id=?")
-    .run(name,id);
+  db.prepare("UPDATE premium_clients SET name=?,booking_name=?,manual_name=1,updated_at=CURRENT_TIMESTAMP WHERE id=?")
+    .run(name,name,id);
 
   db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)")
     .run("RENAME_CLIENT","client",String(id),JSON.stringify({from:client.name,to:name}));
