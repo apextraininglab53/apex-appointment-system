@@ -477,8 +477,12 @@ async function openClient(id) {
     });
 
     $("manualAttendanceList").addEventListener("click", e => {
-      const b = e.target.closest(".deleteAttendance");
-      if (b) deleteManualAttendance(id, Number(b.dataset.attendanceId));
+      const removeBtn = e.target.closest(".removeManualCharge");
+      const restoreBtn = e.target.closest(".restoreManualCharge");
+      const deleteBtn = e.target.closest(".deleteAttendance");
+      if (removeBtn) correctManualCharge(id, Number(removeBtn.dataset.attendanceId), "remove");
+      else if (restoreBtn) correctManualCharge(id, Number(restoreBtn.dataset.attendanceId), "restore");
+      else if (deleteBtn) deleteManualAttendance(id, Number(deleteBtn.dataset.attendanceId));
     });
   } catch(e) {
     showError(e.message);
@@ -515,10 +519,34 @@ async function loadManualAttendance(id) {
   const rows = await api("/api/premium/admin/clients/" + id + "/manual-attendance");
   $("manualAttendanceList").innerHTML = rows.length ? rows.map(r => `
     <div class="row">
-      <span><b>${esc(r.date)}</b>${r.time ? ` — ${esc(r.time)}` : ""}<br><small>${esc(r.service)}${r.notes ? " — " + esc(r.notes) : ""}</small></span>
-      <button type="button" data-attendance-id="${r.id}" class="deleteAttendance" style="width:auto;min-width:90px">ΔΙΑΓΡΑΦΗ</button>
+      <span>
+        <b>${esc(r.date)}</b>${r.time ? ` — ${esc(r.time)}` : ""}<br>
+        <small>${esc(r.service)}${r.notes ? " — " + esc(r.notes) : ""}</small><br>
+        ${r.counted ? '<b>ΧΡΕΩΘΗΚΕ — 1 ΠΡΟΠΟΝΗΣΗ</b>' : (r.charge_removed ? '<span class="muted">Η ΧΡΕΩΣΗ ΑΦΑΙΡΕΘΗΚΕ</span>' : '<span class="muted">Δεν χρεώθηκε ξεχωριστά (ίδια επίσκεψη με booking ή χωρίς ενεργό πακέτο)</span>')}
+        ${r.reason ? `<br><small class="muted">${esc(r.reason)}</small>` : ""}
+      </span>
+      <span style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        ${r.counted ? `<button type="button" data-attendance-id="${r.id}" class="removeManualCharge" style="width:auto">❌ ΑΦΑΙΡΕΣΗ ΧΡΕΩΣΗΣ</button>` : ""}
+        ${r.charge_removed ? `<button type="button" data-attendance-id="${r.id}" class="restoreManualCharge" style="width:auto">↩ ΕΠΑΝΑΦΟΡΑ ΧΡΕΩΣΗΣ</button>` : ""}
+        <button type="button" data-attendance-id="${r.id}" class="deleteAttendance" style="width:auto;min-width:90px">ΔΙΑΓΡΑΦΗ</button>
+      </span>
     </div>
   `).join("") : `<div class="notice">Δεν υπάρχουν χειροκίνητες παρουσίες.</div>`;
+}
+
+async function correctManualCharge(id, attendanceId, action) {
+  const remove = action === "remove";
+  const message = remove
+    ? "Να αφαιρεθεί η χρέωση; Η επίσκεψη και το ιστορικό θα παραμείνουν."
+    : "Να επανέλθει η χρέωση αυτής της χειροκίνητης επίσκεψης;";
+  if (!confirm(message)) return;
+  try {
+    const url = "/api/premium/admin/clients/" + id + "/manual-attendance/" + attendanceId + "/charge/" + (remove ? "remove" : "restore");
+    const result = await api(url, {method:"POST", body: remove ? JSON.stringify({reason:"Διόρθωση χρέωσης από Admin."}) : undefined});
+    showDetailOk(result.message || (remove ? "Η χρέωση αφαιρέθηκε." : "Η χρέωση επανήλθε."));
+    await refresh();
+    await openClient(id);
+  } catch(e) { showDetailError(e.message); }
 }
 
 async function addManualAttendance(id) {
