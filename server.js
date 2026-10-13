@@ -529,6 +529,29 @@ function sameCustomer(
    OPENING HOURS
 ========================================================= */
 
+function getTimesForDate(date) {
+  // Return valid appointment start times for the selected day.
+  // Monday / Wednesday / Friday: 10:00-16:00 and 20:30-22:30.
+  // Sessions last 60 minutes, so the final start time is 21:30.
+  const day = date.getDay(); // Sunday = 0, Monday = 1
+
+  if (day === 0) return []; // Sunday closed
+
+  if (day === 6) {
+    return ["10:00", "11:00", "12:00", "13:00"]; // Saturday 10:00-14:00
+  }
+
+  if ([1, 3, 5].includes(day)) {
+    return [
+      "10:00", "11:00", "12:00", "13:00", "14:00", "15:00",
+      "20:30", "21:30"
+    ];
+  }
+
+  // Tuesday / Thursday: preserve the existing 10:00-22:00 schedule.
+  return Array.from({ length: 12 }, (_, i) => `${String(i + 10).padStart(2, "0")}:00`);
+}
+
 function isClosed(
   date,
   time
