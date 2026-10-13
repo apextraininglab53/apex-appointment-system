@@ -64,13 +64,12 @@ const END_HOUR = 21;
 
 const DAYS_TO_GENERATE = 90;
 
-// Δευτέρα = 1
-// Τετάρτη = 3
-// Παρασκευή = 5
+// Δευτέρα = 1, Τετάρτη = 3, Παρασκευή = 5
 const CLOSED_DAYS = [1, 3, 5];
 
-const CLOSED_FROM = 16;
-const CLOSED_TO = 19;
+// Δευτέρα / Τετάρτη / Παρασκευή: 10:00–16:00 και 20:30–22:30.
+// Οι κρατήσεις διαρκούν 60 λεπτά, άρα οι βραδινές ώρες έναρξης
+// είναι 20:30 και 21:30 (η τελευταία ολοκληρώνεται στις 22:30).
 
 
 /* =========================================================
@@ -532,50 +531,58 @@ function sameCustomer(
 
 function isClosed(
   date,
-  hour
+  time
 ) {
-
-  const day =
-    date.getDay();
-
-  // Κυριακή
-  if (day === 0) {
-
-    return true;
-
-  }
-
-  // Σάββατο
-  // 10:00 - 14:00
-  if (day === 6) {
-
-    return (
-      hour < 10 ||
-      hour > 13
-    );
-
-  }
-
-  // Δευτέρα / Τετάρτη / Παρασκευή
-  // 16:00 - 20:00 κλειστά
-  if (
-    CLOSED_DAYS.includes(day)
-
-    &&
-
-    hour >= CLOSED_FROM
-
-    &&
-
-    hour <= CLOSED_TO
-  ) {
-
-    return true;
-
-  }
-
-  return false;
+  return !getTimesForDate(date).includes(time);
 }
+
+
+/* =========================================================
+   MOVE EXISTING MON/WED/FRI 20:00 BOOKINGS TO 20:30
+========================================================= */
+
+// Preserve booking IDs, customer details, and history. If the destination
+// slot already exists, move its bookings there before removing the old slot.
+const moveEveningBookings = db.transaction(() => {
+  const now = getAthensNowParts();
+  const currentDate = `${now.year}-${now.month}-${now.day}`;
+  const currentTime = `${now.hour}:${now.minute}`;
+  const oldSlots = db.prepare(`
+    SELECT s.id, s.date, s.service
+    FROM slots s
+    WHERE s.time = '20:00'
+      AND strftime('%w', s.date) IN ('1','3','5')
+      AND (s.date > ? OR (s.date = ? AND '20:00' > ?))
+  `).all(currentDate, currentDate, currentTime);
+
+  const findTarget = db.prepare(`
+    SELECT id FROM slots WHERE date = ? AND time = '20:30' AND service = ?
+  `);
+  const insertTarget = db.prepare(`
+    INSERT OR IGNORE INTO slots (date, time, service) VALUES (?, '20:30', ?)
+  `);
+  const moveBookings = db.prepare(`
+    UPDATE bookings SET slot_id = ? WHERE slot_id = ?
+  `);
+  const updateActiveHistory = db.prepare(`
+    UPDATE booking_history
+    SET time = '20:30'
+    WHERE booking_id IN (SELECT id FROM bookings WHERE slot_id = ?)
+      AND date = ? AND time = '20:00' AND service = ? AND action = 'BOOKED'
+  `);
+  const removeOldSlot = db.prepare(`DELETE FROM slots WHERE id = ?`);
+
+  for (const oldSlot of oldSlots) {
+    insertTarget.run(oldSlot.date, oldSlot.service);
+    const target = findTarget.get(oldSlot.date, oldSlot.service);
+    if (!target) throw new Error(`Δεν δημιουργήθηκε η ώρα 20:30 για ${oldSlot.date}.`);
+    updateActiveHistory.run(oldSlot.id, oldSlot.date, oldSlot.service);
+    moveBookings.run(target.id, oldSlot.id);
+    removeOldSlot.run(oldSlot.id);
+  }
+});
+
+moveEveningBookings();
 
 
 /* =========================================================
@@ -586,82 +593,25 @@ function generateSlots(
   days = DAYS_TO_GENERATE
 ) {
 
-  const insert =
-    db.prepare(`
-      INSERT OR IGNORE INTO slots
-      (
-        date,
-        time,
-        service
-      )
-      VALUES (?, ?, ?)
-    `);
+  const insert = db.prepare(`
+    INSERT OR IGNORE INTO slots (date, time, service)
+    VALUES (?, ?, ?)
+  `);
 
-  const transaction =
-    db.transaction(() => {
+  const transaction = db.transaction(() => {
+    for (let offset = 0; offset < days; offset++) {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      date.setDate(date.getDate() + offset);
 
-      for (
-        let offset = 0;
-        offset < days;
-        offset++
-      ) {
-
-        const date =
-          new Date();
-
-        date.setHours(
-          0,
-          0,
-          0,
-          0
-        );
-
-        date.setDate(
-          date.getDate() +
-          offset
-        );
-
-        const dateString =
-          formatDate(date);
-
-        for (
-          let hour = START_HOUR;
-          hour <= END_HOUR;
-          hour++
-        ) {
-
-          if (
-            isClosed(
-              date,
-              hour
-            )
-          ) {
-
-            continue;
-
-          }
-
-          const time =
-            formatTime(hour);
-
-          for (
-            const service
-            of SERVICES
-          ) {
-
-            insert.run(
-              dateString,
-              time,
-              service
-            );
-
-          }
-
+      const dateString = formatDate(date);
+      for (const time of getTimesForDate(date)) {
+        for (const service of SERVICES) {
+          insert.run(dateString, time, service);
         }
-
       }
-
-    });
+    }
+  });
 
   transaction();
 }
@@ -670,60 +620,24 @@ generateSlots();
 
 
 /* =========================================================
-   REMOVE WRONG OLD SLOTS
+   REMOVE OLD UNBOOKED SLOTS THAT ARE OUTSIDE THE CURRENT HOURS
 ========================================================= */
 
 db.prepare(`
   DELETE FROM slots
-
-  WHERE id NOT IN (
-    SELECT slot_id
-    FROM bookings
-  )
-
-  AND (
-
-    time IN (
-      '08:00',
-      '09:00'
-    )
-
-    OR
-
-    strftime('%w', date) = '0'
-
-    OR
-
-    (
-      strftime('%w', date) = '6'
-
-      AND
-
-      time NOT IN (
-        '10:00',
-        '11:00',
-        '12:00',
-        '13:00'
+  WHERE id NOT IN (SELECT slot_id FROM bookings)
+    AND (
+      time IN ('08:00', '09:00')
+      OR strftime('%w', date) = '0'
+      OR (
+        strftime('%w', date) = '6'
+        AND time NOT IN ('10:00', '11:00', '12:00', '13:00')
+      )
+      OR (
+        strftime('%w', date) IN ('1','3','5')
+        AND time NOT IN ('10:00','11:00','12:00','13:00','14:00','15:00','20:30','21:30')
       )
     )
-
-    OR
-
-    (
-      strftime('%w', date)
-      IN ('1','3','5')
-
-      AND
-
-      time IN (
-        '16:00',
-        '17:00',
-        '18:00',
-        '19:00'
-      )
-    )
-
-  )
 `).run();
 
 
