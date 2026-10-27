@@ -2670,6 +2670,9 @@ function premiumSyncCustomers() {
   const findExact = db.prepare(`
     SELECT id FROM premium_clients WHERE booking_customer_key=? LIMIT 1
   `);
+  const deletedExact = db.prepare(`
+    SELECT id FROM premium_clients WHERE booking_customer_key=? AND deleted=1 LIMIT 1
+  `);
   const manuallyNamedClients = db.prepare(`
     SELECT id, name, phone FROM premium_clients
     WHERE deleted=0 AND manual_name=1
@@ -2691,7 +2694,7 @@ function premiumSyncCustomers() {
       // A manually renamed client keeps the original booking_customer_key.
       // If a new booking now uses the Admin-designated name for this phone,
       // attach it to that existing profile rather than creating a duplicate.
-      if (findExact.get(key)) continue;
+      if (findExact.get(key) || deletedExact.get(key)) continue;
       const designatedMatch = manuallyNamedClients.all().some(c =>
         normalizePhone(c.phone) === normalizePhone(phone) &&
         normalizeName(c.name) === normalizeName(name)
@@ -3096,6 +3099,51 @@ app.post("/api/premium/workouts/complete", premiumActiveClientAuth, (req, res) =
 
 /* ----- Premium admin ----- */
 
+/* ----- Premium admin: complete booking history (read-only) ----- */
+app.get("/api/premium/admin/all-bookings", premiumAdmin, (req, res) => {
+  const q = String(req.query.q || "").trim().toLocaleLowerCase("el-GR");
+  const from = String(req.query.from || "").trim();
+  const to = String(req.query.to || "").trim();
+  const action = String(req.query.action || "").trim().toUpperCase();
+
+  // Read-only: this endpoint does not change bookings, subscriptions,
+  // workouts, session balances, clients, or history.
+  let rows = db.prepare(`
+    SELECT
+      id AS history_id,
+      booking_id,
+      name,
+      phone,
+      date,
+      time,
+      service,
+      action,
+      created_at
+    FROM booking_history
+    ORDER BY date DESC, time DESC, created_at DESC, id DESC
+  `).all();
+
+  if (from) rows = rows.filter(row => row.date >= from);
+  if (to) rows = rows.filter(row => row.date <= to);
+  if (action === "BOOKED" || action === "CANCELLED") {
+    rows = rows.filter(row => row.action === action);
+  }
+  if (q) {
+    rows = rows.filter(row =>
+      String(row.name || "").toLocaleLowerCase("el-GR").includes(q) ||
+      String(row.phone || "").includes(q) ||
+      String(row.service || "").toLocaleLowerCase("el-GR").includes(q) ||
+      String(row.date || "").includes(q)
+    );
+  }
+
+  res.json({
+    total: rows.length,
+    earliestRecord: rows.length ? rows[rows.length - 1].date : null,
+    bookings: rows
+  });
+});
+
 app.get("/api/premium/admin/dashboard", premiumAdmin, (req, res) => {
   premiumSyncCustomers();
   const clients = db.prepare("SELECT id FROM premium_clients WHERE active=1 AND deleted=0").all();
@@ -3118,18 +3166,29 @@ app.get("/api/premium/admin/dashboard", premiumAdmin, (req, res) => {
 app.get("/api/premium/admin/clients", premiumAdmin, (req, res) => {
   premiumSyncCustomers();
   const q = String(req.query.q || "").trim();
-  const rows = q
-    ? db.prepare(`
-        SELECT * FROM premium_clients
-        WHERE deleted=0 AND (name LIKE ? OR phone LIKE ? OR email LIKE ?)
-        ORDER BY name
-      `).all(`%${q}%`, `%${q}%`, `%${q}%`)
-    : db.prepare("SELECT * FROM premium_clients WHERE deleted=0 ORDER BY name").all();
+  const allRows = db.prepare(`
+    SELECT * FROM premium_clients
+    WHERE deleted=0
+    ORDER BY updated_at DESC, id DESC
+  `).all();
 
-  const duplicateCounts = new Map();
-  for (const c of rows) {
-    const key = normalizeName(c.name) + "|" + normalizePhone(c.phone);
-    duplicateCounts.set(key, (duplicateCounts.get(key) || 0) + 1);
+  // One visible profile per normalized phone number. If Admin designated a
+  // name, that profile wins; otherwise use the most recently updated profile.
+  const visibleByPhone = new Map();
+  for (const c of allRows) {
+    const key = normalizePhone(c.phone) || ("client-" + c.id);
+    const existing = visibleByPhone.get(key);
+    if (!existing || (Number(c.manual_name) > Number(existing.manual_name))) {
+      visibleByPhone.set(key, c);
+    }
+  }
+  let rows = [...visibleByPhone.values()].sort((a,b) => String(a.name).localeCompare(String(b.name), "el"));
+  if (q) {
+    rows = rows.filter(c =>
+      String(c.name || "").toLocaleLowerCase("el-GR").includes(q) ||
+      String(c.phone || "").includes(q) ||
+      String(c.email || "").toLocaleLowerCase("el-GR").includes(q)
+    );
   }
 
   res.json(rows.map(c => {
