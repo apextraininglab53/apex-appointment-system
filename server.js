@@ -3197,7 +3197,7 @@ app.get("/api/premium/admin/clients", premiumAdmin, (req, res) => {
     const state = premiumState(c.id);
     return {
       id:c.id,name:c.name,phone:c.phone,email:c.email,active:c.active,manual_name:Boolean(c.manual_name),
-      duplicate: (duplicateCounts.get(normalizeName(c.name) + "|" + normalizePhone(c.phone)) || 0) > 1,
+      duplicate: false, // One visible profile per phone is enforced above.
       subscription: sub ? {...sub,used:usage.used,remaining:usage.remaining} : null,
       state
     };
