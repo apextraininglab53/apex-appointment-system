@@ -1024,6 +1024,43 @@ app.post(
 
     }
 
+    // Admin manual bookings keep their existing override.
+    const adminPassword = process.env.ADMIN_PASSWORD || "CHANGE_ME";
+    const isAdminBooking =
+      req.session?.premiumAdmin === true ||
+      req.get("x-admin-password") === adminPassword;
+
+    // Public website bookings are checked against the Premium profile
+    // by normalized phone number, so formatting differences do not matter.
+    if (!isAdminBooking) {
+      const member = premiumFindClientByPhone(phone);
+      if (member) {
+        const state = premiumState(member.id);
+        const latestSubscription = db.prepare(`
+          SELECT * FROM premium_subscriptions
+          WHERE client_id=?
+          ORDER BY id DESC LIMIT 1
+        `).get(member.id);
+        const today = premiumTodayString();
+        const expired =
+          state.reason === "EXPIRED" ||
+          (!!latestSubscription && today > latestSubscription.end_date);
+
+        if (expired) {
+          return res.status(409).json({
+            error: "Η κράτηση δεν ολοκληρώθηκε. Η συνδρομή σας έχει λήξει.",
+            reason: "EXPIRED_SUBSCRIPTION"
+          });
+        }
+
+        if (state.reason === "SESSIONS_EXHAUSTED") {
+          return res.status(409).json({
+            error: "Η κράτηση δεν ολοκληρώθηκε. Δεν έχετε διαθέσιμες προπονήσεις.",
+            reason: "SESSIONS_EXHAUSTED"
+          });
+        }
+      }
+    }
 
     try {
 
@@ -2560,6 +2597,24 @@ function premiumUsage(clientId) {
   };
 }
 
+function premiumFindClientByPhone(phone) {
+  const wantedPhone = normalizePhone(phone);
+  if (!wantedPhone) return null;
+
+  const rows = db.prepare(`
+    SELECT * FROM premium_clients
+    WHERE deleted=0
+  `).all();
+
+  return rows
+    .filter(row => normalizePhone(row.phone) === wantedPhone)
+    .sort((a, b) =>
+      Number(Boolean(b.manual_name)) - Number(Boolean(a.manual_name)) ||
+      String(b.updated_at || "").localeCompare(String(a.updated_at || "")) ||
+      Number(b.id) - Number(a.id)
+    )[0] || null;
+}
+
 function premiumState(clientId) {
   const client = db.prepare("SELECT * FROM premium_clients WHERE id=?").get(clientId);
   const sub = premiumSubscription(clientId);
@@ -2651,10 +2706,14 @@ function premiumClientAuth(req, res, next) {
 function premiumActiveClientAuth(req, res, next) {
   premiumClientAuth(req, res, () => {
     if (!req.premiumState?.active) {
-      return res.status(403).json({
-        error: "Η συνδρομή δεν είναι ενεργή.",
-        reason: req.premiumState?.reason || "INACTIVE"
-      });
+      const reason = req.premiumState?.reason || "INACTIVE";
+      const error = reason === "EXPIRED"
+        ? "Η κράτηση δεν ολοκληρώθηκε. Η συνδρομή σας έχει λήξει."
+        : reason === "SESSIONS_EXHAUSTED"
+          ? "Η κράτηση δεν ολοκληρώθηκε. Δεν έχετε διαθέσιμες προπονήσεις."
+          : "Η συνδρομή δεν είναι ενεργή.";
+
+      return res.status(403).json({ error, reason });
     }
     next();
   });
