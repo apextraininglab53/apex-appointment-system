@@ -552,6 +552,40 @@ async function refresh(){
   }
 }
 
+/*
+ * Αυτόματος συγχρονισμός συνδρομής:
+ * Το /api/premium/me επιστρέφει την πιο πρόσφατη συνδρομή από τη βάση.
+ * Όταν γίνει ανανέωση από το Premium Admin, η καρτέλα του πελάτη
+ * ενημερώνεται αυτόματα χωρίς αποσύνδεση ή χειροκίνητο refresh.
+ */
+let autoRefreshBusy = false;
+
+async function autoRefreshAccount(){
+  if(document.hidden) return;
+  if($("account").classList.contains("hidden")) return;
+  if(autoRefreshBusy) return;
+
+  autoRefreshBusy = true;
+  try{
+    await loadAccount();
+    $("accountError").style.display = "none";
+  }catch(e){
+    // Δεν διακόπτουμε τη χρήση του λογαριασμού για προσωρινό σφάλμα δικτύου.
+    console.warn("APEX automatic account refresh:", e);
+  }finally{
+    autoRefreshBusy = false;
+  }
+}
+
+// Έλεγχος κάθε 15 δευτερόλεπτα όσο ο πελάτης έχει ανοιχτό τον λογαριασμό.
+setInterval(autoRefreshAccount, 15000);
+
+// Άμεσος συγχρονισμός όταν ο πελάτης επιστρέψει στην καρτέλα.
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden) autoRefreshAccount();
+});
+window.addEventListener("focus",autoRefreshAccount);
+
 $("loginBtn").onclick=login;
 $("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
 $("loginKey").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
