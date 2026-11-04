@@ -2216,6 +2216,39 @@ db.exec(`
 
 db.prepare("UPDATE premium_clients SET booking_name=name WHERE booking_name IS NULL OR booking_name='' ").run();
 
+// Keep historical names linked to the profile after an Admin rename.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS premium_client_name_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id INTEGER NOT NULL REFERENCES premium_clients(id),
+    name TEXT NOT NULL,
+    normalized_name TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(client_id, normalized_name)
+  );
+  CREATE INDEX IF NOT EXISTS idx_premium_client_name_history_lookup
+    ON premium_client_name_history(client_id, normalized_name);
+`);
+const rememberClientName = db.prepare(`
+  INSERT OR IGNORE INTO premium_client_name_history(client_id,name,normalized_name)
+  VALUES(?,?,?)
+`);
+for (const client of db.prepare("SELECT id,name,booking_name,booking_customer_key FROM premium_clients").all()) {
+  const keySeparator = String(client.booking_customer_key || "").lastIndexOf("|");
+  const originalKeyName = keySeparator > 0 ? client.booking_customer_key.slice(0, keySeparator) : null;
+  for (const name of [client.name, client.booking_name, originalKeyName]) {
+    const normalized = normalizeName(name);
+    if (normalized) rememberClientName.run(client.id, String(name).trim(), normalized);
+  }
+}
+function premiumClientNameKeys(client) {
+  const names = new Set([client?.name, client?.booking_name].filter(Boolean).map(normalizeName));
+  if (client?.id) {
+    for (const row of db.prepare("SELECT normalized_name FROM premium_client_name_history WHERE client_id=?").all(client.id)) names.add(row.normalized_name);
+  }
+  return names;
+}
+
 function premiumCustomerKey(name, phone) {
   return normalizeName(name) + "|" + normalizePhone(phone);
 }
@@ -2296,12 +2329,9 @@ function premiumBookingUsage(client, subscription) {
   const now = premiumNowMs();
   const start = subscription.start_date;
   const end = subscription.end_date;
-  const bookingName = client.booking_name || client.name;
+  const clientNames = premiumClientNameKeys(client);
 
-  // We cross-check the client record against the booking system using the
-  // phone as the primary key and the client/booking name as a secondary check.
-  // This also survives a manual rename in the client list because booking_name
-  // keeps the original booking name.
+  // Stable name aliases keep past booking rows connected after a rename.
   const activeCandidates = db.prepare(`
     SELECT
       b.id AS booking_id,
@@ -2319,10 +2349,7 @@ function premiumBookingUsage(client, subscription) {
 
   const active = activeCandidates.filter(b =>
     normalizePhone(b.phone) === normalizePhone(client.phone) &&
-    (
-      normalizeName(b.name) === normalizeName(client.name) ||
-      normalizeName(b.name) === normalizeName(bookingName)
-    )
+    clientNames.has(normalizeName(b.name))
   );
 
   const cancelledCandidates = db.prepare(`
@@ -2342,10 +2369,7 @@ function premiumBookingUsage(client, subscription) {
 
   const cancelled = cancelledCandidates.filter(c =>
     normalizePhone(c.phone) === normalizePhone(client.phone) &&
-    (
-      normalizeName(c.name) === normalizeName(client.name) ||
-      normalizeName(c.name) === normalizeName(bookingName)
-    )
+    clientNames.has(normalizeName(c.name))
   );
 
   const excludedBookingIds = new Set(
@@ -2414,7 +2438,7 @@ function premiumUpcomingBookings(client) {
   if (!client) return [];
 
   const now = premiumNowMs();
-  const bookingName = client.booking_name || client.name;
+  const clientNames = premiumClientNameKeys(client);
 
   const rows = db.prepare(`
     SELECT
@@ -2432,10 +2456,7 @@ function premiumUpcomingBookings(client) {
   return rows
     .filter(b =>
       normalizePhone(b.phone) === normalizePhone(client.phone) &&
-      (
-        normalizeName(b.name) === normalizeName(client.name) ||
-        normalizeName(b.name) === normalizeName(bookingName)
-      )
+      clientNames.has(normalizeName(b.name))
     )
     .filter(b => premiumAthensLocalToMs(b.date, b.time) > now)
     .map(b => {
@@ -3086,10 +3107,7 @@ app.post("/api/premium/booking/cancel", premiumClientAuth, (req, res) => {
 
       const sameClient =
         normalizePhone(booking.phone) === normalizePhone(client.phone) &&
-        (
-          normalizeName(booking.name) === normalizeName(client.name) ||
-          normalizeName(booking.name) === normalizeName(client.booking_name || client.name)
-        );
+        premiumClientNameKeys(client).has(normalizeName(booking.name));
 
       if (!sameClient) {
         throw new Error("Δεν μπορείς να ακυρώσεις ραντεβού άλλου πελάτη.");
@@ -3231,17 +3249,8 @@ app.get("/api/premium/admin/clients", premiumAdmin, (req, res) => {
     ORDER BY updated_at DESC, id DESC
   `).all();
 
-  // One visible profile per normalized phone number. If Admin designated a
-  // name, that profile wins; otherwise use the most recently updated profile.
-  const visibleByPhone = new Map();
-  for (const c of allRows) {
-    const key = normalizePhone(c.phone) || ("client-" + c.id);
-    const existing = visibleByPhone.get(key);
-    if (!existing || (Number(c.manual_name) > Number(existing.manual_name))) {
-      visibleByPhone.set(key, c);
-    }
-  }
-  let rows = [...visibleByPhone.values()].sort((a,b) => String(a.name).localeCompare(String(b.name), "el"));
+  // Keep profiles sharing a phone separate, with independent subscriptions and history.
+  let rows = allRows.sort((a,b) => String(a.name).localeCompare(String(b.name), "el") || Number(a.id)-Number(b.id));
   if (q) {
     rows = rows.filter(c =>
       String(c.name || "").toLocaleLowerCase("el-GR").includes(q) ||
@@ -3256,7 +3265,7 @@ app.get("/api/premium/admin/clients", premiumAdmin, (req, res) => {
     const state = premiumState(c.id);
     return {
       id:c.id,name:c.name,phone:c.phone,email:c.email,active:c.active,manual_name:Boolean(c.manual_name),
-      duplicate: false, // One visible profile per phone is enforced above.
+      duplicate: false,
       subscription: sub ? {...sub,used:usage.used,remaining:usage.remaining} : null,
       state
     };
@@ -3295,6 +3304,9 @@ app.post("/api/premium/admin/clients", premiumAdmin, (req, res) => {
   if (!name || !phone) return res.status(400).json({error:"Όνομα και τηλέφωνο είναι υποχρεωτικά."});
 
   const key = premiumCustomerKey(name, phone);
+  const tombstone = db.prepare("SELECT id FROM premium_clients WHERE booking_customer_key=? AND deleted=1").get(key);
+  if (tombstone) return res.status(409).json({error:"Αυτό το προφίλ έχει διαγραφεί και δεν μπορεί να επανενεργοποιηθεί."});
+
   const existing = db.prepare("SELECT id FROM premium_clients WHERE booking_customer_key=? AND deleted=0").get(key);
 
   if (existing) {
@@ -3358,8 +3370,12 @@ app.post("/api/premium/admin/clients/:id/rename", premiumAdmin, (req,res) => {
     });
   }
 
-  db.prepare("UPDATE premium_clients SET name=?,booking_name=?,manual_name=1,updated_at=CURRENT_TIMESTAMP WHERE id=?")
-    .run(name,name,id);
+  db.transaction(() => {
+    rememberClientName.run(id, client.name, normalizeName(client.name));
+    rememberClientName.run(id, name, normalizeName(name));
+    db.prepare("UPDATE premium_clients SET name=?,booking_name=?,manual_name=1,updated_at=CURRENT_TIMESTAMP WHERE id=?")
+      .run(name,name,id);
+  })();
 
   db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)")
     .run("RENAME_CLIENT","client",String(id),JSON.stringify({from:client.name,to:name}));
@@ -3391,24 +3407,36 @@ app.post("/api/premium/admin/clients/:id/subscription", premiumAdmin, (req,res) 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || !/^\d{4}-\d{2}-\d{2}$/.test(end) || start > end) {
     return res.status(400).json({error:"Οι ημερομηνίες δεν είναι σωστές."});
   }
-  const exists = db.prepare("SELECT id FROM premium_clients WHERE id=? AND deleted=0").get(id);
-  if (!exists) return res.status(404).json({error:"Πελάτης δεν βρέθηκε."});
+  const selected = db.prepare("SELECT id,phone FROM premium_clients WHERE id=? AND deleted=0").get(id);
+  if (!selected) return res.status(404).json({error:"Πελάτης δεν βρέθηκε."});
 
-  db.prepare("UPDATE premium_subscriptions SET active=0 WHERE client_id=?").run(id);
-  const info = db.prepare(`
-    INSERT INTO premium_subscriptions(client_id,package_sessions,start_date,end_date)
-    VALUES(?,?,?,?)
-  `).run(id,sessions,start,end);
+  // One renewal action creates a distinct subscription/event for every active,
+  // non-deleted profile sharing the selected phone. The selected profile is
+  // included even if it was disabled so the existing renew flow can reactivate it.
+  const normalizedPhone = normalizePhone(selected.phone);
+  const targets = db.prepare("SELECT id,phone FROM premium_clients WHERE deleted=0 AND (active=1 OR id=?)")
+    .all(id)
+    .filter(client => normalizePhone(client.phone) === normalizedPhone);
+  if (!targets.length) return res.status(404).json({error:"Δεν βρέθηκαν Premium προφίλ για αυτό το τηλέφωνο."});
 
-  db.prepare("INSERT INTO premium_subscription_events(subscription_id,event_type,details) VALUES(?,?,?)")
-    .run(info.lastInsertRowid,"RENEWAL",JSON.stringify({sessions,start,end}));
+  const renewAll = db.transaction(() => {
+    for (const target of targets) {
+      db.prepare("UPDATE premium_subscriptions SET active=0 WHERE client_id=?").run(target.id);
+      const info = db.prepare(`
+        INSERT INTO premium_subscriptions(client_id,package_sessions,start_date,end_date)
+        VALUES(?,?,?,?)
+      `).run(target.id,sessions,start,end);
 
-  db.prepare("UPDATE premium_clients SET active=1,updated_at=CURRENT_TIMESTAMP WHERE id=?").run(id);
+      db.prepare("INSERT INTO premium_subscription_events(subscription_id,event_type,details) VALUES(?,?,?)")
+        .run(info.lastInsertRowid,"RENEWAL",JSON.stringify({sessions,start,end,phone_group:true}));
+      db.prepare("UPDATE premium_clients SET active=1,updated_at=CURRENT_TIMESTAMP WHERE id=?").run(target.id);
+      db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)")
+        .run("RENEW_SUBSCRIPTION","client",String(target.id),JSON.stringify({sessions,start,end,phone_group:true}));
+    }
+  });
+  renewAll();
 
-  db.prepare("INSERT INTO premium_audit(admin_action,target_type,target_id,details) VALUES(?,?,?,?)")
-    .run("RENEW_SUBSCRIPTION","client",String(id),JSON.stringify({sessions,start,end}));
-
-  res.json({ok:true});
+  res.json({ok:true,renewed_profiles:targets.length});
 });
 
 app.post("/api/premium/admin/clients/:id/correct", premiumAdmin, (req,res) => {
