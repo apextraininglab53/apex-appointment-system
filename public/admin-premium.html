@@ -94,6 +94,12 @@ button:active{transform:scale(.98)}
   </div>
 
   <div class="card">
+    <button type="button" class="sectionBtn" id="lowClientsBtn">ΑΠΟ 2 ΚΑΙ ΚΑΤΩ</button>
+    <p class="muted" style="margin:10px 0 0">Αυτόματη λίστα πελατών με 2, 1 ή 0 προπονήσεις υπόλοιπο.</p>
+    <div id="lowClients" class="clients" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
     <h2>Δημιουργία προγράμματος</h2>
     <div class="cols">
       <input id="pname" placeholder="Όνομα προγράμματος">
@@ -235,12 +241,40 @@ function toggleCustomerFolder(el) {
   el.classList.toggle("open");
 }
 
+function renderLowClients(allRows) {
+  const rows = (Array.isArray(allRows) ? allRows : []).filter(c => {
+    const sub = c && c.subscription;
+    if (!sub) return false;
+    const remaining = Number(sub.remaining ?? 0);
+    return Number.isFinite(remaining) && remaining <= 2;
+  }).sort((a, b) => {
+    const ar = Number(a.subscription?.remaining ?? 0);
+    const br = Number(b.subscription?.remaining ?? 0);
+    return ar - br || String(a.name || "").localeCompare(String(b.name || ""), "el");
+  });
+
+  const target = $("lowClients");
+  if (!target) return;
+  target.innerHTML = rows.map(c => {
+    const sub = c.subscription;
+    const remaining = Number(sub.remaining ?? 0);
+    const endDate = sub.end_date ? ` • Λήξη: ${esc(sub.end_date)}` : "";
+    const status = remaining <= 0 ? "ΕΞΑΝΤΛΗΘΗΚΑΝ" : `ΜΕΝΟΥΝ ${remaining}`;
+    return `<div class="client" data-low-client-id="${Number(c.id)}">
+      <div style="font-weight:900">${esc(c.name || "Χωρίς όνομα")}</div>
+      <div class="muted" style="font-size:12px;margin-top:5px">${esc(c.phone || "Χωρίς τηλέφωνο")}${endDate}</div>
+      <div style="margin-top:8px"><span class="tag">${status}</span></div>
+    </div>`;
+  }).join("") || `<div class="notice">Δεν υπάρχουν πελάτες με 2 ή λιγότερες προπονήσεις.</div>`;
+}
+
 async function loadClients() {
   try {
     const q = $("search").value.trim().toLowerCase();
     // Load the full customer list so that a search by one name never hides
     // the other customers that share the same mobile number.
     const allRows = await api("/api/premium/admin/clients");
+    renderLowClients(allRows);
     const rows = q
       ? allRows.filter(c =>
           String(c.name || "").toLowerCase().includes(q) ||
@@ -692,6 +726,11 @@ document.addEventListener("DOMContentLoaded", () => {
   $("refreshClientsBtn").addEventListener("click", loadClients);
   $("programsBtn").addEventListener("click", loadPrograms);
   $("clientsBtn").addEventListener("click", loadClients);
+  $("lowClientsBtn").addEventListener("click", loadClients);
+  $("lowClients").addEventListener("click", e => {
+    const item = e.target.closest("[data-low-client-id]");
+    if (item) openClient(Number(item.dataset.lowClientId));
+  });
   $("createProgramBtn").addEventListener("click", createProgram);
   $("closeModalBtn").addEventListener("click", closeModal);
 
