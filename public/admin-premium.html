@@ -395,6 +395,7 @@ async function openClient(id) {
         <label class="muted">Ονοματεπώνυμο</label>
         <input id="clientNameEdit" type="text" value="${esc(d.client.name)}" autocomplete="name">
         <button type="button" class="primary" id="renameBtn" style="margin-top:10px">ΑΠΟΘΗΚΕΥΣΗ ΟΝΟΜΑΤΟΣ</button>
+        <button type="button" id="deleteClientBtn" style="margin-top:10px;border-color:#633;color:#ffb3b3">ΔΙΑΓΡΑΦΗ ΜΕΛΟΥΣ</button>
       </div>
 
       <div class="card">
@@ -484,6 +485,7 @@ async function openClient(id) {
     await fillProgramSelect();
     $("attendanceDate").value = localToday();
     $("renameBtn").onclick = () => renameClient(id);
+    $("deleteClientBtn").onclick = () => deleteClient(id);
     $("addAttendanceBtn").onclick = () => addManualAttendance(id);
     $("renewBtn").onclick = () => renew(id);
     $("correctBtn").onclick = () => correct(id);
@@ -585,6 +587,18 @@ async function renameClient(id) {
     await refresh();
     await openClient(id);
   } catch(e) { showDetailError(e.message); }
+}
+
+async function deleteClient(id) {
+  if (!confirm("Να διαγραφεί οριστικά αυτό το μέλος και τα στοιχεία του; Η ενέργεια δεν αναιρείται.")) return;
+  try {
+    const result = await api("/api/premium/admin/clients/" + id + "/delete", {method:"POST"});
+    closeModal();
+    await refresh();
+    showOk(result.message || "Το μέλος διαγράφηκε.");
+  } catch(e) {
+    showDetailError(e.message);
+  }
 }
 
 function localToday() {
