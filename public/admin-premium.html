@@ -100,6 +100,16 @@ button:active{transform:scale(.98)}
   </div>
 
   <div class="card">
+    <button type="button" class="sectionBtn" id="activeMembersBtn">ΕΝΕΡΓΑ ΜΕΛΗ</button>
+    <div id="activeMembers" class="clients" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <button type="button" class="sectionBtn" id="expiredMembersBtn">ΛΗΓΜΕΝΕΣ ΣΥΝΔΡΟΜΕΣ</button>
+    <div id="expiredMembers" class="clients" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
     <h2>Δημιουργία προγράμματος</h2>
     <div class="cols">
       <input id="pname" placeholder="Όνομα προγράμματος">
@@ -268,6 +278,30 @@ function renderLowClients(allRows) {
   }).join("") || `<div class="notice">Δεν υπάρχουν πελάτες με 2 ή λιγότερες προπονήσεις.</div>`;
 }
 
+function renderSubscriptionLists(allRows) {
+  const today = localToday();
+  const withSubscription = (Array.isArray(allRows) ? allRows : []).filter(c => c?.subscription?.end_date);
+  const render = (rows, emptyText) => rows.map(c => {
+    const sub = c.subscription;
+    return `<div class="client" data-subscription-client-id="${Number(c.id)}">
+      <div style="font-weight:900">${esc(c.name || "Χωρίς όνομα")}</div>
+      <div class="muted" style="font-size:12px;margin-top:5px">${esc(c.phone || "Χωρίς τηλέφωνο")}</div>
+      <div style="margin-top:8px"><span class="tag">Λήξη ${esc(sub.end_date)}</span><span class="tag">Υπόλοιπο ${esc(sub.remaining ?? 0)}</span></div>
+    </div>`;
+  }).join("") || `<div class="notice">${emptyText}</div>`;
+
+  $("activeMembers").innerHTML = render(
+    withSubscription.filter(c => String(c.subscription.end_date) >= today)
+      .sort((a,b) => String(a.subscription.end_date).localeCompare(String(b.subscription.end_date))),
+    "Δεν υπάρχουν ενεργά μέλη."
+  );
+  $("expiredMembers").innerHTML = render(
+    withSubscription.filter(c => String(c.subscription.end_date) < today)
+      .sort((a,b) => String(b.subscription.end_date).localeCompare(String(a.subscription.end_date))),
+    "Δεν υπάρχουν μέλη με ληγμένη συνδρομή."
+  );
+}
+
 async function loadClients() {
   try {
     const q = $("search").value.trim().toLowerCase();
@@ -275,6 +309,7 @@ async function loadClients() {
     // the other customers that share the same mobile number.
     const allRows = await api("/api/premium/admin/clients");
     renderLowClients(allRows);
+    renderSubscriptionLists(allRows);
     const rows = q
       ? allRows.filter(c =>
           String(c.name || "").toLowerCase().includes(q) ||
@@ -727,6 +762,16 @@ document.addEventListener("DOMContentLoaded", () => {
   $("programsBtn").addEventListener("click", loadPrograms);
   $("clientsBtn").addEventListener("click", loadClients);
   $("lowClientsBtn").addEventListener("click", loadClients);
+  $("activeMembersBtn").addEventListener("click", loadClients);
+  $("expiredMembersBtn").addEventListener("click", loadClients);
+  $("activeMembers").addEventListener("click", e => {
+    const item = e.target.closest("[data-subscription-client-id]");
+    if (item) openClient(Number(item.dataset.subscriptionClientId));
+  });
+  $("expiredMembers").addEventListener("click", e => {
+    const item = e.target.closest("[data-subscription-client-id]");
+    if (item) openClient(Number(item.dataset.subscriptionClientId));
+  });
   $("lowClients").addEventListener("click", e => {
     const item = e.target.closest("[data-low-client-id]");
     if (item) openClient(Number(item.dataset.lowClientId));
