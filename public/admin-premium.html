@@ -278,26 +278,38 @@ function renderLowClients(allRows) {
   }).join("") || `<div class="notice">Δεν υπάρχουν πελάτες με 2 ή λιγότερες προπονήσεις.</div>`;
 }
 
+function canonicalMember(group) {
+  return group.find(c => c.manual_name) || [...group].sort((a, b) => Number(a.id) - Number(b.id))[0];
+}
+
 function renderSubscriptionLists(allRows) {
   const today = localToday();
   const withSubscription = (Array.isArray(allRows) ? allRows : []).filter(c => c?.subscription?.end_date);
-  const render = (rows, emptyText) => rows.map(c => {
+  const groups = new Map();
+  for (const c of withSubscription) {
+    const key = phoneKey(c.phone) || ("client-" + c.id);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(c);
+  }
+  const render = (rows, emptyText) => rows.map(group => {
+    const member = canonicalMember(group);
+    const c = group.find(x => String(x.subscription.end_date) >= today) || group[0];
     const sub = c.subscription;
     return `<div class="client" data-subscription-client-id="${Number(c.id)}">
-      <div style="font-weight:900">${esc(c.name || "Χωρίς όνομα")}</div>
-      <div class="muted" style="font-size:12px;margin-top:5px">${esc(c.phone || "Χωρίς τηλέφωνο")}</div>
+      <div style="font-weight:900">${esc(member?.name || "Χωρίς όνομα")}</div>
+      <div class="muted" style="font-size:12px;margin-top:5px">${esc(member?.phone || "Χωρίς τηλέφωνο")}</div>
       <div style="margin-top:8px"><span class="tag">Λήξη ${esc(sub.end_date)}</span><span class="tag">Υπόλοιπο ${esc(sub.remaining ?? 0)}</span></div>
     </div>`;
   }).join("") || `<div class="notice">${emptyText}</div>`;
 
   $("activeMembers").innerHTML = render(
-    withSubscription.filter(c => String(c.subscription.end_date) >= today)
-      .sort((a,b) => String(a.subscription.end_date).localeCompare(String(b.subscription.end_date))),
+    [...groups.values()].filter(group => group.some(c => String(c.subscription.end_date) >= today))
+      .sort((a,b) => String(a[0].subscription.end_date).localeCompare(String(b[0].subscription.end_date))),
     "Δεν υπάρχουν ενεργά μέλη."
   );
   $("expiredMembers").innerHTML = render(
-    withSubscription.filter(c => String(c.subscription.end_date) < today)
-      .sort((a,b) => String(b.subscription.end_date).localeCompare(String(a.subscription.end_date))),
+    [...groups.values()].filter(group => !group.some(c => String(c.subscription.end_date) >= today) && group.some(c => String(c.subscription.end_date) < today))
+      .sort((a,b) => String(b[0].subscription.end_date).localeCompare(String(a[0].subscription.end_date))),
     "Δεν υπάρχουν μέλη με ληγμένη συνδρομή."
   );
 }
@@ -310,33 +322,27 @@ async function loadClients() {
     const allRows = await api("/api/premium/admin/clients");
     renderLowClients(allRows);
     renderSubscriptionLists(allRows);
-    const rows = q
-      ? allRows.filter(c =>
-          String(c.name || "").toLowerCase().includes(q) ||
-          String(c.phone || "").toLowerCase().includes(q)
-        )
-      : allRows;
-
     const groups = new Map();
-    for (const c of rows) {
+    for (const c of allRows) {
       const key = phoneKey(c.phone) || ("client-" + c.id);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(c);
     }
 
-    const sortedGroups = [...groups.values()].sort((a,b) =>
-      String(a[0]?.name || "").localeCompare(String(b[0]?.name || ""), "el")
+    const matchingGroups = [...groups.values()].filter(group => !q || group.some(c =>
+      String(c.name || "").toLowerCase().includes(q) || String(c.phone || "").toLowerCase().includes(q)
+    ));
+
+    const sortedGroups = matchingGroups.sort((a,b) =>
+      String(canonicalMember(a)?.name || "").localeCompare(String(canonicalMember(b)?.name || ""), "el")
     );
 
     $("clients").innerHTML = sortedGroups.map(group => {
       const phone = group[0]?.phone || "Χωρίς τηλέφωνο";
       const folderId = "folder-" + phoneKey(phone) + "-" + group[0].id;
-      // The name explicitly saved by Admin is the canonical name for new bookings.
-      // Keep all profiles visible in the folder; only the designated name controls bookings.
-      const designated = group.find(c => c.manual_name);
-      const folderTitle = designated
-        ? String(designated.name || "Χωρίς όνομα").trim()
-        : group.map(c => String(c.name || "Χωρίς όνομα").trim()).filter(Boolean).join(" • ");
+      // Show one canonical name per phone: the Admin-designated name, or the earliest profile.
+      const designated = canonicalMember(group);
+      const folderTitle = String(designated?.name || "Χωρίς όνομα").trim();
       const folderSubtitle = designated
         ? `<div class="folder-phone">${esc(phone)} • Όνομα κρατήσεων: ${esc(designated.name)}</div>`
         : `<div class="folder-phone">${esc(phone)}</div>`;
@@ -429,7 +435,7 @@ async function openClient(id) {
       <div class="card">
         <h3>Ανανέωση</h3>
         <div class="cols">
-          <select id="ss"><option value="8">8 συνεδρίες</option><option value="12">12 συνεδρίες</option></select>
+          <select id="ss"><option value="8">8 συνεδρίες</option><option value="12">12 συνεδρίες</option><option value="16">16 συνεδρίες</option><option value="24">24 συνεδρίες</option></select>
           <input id="sd" type="date">
           <input id="ed" type="date">
           <button type="button" class="primary" id="renewBtn">ΑΝΑΝΕΩΣΗ</button>
