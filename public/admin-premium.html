@@ -244,7 +244,9 @@ async function refresh() {
 }
 
 function phoneKey(phone) {
-  return String(phone || "").replace(/\D/g, "");
+  const digits = String(phone || "").replace(/\D/g, "");
+  // Treat Greek numbers with +30 and the same local number without +30 as identical.
+  return digits.startsWith("30") && digits.length === 12 ? digits.slice(2) : digits;
 }
 
 function toggleCustomerFolder(el) {
